@@ -1,4 +1,5 @@
 #' @include TxModDb.R
+#' @include AllGenerics.R
 #' @include TxModDb-schema.R
 #' @include TxModDb-SELECT-helpers.R
 NULL
