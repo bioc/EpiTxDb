@@ -1,0 +1,37 @@
+Package: TxModDb
+Type: Package
+Title: Classes for accessing post-transcriptional modifications via the
+    AnnotationDbi interfaces.
+Version: 0.1.0
+Authors@R: person("Felix G.M.", 
+                  "Ernst", 
+                  email = "felix.gm.ernst@outlook.com", 
+                  role = c("aut", "cre"),
+                  comment = c(ORCID = "0000-0001-5064-0928"))
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: false
+Depends:
+    R (>= 3.6),
+    AnnotationDbi
+Imports:
+    methods,
+    GenomicFeatures
+Suggests:
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    testthat
+RoxygenNote: 7.0.2
+BugReports: https://github.com/FelixErnst/TxModDb/issues
+URL: https://github.com/FelixErnst/TxModDb
+Collate: 
+    'TxModDb-SELECT-helpers.R'
+    'TxModDb-schema.R'
+    'TxModDb.R'
+    'TxModDb-class.R'
+    'utils.R'
+    'makeTxModDb.R'
+    'makeTxModDbFromGRanges.R'
