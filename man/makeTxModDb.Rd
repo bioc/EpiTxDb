@@ -8,7 +8,6 @@ makeTxModDb(
   modifications,
   reactions,
   specifier = NULL,
-  transcripts = NULL,
   metadata = NULL,
   reassign.ids = FALSE
 )

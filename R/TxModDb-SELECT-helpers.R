@@ -87,14 +87,3 @@ TxModDb_SELECT_from_specifier <- function(txmoddb, filter=list(),
     TxModDb_SELECT_from_INNER_JOIN(txmoddb, "specifier", columns,
                                    filter = filter, orderby = orderby)
 }
-
-TxModDb_SELECT_from_transcript <- function(txmoddb, filter=list(),
-                                           orderby=c("_mod_id", "entrezid"))
-{
-    schema_version <- TxModDb_schema_version(txmoddb)
-    columns <- TXMODDB_table_columns("transcript",
-                                     schema_version = schema_version)
-    TxModDb_SELECT_from_INNER_JOIN(txmoddb, "transcript", columns,
-                                   filter = filter, orderby = orderby)
-}
-

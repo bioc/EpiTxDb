@@ -39,7 +39,10 @@ setDataFrameColClass <- GenomicFeatures:::setDataFrameColClass
         mod_type = "character",
         mod_name = "character",
         mod_start = "integer",
-        mod_end = "integer"
+        mod_end = "integer",
+        transcript_id = "character",
+        transcript_ensembltrans = "character",
+        transcript_entrezid = "character"
     )
     if (is.null(modifications)) {
         modifications <- makeZeroRowDataFrame(COL2CLASS)
@@ -116,30 +119,6 @@ load_specifiers <- function(txdb, set.col.class = FALSE) {
     .format_specifiers(specifiers, set.col.class = set.col.class)
 }
 
-.format_transcripts <- function(transcripts, set.col.class = FALSE){
-    COL2CLASS <- c(
-        mod_id="integer",
-        entrezid="character"
-    )
-    if (is.null(transcripts)) {
-        transcripts <- makeZeroRowDataFrame(COL2CLASS)
-    } else {
-        if (!is.data.frame(transcripts))
-            stop("'transcripts' must be a data frame")
-        if (!identical(names(transcripts), names(COL2CLASS)))
-            transcripts <- transcripts[names(COL2CLASS)]
-        if (set.col.class)
-            transcripts <- setDataFrameColClass(transcripts, COL2CLASS)
-    }
-    transcripts
-}
-
-load_transcripts <- function(txdb, set.col.class = FALSE)
-{
-  transcripts <- TxModDb_SELECT_from_transcript(txdb)
-  colnames(transcripts) <- sub("^_", "", colnames(transcripts))
-  .format_transcripts(transcripts, set.col.class = set.col.class)
-}
 
 # validity TxModDb -------------------------------------------------------------
 
@@ -173,23 +152,12 @@ load_transcripts <- function(txdb, set.col.class = FALSE)
     NULL
 }
 
-.valid.transcript.table <- function(conn){
-    schema_version <- TxModDb_schema_version(conn)
-    colnames <- TXMODDB_table_columns("transcript",
-                                      schema_version=schema_version)
-    msg <- AnnotationDbi:::.valid.table.colnames(conn, "transcript", colnames)
-    if (!is.null(msg))
-      return(msg)
-    NULL
-}
-
 .valid.TxModDb <- function(object){
     conn <- dbconn(object)
     c(AnnotationDbi:::.valid.metadata.table(conn, DB_TYPE_NAME, DB_TYPE_VALUE),
       .valid.modification.table(conn),
       .valid.reaction.table(conn),
-      .valid.specifier.table(conn),
-      .valid.transcript.table(conn))
+      .valid.specifier.table(conn))
 }
 
 setValidity("TxModDb", .valid.TxModDb)
@@ -211,6 +179,52 @@ setMethod("organism", "TxModDb",
     }
 )
 
+# seqinfo ----------------------------------------------------------------------
+
+.get_seqnames <- function(seqnames_db){
+    ensembl_not_empty <- seqnames_db$transcript_ensembltrans != ""
+    entrez_not_empty <- seqnames_db$transcript_entrezid != ""
+    both_not_empty <- ensembl_not_empty & entrez_not_empty
+    if(all(entrez_not_empty)){
+      return(seqnames_db$transcript_entrezid)
+    }
+    if(all(ensembl_not_empty)){
+      return(seqnames_db$transcript_ensembltrans)
+    }
+    if(!all(both_not_empty)){
+      return(seqnames_db$transcript_id)
+    }
+    seqnames <- seqnames_db$transcript_id
+    if(length(intersect(seqnames,
+                        seqnames_db$transcript_entrezid)) != 0L){
+        return(seqnames)
+    }
+    seqnames[entrez_not_empty] <-
+      seqnames_db$transcript_entrezid[entrez_not_empty]
+    if(length(intersect(seqnames,
+                        seqnames_db$transcript_ensembltrans)) != 0L){
+        return(seqnames)
+    }
+    seqnames[ensembl_not_empty] <-
+      seqnames_db$transcript_ensembltrans[ensembl_not_empty]
+    seqnames
+}
+
+.get_TxModDb_seqinfo <- function(x){
+    sql <- paste0("SELECT DISTINCT transcript_id, transcript_ensembltrans, ",
+                  "transcript_entrezid FROM modification")
+    seqnames_db <- queryAnnotationDb(x, sql)
+    ans <- Seqinfo(seqnames = .get_seqnames(seqnames_db))
+    sql <- "SELECT value FROM metadata WHERE name='Genome'"
+    genome <- unlist(queryAnnotationDb(x, sql))
+    names(genome) <- NULL
+    if (length(genome) != 0L)
+      genome(ans) <- genome
+    ans
+}
+
+setMethod("seqinfo", "TxModDb", .get_TxModDb_seqinfo)
+
 # as.list and comparison -------------------------------------------------------
 
 .format_txdb_dump <- function(modifications = NULL, reactions = NULL,
@@ -218,7 +232,6 @@ setMethod("organism", "TxModDb",
     modifications <- .format_modifications(modifications, set.col.class = TRUE)
     reactions <- .format_reactions(reactions, set.col.class = TRUE)
     specifiers <- .format_specifiers(specifiers, set.col.class = TRUE)
-    transcripts <- .format_transcripts(transcripts, set.col.class = TRUE)
     list(modifications = modifications, reactions = reactions,
          specifiers = specifiers, transcripts = transcripts)
 }
@@ -229,7 +242,6 @@ setMethod("as.list", "TxModDb",
         modifications <- load_modifications(x)
         reactions <- load_reactions(x)
         specifiers <- load_specifiers(x)
-        transcripts <- load_transcripts(x)
         .format_txdb_dump(modifications, reactions, specifiers, transcripts)
     }
 )

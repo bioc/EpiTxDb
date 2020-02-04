@@ -22,9 +22,25 @@ has_col <- GenomicFeatures:::has_col
 dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 .makeTxModDb_normarg_modifications <- function(modifications){
-    .REQUIRED_COLS <- c("mod_id", "mod_type", "mod_start", "mod_end")
-    .OPTIONAL_COLS <- c("mod_name")
-    check_colnames(modifications, .REQUIRED_COLS, .OPTIONAL_COLS, "modifications")
+    .REQUIRED_COLS <- c("mod_id", "mod_type", "mod_start", "mod_end",
+                        "transcript_id")
+    .OPTIONAL_COLS <- c("mod_name", "ensembltrans", "entrezid")
+    # make sure 'transcript_id is set'
+    if(!has_col(modifications, "transcript_id") &&
+       !has_col(modifications, "ensembltrans") &&
+       !has_col(modifications, "entrezid")){
+        stop("'modifications' must contain a column 'ensembltrans' or 'entrezid'",
+             ", if no column 'transcript_id' is given.")
+    }
+    if(!has_col(modifications, "transcript_id") &&
+       (has_col(modifications, "ensembltrans") ||
+        has_col(modifications, "entrezid"))){
+        transcript_id <- factor(paste0(modifications$ensembltrans,"_",
+                                       modifications$entrezid))
+        modifications$transcript_id <- as.integer(transcript_id)
+    }
+    check_colnames(modifications, .REQUIRED_COLS, .OPTIONAL_COLS,
+                   "modifications")
     ## Check 'mod_id'.
     if (!is.integer(modifications$mod_id) || any(is.na(modifications$mod_id)))
         stop("'modifications$mod_id' must be an integer vector ",
@@ -58,11 +74,31 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         && !.is_character_or_factor(modifications$mod_type))
         stop("'modifications$mod_type' must be a character vector ",
                   "(or factor)")
-    ## Check 'tx_id'.
-    if (has_col(modifications, "tx_id")
-        && !is.integer(modifications$tx_id))
-        stop("'modifications$tx_id' must be a character vector ",
-                  "(or factor)")
+    ## Check 'transcript_id'.
+    if (!is.integer(modifications$transcript_id)
+        || any(is.na(modifications$transcript_id)))
+        stop("'modifications$transcript_id' must be a integer vector with no ",
+             "NAs")
+    ## Check 'ensembltrans'.
+    if (has_col(modifications, "ensembltrans")){
+        if(!.is_character_or_factor(modifications$ensembltrans)
+           || any(is.na(modifications$ensembltrans))){
+            stop("'modifications$ensembltrans' must be a character vector",
+                 " (or factor) with no NAs")
+        }
+    } else {
+        modifications$ensembltrans <- character(1)
+    }
+    ## Check 'entrezid'.
+    if (has_col(modifications, "entrezid")){
+        if(!.is_character_or_factor(modifications$entrezid)
+           || any(is.na(modifications$entrezid))){
+            stop("'modifications$entrezid' must be a character vector ",
+                 "(or factor) with no NAs")
+        }
+    } else {
+        modifications$entrezid <- character(1)
+    }
     modifications
 }
 
@@ -148,27 +184,6 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     specifier
 }
 
-.makeTxModDb_normarg_transcripts <- function(transcripts, modifications_mod_id){
-    if (is.null(transcripts)) {
-        transcripts <- data.frame(mod_id = modifications_mod_id[FALSE],
-                                  entrezid = character(0), check.names = FALSE,
-                                  stringsAsFactors = FALSE)
-        return(transcripts)
-    }
-    .REQUIRED_COLS <- c("mod_id","entrezid")
-    .OPTIONAL_COLS <- c()
-    check_colnames(transcripts, .REQUIRED_COLS, .OPTIONAL_COLS, "transcripts")
-    ## Check 'mod_id'.
-    .check_foreign_key(transcripts$mod_id, "integer", "transcripts$mod_id",
-                       modifications_mod_id, "integer", "modifications$mod_id")
-    ## Check 'entrezid'.
-    if (!.is_character_or_factor(transcripts$entrezid)
-        || any(is.na(transcripts$entrezid)))
-        stop("'transcripts$entrezid' must be a character vector (or factor) ",
-             "with no NAs")
-    transcripts
-}
-
 .makeTxModDb_normarg_metadata <- function(metadata)
 {
     if (!is.null(metadata)) {
@@ -203,7 +218,10 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                                        mod_type,
                                        mod_name,
                                        mod_start,
-                                       mod_end){
+                                       mod_end,
+                                       transcript_id,
+                                       ensembltrans,
+                                       entrezid){
     if (is.null(mod_name))
         mod_name <- rep.int(NA_character_, length(mod_internal_id))
     data <- data.frame(mod_internal_id = mod_internal_id,
@@ -211,6 +229,9 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                        mod_name = mod_name,
                        mod_start = mod_start,
                        mod_end = mod_end,
+                       transcript_id = transcript_id,
+                       ensembltrans = ensembltrans,
+                       entrezid = entrezid,
                        check.names = FALSE, stringsAsFactors = FALSE)
     data <- unique(data)
 
@@ -268,23 +289,6 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     insert_data_into_table(conn, "specifier", data)
 }
 
-.write_transcript_table <- function(conn,
-                                    internal_mod_id,
-                                    entrezid){
-    data <- data.frame(internal_mod_id = internal_mod_id,
-                       entrezid = entrezid,
-                       check.names = FALSE, stringsAsFactors = FALSE)
-    data <- unique(data)
-    data <- S4Vectors:::extract_data_frame_rows(data, !is.na(data$entrezid))
-
-    ## Create the table.
-    SQL <- build_SQL_CREATE_transcript_table()
-    dbExecute(conn, SQL)
-
-    ## Fill the table.
-    insert_data_into_table(conn, "transcript", data)
-}
-
 .write_metadata_table <- function(conn, metadata){
     nb_modifications <- dbEasyQuery(conn,
                                     "SELECT COUNT(*) FROM modification")[[1L]]
@@ -318,39 +322,24 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 #' @rdname makeTxModDb
 #' @export
-makeTxModDb <- function(modifications, reactions,
-                        specifier = NULL, transcripts = NULL, metadata = NULL,
-                        reassign.ids = FALSE){
+makeTxModDb <- function(modifications, reactions, specifier = NULL,
+                        metadata = NULL, reassign.ids = FALSE){
     if (!isTRUEorFALSE(reassign.ids))
         stop("'reassign.ids' must be TRUE or FALSE")
 
     modifications <- .makeTxModDb_normarg_modifications(modifications)
     reactions <- .makeTxModDb_normarg_reactions(reactions, modifications$mod_id)
     specifier <- .makeTxModDb_normarg_specifiers(specifier, modifications$mod_id)
-    if (has_col(modifications, "entrezid")) {
-        if (!is.null(transcripts))
-            stop("'transcripts' must be NULL when 'modifications' ",
-                      "has a \"entrezid\" col")
-        transcripts <- modifications[!is.na(modifications$entrezid),
-                                     c("mod_id", "entrezid")]
-    } else {
-        transcripts <- .makeTxModDb_normarg_transcripts(transcripts,
-                                                        modifications$mod_id)
-    }
     metadata <- .makeTxModDb_normarg_metadata(metadata)
 
-    modifications_internal_mod_id <- .make_modifications_internal_mod_id(
-        modifications,
-        reassign.ids)
+    modifications_internal_mod_id <-
+        .make_modifications_internal_mod_id(modifications, reassign.ids)
     reactions_internal_mod_id <- translateIds(modifications$mod_id,
                                               modifications_internal_mod_id,
                                               reactions$mod_id)
     specifiers_internal_mod_id <- translateIds(modifications$mod_id,
                                                modifications_internal_mod_id,
                                                specifier$mod_id)
-    transcripts_internal_mod_id <- translateIds(modifications$mod_id,
-                                                modifications_internal_mod_id,
-                                                transcripts$mod_id)
 
     ## Create the db in a temp file.
     conn <- dbConnect(SQLite(), dbname="")
@@ -359,7 +348,10 @@ makeTxModDb <- function(modifications, reactions,
                                modifications$mod_type,
                                modifications$mod_name,
                                modifications$mod_start,
-                               modifications$mod_end)
+                               modifications$mod_end,
+                               modifications$transcript_id,
+                               modifications$ensembltrans,
+                               modifications$entrezid)
     .write_reactions_table(conn,
                            reactions_internal_mod_id,
                            reactions$mod_rank,
@@ -374,9 +366,6 @@ makeTxModDb <- function(modifications, reactions,
                             specifier$specifier_genename,
                             specifier$specifier_entrezid,
                             specifier$specifier_ensembl)
-    .write_transcript_table(conn,
-                            transcripts_internal_mod_id,
-                            transcripts$entrezid)
-    .write_metadata_table(conn, metadata)  # must come last!
+    .write_metadata_table(conn, metadata)
     TxModDb(conn)
 }

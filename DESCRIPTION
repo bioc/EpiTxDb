@@ -10,9 +10,14 @@ Authors@R: person("Felix G.M.",
                   comment = c(ORCID = "0000-0001-5064-0928"))
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: Artistic-2.0
 Encoding: UTF-8
 LazyData: false
+biocViews:
+    AnnotationData,
+    Epitranscriptomics,
+    TxDb,
+    Homo_sapiens
 Depends:
     R (>= 3.6),
     AnnotationDbi
@@ -24,10 +29,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-RoxygenNote: 7.0.2
-BugReports: https://github.com/FelixErnst/TxModDb/issues
-URL: https://github.com/FelixErnst/TxModDb
 Collate: 
+    'AllGenerics.R'
     'TxModDb-SELECT-helpers.R'
     'TxModDb-schema.R'
     'TxModDb.R'
@@ -35,3 +38,9 @@ Collate:
     'utils.R'
     'makeTxModDb.R'
     'makeTxModDbFromGRanges.R'
+    'modifications.R'
+    'modificationsBy.R'
+    'select-methods.R'
+RoxygenNote: 7.0.2
+BugReports: https://github.com/FelixErnst/TxModDb/issues
+URL: https://github.com/FelixErnst/TxModDb

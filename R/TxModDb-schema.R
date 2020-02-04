@@ -33,9 +33,11 @@ TXMODDB_MOD_COLDEFS <- c(
     mod_type = "TEXT NOT NULL",
     mod_name = "TEXT NULL",
     mod_start = "INTEGER NOT NULL",
-    mod_end = "INTEGER NOT NULL"
+    mod_end = "INTEGER NOT NULL",
+    transcript_id = "TEXT NOT NULL",
+    transcript_ensembltrans = "TEXT NULL",
+    transcript_entrezid = "TEXT NULL"
 )
-
 TXMODDB_MOD_COLUMNS <- names(TXMODDB_MOD_COLDEFS)
 
 # modification 'reaction' table
@@ -64,21 +66,12 @@ TXMODDB_SPECIFIER_COLDEFS <- c(
 
 TXMODDB_SPECIFIER_COLUMNS <- names(TXMODDB_SPECIFIER_COLDEFS)
 
-# 'transcript' table
-
-TXMODDB_TX_COLDEFS <- c(
-    `_mod_id` = "INTEGER PRIMARY KEY",
-    entrezid = "TEXT NOT NULL"
-)
-
-TXMODDB_TX_COLUMNS <- names(TXMODDB_TX_COLDEFS)
-
+#
 
 TXMODDB_COLUMNS <- list(
     modification = TXMODDB_MOD_COLUMNS,
     reaction = TXMODDB_REACTION_COLUMNS,
-    specifier = TXMODDB_SPECIFIER_COLUMNS,
-    transcript = TXMODDB_TX_COLUMNS
+    specifier = TXMODDB_SPECIFIER_COLUMNS
 )
 
 
@@ -112,14 +105,6 @@ build_SQL_CREATE_specifier_table <- function()
     foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
     constraints <- c(foreign_key)
     .build_SQL_CREATE_TABLE("specifier", TXMODDB_SPECIFIER_COLDEFS, constraints)
-}
-
-build_SQL_CREATE_transcript_table <- function()
-{
-    unique_key <- "UNIQUE (_mod_id, entrezid)"
-    foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
-    constraints <- c(unique_key, foreign_key)
-    .build_SQL_CREATE_TABLE("transcript", TXMODDB_TX_COLDEFS, constraints)
 }
 
 
@@ -158,4 +143,3 @@ TXMODDB_column2table <- function(columns, from_table = NA, schema_version = NA){
     }
     tables
 }
-

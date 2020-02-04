@@ -2,6 +2,8 @@
 
 export(makeTxModDb)
 exportClasses(TxModDb)
+exportMethods(modifications)
+exportMethods(modificationsByTranscript)
 import(AnnotationDbi)
 import(GenomeInfoDb)
 import(RSQLite)

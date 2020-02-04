@@ -17,9 +17,9 @@ NULL
     tCols <- .getTableColMapping(x)
     longNames <- unique(unlist(tCols,use.names=FALSE))
     abbrev <- unique(toupper((gsub("_","",unlist(tCols,use.names=FALSE)))))
-    abbrev <- gsub("REACTION","RX",abbrev)
-    abbrev <- gsub("SPECIFIER","SPEC",abbrev)
-    abbrev <- gsub("^ENTREZID","TXENTREZID",abbrev)
+    abbrev <- gsub("^REACTION","RX",abbrev)
+    abbrev <- gsub("^SPECIFIER","SPEC",abbrev)
+    abbrev <- gsub("^TRANSCRIPT","TX",abbrev)
     names(abbrev) <- longNames
     abbrev
 }
@@ -47,10 +47,10 @@ NULL
 
 # helper functions for generating SQL statements from selected columns ---------
 
-## this just takes the 1 letter abrevs and makes them into a sorted string
-## that can be used as a key below
+# this just takes the 1 letter abrevs and makes them into a sorted string
+# that can be used as a key below
 .encodeSortedTableKey <- function(sTNames){
-    prefSort <- c("t","m","r","s")
+    prefSort <- c("m","r","s")
     res <- sTNames[match(prefSort, sTNames)]
     paste(res[!is.na(res)], collapse="")
 }
@@ -60,28 +60,8 @@ NULL
     .encodeSortedTableKey(sTNames)
 }
 
-## for unlikely table combos
-.missingTableInterpolator <- function(tName){
-    tName <- switch(EXPR = tName,
-                    "se" = "tse",
-                    "sc" = "tsc",
-                    "te" = "tse",
-                    "tc" = "tsc",
-                    "ge" = "gtse",
-                    "gc" = "gtsc",
-                    "gs" = "gts",
-                    "sec" = "tsec",
-                    "gsec" = "gtsec",
-                    "gtce" = "gtsec",
-                    "gte" = "gtse",
-                    tName)
-    tName
-}
-
-## real joins for likely combos
+# real joins for likely combos
 .tableJoinSelector <- function(tName){
-    ## if its not one of these, then it needs to become one
-    tName <- .missingTableInterpolator(tName)
     rs <- paste("(SELECT * FROM reaction ",
                 "LEFT JOIN specifier ON (reaction._mod_id = specifier._mod_id) ) ")
     ms <- paste("SELECT * FROM modification ",
@@ -91,25 +71,8 @@ NULL
     mrs <- paste("(SELECT * FROM modification ",
                  "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) ",
                  "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id) ) ")
-    ts <- paste("SELECT * FROM transcript ",
-                "LEFT JOIN specifier ON (transcript._mod_id = specifier._mod_id) ")
-    tr <- paste("SELECT * FROM transcript ",
-                "LEFT JOIN reaction ON (transcript._mod_id = reaction._mod_id) ")
-    trs <- paste("(SELECT * FROM transcript ",
-                 "LEFT JOIN reaction ON (transcript._mod_id = reaction._mod_id) ",
-                 "LEFT JOIN specifier ON (transcript._mod_id = specifier._mod_id) ) ")
-    tm <- paste("SELECT * FROM modification ",
-                "LEFT JOIN transcript ON (modification._mod_id = transcript._mod_id) ")
-    tmr <- paste("(SELECT * FROM modification ",
-                 "LEFT JOIN transcript ON (modification._mod_id = transcript._mod_id) ",
-                 "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) )")
-    tmrs <- paste("(SELECT * FROM modification ",
-                  "LEFT JOIN transcript ON (modification._mod_id = transcript._mod_id) ",
-                  "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) ",
-                  "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id) ) ")
 
     sql <- switch(EXPR = tName,
-                  "t" = "transcript",
                   "m" = "modification",
                   "r" = "reaction",
                   "s" = "specifier",
@@ -117,12 +80,6 @@ NULL
                   "ms" = ms,
                   "mr" = mr,
                   "mrs" = mrs,
-                  "ts" = ts,
-                  "tr" = tr,
-                  "trs" = trs,
-                  "tm" = tm,
-                  "tmr" = tmr,
-                  "tmrs" = tmrs,
                   stop(paste("No query for this combination of tables.",
                              "Please add",tName,"to the interpolator")))
     sql
@@ -130,7 +87,7 @@ NULL
 
 # helper function to generate SQL statements -----------------------------------
 
-## WHERE g._tx_id = s._tx_id etc.
+#
 .makeJoinSQL <- function(x, cnames){
     tKey <- .makeTableKey(x,cnames)
     .tableJoinSelector(tKey)
@@ -264,6 +221,15 @@ setMethod("columns", "TxModDb",
         "MODNAME" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT mod_name FROM modification", 1L),
+        "TXID" = AnnotationDbi:::dbQuery(
+            dbconn(x),
+            "SELECT DISTINCT transcript_id FROM modification", 1L),
+        "TXENSEMBLTRANS" = AnnotationDbi:::dbQuery(
+            dbconn(x),
+            "SELECT DISTINCT transcript_ensembltrans FROM modification", 1L),
+        "TXENTREZID" = AnnotationDbi:::dbQuery(
+            dbconn(x),
+            "SELECT DISTINCT transcript_entrezid FROM modification", 1L),
         "RXGENENAME" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT reaction_genename FROM reaction", 1L),
@@ -291,9 +257,6 @@ setMethod("columns", "TxModDb",
         "SPECENTREZID" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT specifier_ensembl FROM specifier", 1L),
-        "TXENTREZID" = AnnotationDbi:::dbQuery(
-            dbconn(x),
-            "SELECT DISTINCT entrezid FROM transcript", 1L),
         stop(paste(keytype, "is not a supported keytype.",
                    " Please use the keytypes",
                    "method to identify viable keytypes")))
@@ -310,8 +273,9 @@ setMethod("keys", "TxModDb",.keysDispatch)
 # keytypes ---------------------------------------------------------------------
 
 setMethod("keytypes", "TxModDb",
-          function(x) return(c("MODID","MODTYPE","MODNAME","RXGENENAME",
+          function(x) return(c("MODID","MODTYPE","MODNAME","TXID",
+                               "TXENSEMBLTRANS","TXENTREZID","RXGENENAME",
                                "RXENSEMBL","RXENSEMBLTRANS","RXENTREZID",
                                "RXENZYME","SPECTYPE","SPECGENENAME",
-                               "SPECENSEMBL","SPECENTREZID","TXENTREZID"))
+                               "SPECENSEMBL","SPECENTREZID"))
 )
