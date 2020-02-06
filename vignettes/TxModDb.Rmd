@@ -1,0 +1,81 @@
+---
+title: "TxModDB"
+author: "Felix G.M. Ernst"
+date: "`r Sys.Date()`"
+package: RNAmodR
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{TxModDB}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+---
+
+```{r style, echo = FALSE, results = 'asis'}
+BiocStyle::markdown(css.files = c('custom.css'))
+```
+
+# Introduction
+
+```{r, echo = FALSE}
+suppressPackageStartupMessages({
+  library(GenomicFeatures)
+  library(BSgenome.Hsapiens.UCSC.hg38)
+  library(TxModDb)
+  library(TxModDb.Hsapiens.hg38)
+  library(Modstrings)
+})
+```
+```{r, eval = FALSE}
+library(GenomicFeatures)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(TxModDb)
+library(TxModDb.Hsapiens.hg38)
+library(Modstrings)
+```
+
+
+
+```{r}
+txmoddb <- TxModDb.Hsapiens.hg38
+```
+
+
+
+```{r}
+mod <- modificationsBy(txmoddb)
+```
+
+
+# Ribosomal modifications (Y and 2'-O)
+
+```{r}
+txdb <- makeTxDbFromUCSC(genome = "hg38", tablename = "refGene")
+```
+
+```{r}
+seqnames <- as.character(unlist(unique(seqnames(mod))))
+tx <- transcripts(txdb, filter=list(TXNAME = seqnames))
+# some transcripts are invalid and too long 
+tx <- tx[width(tx) < 6000] 
+# 28S rRNA does not have a consistent length. Keep the valid one
+tx <- tx[tx$tx_name != "NR_003287" | (tx$tx_name == "NR_003287" & width(tx) == 5070L)] 
+
+sequences <- getSeq(BSgenome.Hsapiens.UCSC.hg38, tx)
+seqtype(sequences) <- "RNA"
+names(sequences) <- mcols(tx)$tx_name
+```
+
+```{r}
+combineIntoModstrings(sequences, mod)
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```

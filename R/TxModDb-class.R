@@ -41,8 +41,8 @@ setDataFrameColClass <- GenomicFeatures:::setDataFrameColClass
         mod_start = "integer",
         mod_end = "integer",
         transcript_id = "character",
-        transcript_ensembltrans = "character",
-        transcript_entrezid = "character"
+        transcript_name = "character",
+        transcript_ensembltrans = "character"
     )
     if (is.null(modifications)) {
         modifications <- makeZeroRowDataFrame(COL2CLASS)
@@ -182,25 +182,25 @@ setMethod("organism", "TxModDb",
 # seqinfo ----------------------------------------------------------------------
 
 .get_seqnames <- function(seqnames_db){
+    name_not_empty <- seqnames_db$transcript_name != ""
     ensembl_not_empty <- seqnames_db$transcript_ensembltrans != ""
-    entrez_not_empty <- seqnames_db$transcript_entrezid != ""
-    both_not_empty <- ensembl_not_empty & entrez_not_empty
-    if(all(entrez_not_empty)){
-      return(seqnames_db$transcript_entrezid)
+    both_empty <- !ensembl_not_empty & !name_not_empty
+    if(all(name_not_empty)){
+      return(seqnames_db$transcript_name)
     }
     if(all(ensembl_not_empty)){
       return(seqnames_db$transcript_ensembltrans)
     }
-    if(!all(both_not_empty)){
+    if(all(both_empty)){
       return(seqnames_db$transcript_id)
     }
     seqnames <- seqnames_db$transcript_id
     if(length(intersect(seqnames,
-                        seqnames_db$transcript_entrezid)) != 0L){
+                        seqnames_db$transcript_name)) != 0L){
         return(seqnames)
     }
-    seqnames[entrez_not_empty] <-
-      seqnames_db$transcript_entrezid[entrez_not_empty]
+    seqnames[name_not_empty] <-
+      seqnames_db$transcript_name[name_not_empty]
     if(length(intersect(seqnames,
                         seqnames_db$transcript_ensembltrans)) != 0L){
         return(seqnames)
@@ -211,8 +211,8 @@ setMethod("organism", "TxModDb",
 }
 
 .get_TxModDb_seqinfo <- function(x){
-    sql <- paste0("SELECT DISTINCT transcript_id, transcript_ensembltrans, ",
-                  "transcript_entrezid FROM modification")
+    sql <- paste0("SELECT DISTINCT transcript_id, transcript_name, ",
+                  "transcript_ensembltrans FROM modification")
     seqnames_db <- queryAnnotationDb(x, sql)
     ans <- Seqinfo(seqnames = .get_seqnames(seqnames_db))
     sql <- "SELECT value FROM metadata WHERE name='Genome'"

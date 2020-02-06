@@ -24,19 +24,19 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 .makeTxModDb_normarg_modifications <- function(modifications){
     .REQUIRED_COLS <- c("mod_id", "mod_type", "mod_start", "mod_end",
                         "transcript_id")
-    .OPTIONAL_COLS <- c("mod_name", "ensembltrans", "entrezid")
+    .OPTIONAL_COLS <- c("mod_name", "transcript_name", "ensembltrans")
     # make sure 'transcript_id is set'
     if(!has_col(modifications, "transcript_id") &&
        !has_col(modifications, "ensembltrans") &&
-       !has_col(modifications, "entrezid")){
-        stop("'modifications' must contain a column 'ensembltrans' or 'entrezid'",
-             ", if no column 'transcript_id' is given.")
+       !has_col(modifications, "transcript_name")){
+        stop("'modifications' must contain a column 'ensembltrans' or ",
+             "'transcript_name', if no column 'transcript_id' is given.")
     }
     if(!has_col(modifications, "transcript_id") &&
        (has_col(modifications, "ensembltrans") ||
-        has_col(modifications, "entrezid"))){
+        has_col(modifications, "transcript_name"))){
         transcript_id <- factor(paste0(modifications$ensembltrans,"_",
-                                       modifications$entrezid))
+                                       modifications$transcript_name))
         modifications$transcript_id <- as.integer(transcript_id)
     }
     check_colnames(modifications, .REQUIRED_COLS, .OPTIONAL_COLS,
@@ -65,20 +65,32 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     if (any(modifications$mod_start > modifications$mod_end))
         stop("modification starts must be <= modification ends")
     ## Check 'mod_name'.
-    if (has_col(modifications, "mod_name")
-        && !.is_character_or_factor(modifications$mod_name))
+    if (!.is_character_or_factor(modifications$mod_name))
         stop("'modifications$mod_name' must be a character vector ",
                   "(or factor)")
     ## Check 'mod_type'.
-    if (has_col(modifications, "mod_type")
-        && !.is_character_or_factor(modifications$mod_type))
+    if (!.is_character_or_factor(modifications$mod_type))
         stop("'modifications$mod_type' must be a character vector ",
                   "(or factor)")
+    if(!all(as.character(modifications$mod_type) %in% shortName(ModRNAString()))){
+        stop("'modifications$mod_type' must be a valid modification shortName ",
+             "(shortName(ModRNAString()))")
+    }
     ## Check 'transcript_id'.
     if (!is.integer(modifications$transcript_id)
         || any(is.na(modifications$transcript_id)))
         stop("'modifications$transcript_id' must be a integer vector with no ",
              "NAs")
+    ## Check 'transcript_name'.
+    if (has_col(modifications, "transcript_name")){
+        if(!.is_character_or_factor(modifications$transcript_name)
+           || any(is.na(modifications$transcript_name))){
+            stop("'modifications$transcript_name' must be a character vector ",
+                 "(or factor) with no NAs")
+        }
+    } else {
+        modifications$transcript_name <- character(1)
+    }
     ## Check 'ensembltrans'.
     if (has_col(modifications, "ensembltrans")){
         if(!.is_character_or_factor(modifications$ensembltrans)
@@ -89,20 +101,21 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     } else {
         modifications$ensembltrans <- character(1)
     }
-    ## Check 'entrezid'.
-    if (has_col(modifications, "entrezid")){
-        if(!.is_character_or_factor(modifications$entrezid)
-           || any(is.na(modifications$entrezid))){
-            stop("'modifications$entrezid' must be a character vector ",
-                 "(or factor) with no NAs")
-        }
-    } else {
-        modifications$entrezid <- character(1)
-    }
     modifications
 }
 
 .makeTxModDb_normarg_reactions <- function(reactions, modifications_mod_id){
+    if (is.null(reactions)) {
+        reactions <- data.frame(mod_id = modifications_mod_id[FALSE],
+                                mod_rank = integer(0),
+                                reaction_genename = character(0),
+                                reaction_ensembl = character(0),
+                                reaction_ensembltrans = character(0),
+                                reaction_entrezid = character(0),
+                                reaction_enzyme = character(0),
+                                check.names = FALSE, stringsAsFactors = FALSE)
+        return(reactions)
+    }
     .REQUIRED_COLS <- c("mod_id", "mod_rank")
     .OPTIONAL_COLS <- c("reaction_genename", "reaction_ensembl",
                         "reaction_ensembltrans", "reaction_entrezid",
@@ -155,6 +168,15 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 
 .makeTxModDb_normarg_specifiers <- function(specifier, modifications_mod_id){
+    if (is.null(specifier)) {
+        specifier <- data.frame(mod_id = modifications_mod_id[FALSE],
+                                specifier_type = character(0),
+                                specifier_genename = character(0),
+                                specifier_entrezid = character(0),
+                                specifier_ensembl = character(0),
+                                check.names = FALSE, stringsAsFactors = FALSE)
+        return(specifier)
+    }
     .REQUIRED_COLS <- c("mod_id", "specifier_type", "specifier_genename")
     .OPTIONAL_COLS <- c("specifier_entrezid", "specifier_ensembl")
     check_colnames(specifier, .REQUIRED_COLS, .OPTIONAL_COLS, "specifier")
@@ -322,7 +344,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 #' @rdname makeTxModDb
 #' @export
-makeTxModDb <- function(modifications, reactions, specifier = NULL,
+makeTxModDb <- function(modifications, reactions = NULL, specifier = NULL,
                         metadata = NULL, reassign.ids = FALSE){
     if (!isTRUEorFALSE(reassign.ids))
         stop("'reassign.ids' must be TRUE or FALSE")
@@ -350,8 +372,8 @@ makeTxModDb <- function(modifications, reactions, specifier = NULL,
                                modifications$mod_start,
                                modifications$mod_end,
                                modifications$transcript_id,
-                               modifications$ensembltrans,
-                               modifications$entrezid)
+                               modifications$transcript_name,
+                               modifications$ensembltrans)
     .write_reactions_table(conn,
                            reactions_internal_mod_id,
                            reactions$mod_rank,

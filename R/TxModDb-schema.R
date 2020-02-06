@@ -35,8 +35,8 @@ TXMODDB_MOD_COLDEFS <- c(
     mod_start = "INTEGER NOT NULL",
     mod_end = "INTEGER NOT NULL",
     transcript_id = "TEXT NOT NULL",
-    transcript_ensembltrans = "TEXT NULL",
-    transcript_entrezid = "TEXT NULL"
+    transcript_name = "TEXT NOT NULL",
+    transcript_ensembltrans = "TEXT NULL"
 )
 TXMODDB_MOD_COLUMNS <- names(TXMODDB_MOD_COLDEFS)
 

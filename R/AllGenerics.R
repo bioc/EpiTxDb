@@ -2,8 +2,9 @@
 setGeneric("modifications",
            function(x, ...) standardGeneric("modifications"))
 
-setGeneric("modificationsByTranscript",
-           function(x, ...) standardGeneric("modificationsByTranscript"))
+setGeneric("modificationsBy",
+           function(x, ...) standardGeneric("modificationsBy"))
 
 setGeneric("modifiedSeqsByTranscript",
-           function(x, ...) standardGeneric("modifiedSeqsByTranscript"))
+           function(x, sequences, ...)
+               standardGeneric("modifiedSeqsByTranscript"))

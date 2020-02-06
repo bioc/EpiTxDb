@@ -4,7 +4,8 @@
 \alias{modifications}
 \alias{modificationsBy}
 \alias{modifications,TxModDb-method}
-\alias{modificationsByTranscript,TxModDb-method}
+\alias{modificationsBy,TxModDb-method}
+\alias{modifiedSeqsByTranscript,TxModDb,DNAStringSet-method}
 \title{modifications}
 \usage{
 \S4method{modifications}{TxModDb}(
@@ -14,7 +15,9 @@
   use.names = FALSE
 )
 
-\S4method{modificationsByTranscript}{TxModDb}(x, use.names = FALSE)
+\S4method{modificationsBy}{TxModDb}(x, by = c("transcript", "type", "reaction", "specifier"))
+
+\S4method{modifiedSeqsByTranscript}{TxModDb,DNAStringSet}(x, sequences)
 }
 \arguments{
 \item{x}{a \code{\link[=TxModDb-class]{TxModDb}}}

@@ -152,8 +152,8 @@ translateCols <- function(columns, txmoddb){
 #' @export
 setMethod("modifications", "TxModDb",
     function(x, column = c("mod_id","mod_type","mod_name"),
-           filter = NULL, use.names = FALSE){
-      .extractFromTxModDb(x, "modification", mcolumns = column,
-                          filter = filter, use.names = use.names)
+             filter = NULL, use.names = FALSE){
+        .extractFromTxModDb(x, "modification", mcolumns = column,
+                            filter = filter, use.names = use.names)
     }
 )

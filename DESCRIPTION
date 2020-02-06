@@ -23,12 +23,15 @@ Depends:
     AnnotationDbi
 Imports:
     methods,
-    GenomicFeatures
+    GenomicFeatures,
+    httr
 Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    BSgenome.Hsapiens.UCSC.hg38,
+    TxModDb.Hsapiens.hg38
 Collate: 
     'AllGenerics.R'
     'TxModDb-SELECT-helpers.R'
@@ -38,9 +41,11 @@ Collate:
     'utils.R'
     'makeTxModDb.R'
     'makeTxModDbFromGRanges.R'
+    'makeTxModDbFromtRNAdb.R'
     'modifications.R'
     'modificationsBy.R'
     'select-methods.R'
 RoxygenNote: 7.0.2
 BugReports: https://github.com/FelixErnst/TxModDb/issues
 URL: https://github.com/FelixErnst/TxModDb
+VignetteBuilder: knitr

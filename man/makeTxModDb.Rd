@@ -6,7 +6,7 @@
 \usage{
 makeTxModDb(
   modifications,
-  reactions,
+  reactions = NULL,
   specifier = NULL,
   metadata = NULL,
   reassign.ids = FALSE

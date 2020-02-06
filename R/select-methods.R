@@ -122,7 +122,7 @@ NULL
         stop("'keys' must be a character vector")
     if(missing(columns) || !is.character(columns))
         stop("'columns' must be a character vector")
-    ## Some argument checking
+    # Some argument checking
     if('skipValidKeysTest' %in% names(extraArgs)){
         skipValidKeysTest < -extraArgs[["skipValidKeysTest"]]
     } else {
@@ -131,33 +131,27 @@ NULL
     testSelectArgs(x, keys = keys, cols = columns, keytype = keytype,
                    skipValidKeysTest = skipValidKeysTest)
 
-    ## 1st we check the keytype to see if it is valid:
-    if(is.na(keys(x, keytype)[1]) & length(keys(x, keytype))==1){
+    # 1st we check the keytype to see if it is valid:
+    if(is.na(keys(x, keytype)[1]) & length(keys(x, keytype)) == 1){
         stop(paste("There do not appear to be any keys",
                    "for the keytype you have specified."))
     }
 
     # generate column names
     cnames <- unique(c(keytype, columns))
-
-    ## the following just gets the major join and then modifies it ONLY if the
-    ## keytype is a GENEID
+    # create thejoin SQL
     majorJoin <- .makeJoinSQL(x, cnames)
-    # if(keytype=="GENEID"){
-    #     majorJoin <- sub("FROM transcript LEFT JOIN gene",
-    #                      "FROM transcript INNER JOIN gene",majorJoin)
-    # }
 
     if(length(keys) <= 1000){  ##if more than about this, prolly faster to get all
         sql <- paste("SELECT DISTINCT",
-                     .makeSelectList(x, cnames, abbrev=FALSE),
+                     .makeSelectList(x, cnames, abbrev = FALSE),
                      "FROM",
                      majorJoin,
                      "WHERE",
-                     .makeKeyList(x, keys, keytype, abbrev=FALSE))
+                     .makeKeyList(x, keys, keytype, abbrev = FALSE))
     } else {
         sql <- paste("SELECT DISTINCT",
-                     .makeSelectList(x, cnames, abbrev=FALSE),
+                     .makeSelectList(x, cnames, abbrev = FALSE),
                      "FROM",
                      majorJoin)
     }
@@ -166,19 +160,19 @@ NULL
 
     if(length(keys) > 1000){ ##Then drop the extras now(in event there are some)
         ktColId <- .reverseColAbbreviations(x, keytype)
-        res <-  res[res[[ktColId]] %in% keys,,drop=FALSE]
+        res <-  res[res[[ktColId]] %in% keys,,drop = FALSE]
     }
 
     ## Then drop any columns that were not explicitely requested but that may have
     ## been appended to make a joind (like TXID)
-    res <- res[,.reverseColAbbreviations(x,cnames),drop=FALSE]
+    res <- res[,.reverseColAbbreviations(x,cnames),drop = FALSE]
 
     ## Then sort rows and columns and drop the filtered rows etc. using resort_base
     ## from AnnotationDbi
     joinType <- .reverseColAbbreviations(x, keytype)
     if(dim(res)[1]>0){
         res <- resort_base(res, keys, joinType,
-                           .reverseColAbbreviations(x,cnames))
+                           .reverseColAbbreviations(x, cnames))
     }
 
     ## Then put the user preferred headers onto the table
@@ -224,12 +218,12 @@ setMethod("columns", "TxModDb",
         "TXID" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT transcript_id FROM modification", 1L),
+        "TXNAME" = AnnotationDbi:::dbQuery(
+            dbconn(x),
+            "SELECT DISTINCT transcript_name FROM modification", 1L),
         "TXENSEMBLTRANS" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT transcript_ensembltrans FROM modification", 1L),
-        "TXENTREZID" = AnnotationDbi:::dbQuery(
-            dbconn(x),
-            "SELECT DISTINCT transcript_entrezid FROM modification", 1L),
         "RXGENENAME" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT reaction_genename FROM reaction", 1L),
@@ -273,8 +267,8 @@ setMethod("keys", "TxModDb",.keysDispatch)
 # keytypes ---------------------------------------------------------------------
 
 setMethod("keytypes", "TxModDb",
-          function(x) return(c("MODID","MODTYPE","MODNAME","TXID",
-                               "TXENSEMBLTRANS","TXENTREZID","RXGENENAME",
+          function(x) return(c("MODID","MODTYPE","MODNAME","TXID","TXNAME",
+                               "TXENSEMBLTRANS","RXGENENAME",
                                "RXENSEMBL","RXENSEMBLTRANS","RXENTREZID",
                                "RXENZYME","SPECTYPE","SPECGENENAME",
                                "SPECENSEMBL","SPECENTREZID"))
