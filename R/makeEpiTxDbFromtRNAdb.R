@@ -2,9 +2,9 @@
 #' @include makeEpiTxDb.R
 NULL
 
-#' @name makeEpiTxDbfromtRNAdb
+#' @name makeEpiTxDbFromtRNAdb
 #'
-#' @title makeEpiTxDbfromtRNAdb
+#' @title makeEpiTxDbFromtRNAdb
 #'
 #' @description
 #' title
@@ -12,17 +12,17 @@ NULL
 #'
 NULL
 
-# makeEpiTxDbfromtRNAdb --------------------------------------------------------
+# makeEpiTxDbFromtRNAdb --------------------------------------------------------
 
-#' @rdname makeEpiTxDbfromtRNAdb
+#' @rdname makeEpiTxDbFromtRNAdb
 #' @importFrom tRNAdbImport import.tRNAdb
 #' @export
-makeEpiTxDbfromtRNAdb <- function(organism, txdb = NULL, sequences = NULL,
+makeEpiTxDbFromtRNAdb <- function(organism, txdb = NULL, sequences = NULL,
                                   metadata = NULL){
     if(!assertive::is_a_non_empty_string(organism) ||
-       !(organism %in% listAvailableOrganismsfromtRNAdb())){
+       !(organism %in% listAvailableOrganismsFromtRNAdb())){
         stop("'organism' must be a single character value and match an entry ",
-             "from listAvailableOrganismsfromtRNAdb()")
+             "from listAvailableOrganismsFromtRNAdb()")
     }
 
     # get tRNAdb information
@@ -81,11 +81,11 @@ makeEpiTxDbfromtRNAdb <- function(organism, txdb = NULL, sequences = NULL,
 }
 
 
-#' @rdname makeEpiTxDbfromtRNAdb
+#' @rdname makeEpiTxDbFromtRNAdb
 #' @importFrom httr modify_url POST content
 #' @importFrom xml2 xml_find_all
 #' @export
-listAvailableOrganismsfromtRNAdb <- function(){
+listAvailableOrganismsFromtRNAdb <- function(){
     res <- httr::POST(paste0(httr::modify_url(tRNAdbImport:::TRNA_DB_URL),
                              "DataOutput/Organisms"))
     html <- httr::content(res)

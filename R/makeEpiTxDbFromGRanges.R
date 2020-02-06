@@ -12,21 +12,29 @@ NULL
 #'
 NULL
 
-# makeEpiTxDbfromGRanges --------------------------------------------------------
+# makeEpiTxDbfromGRanges -------------------------------------------------------
 
 #' @rdname makeEpiTxDbfromGRanges
 #' @export
 makeEpiTxDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
     # extract modification table
-    modifications <- data.frame(mod_id = mcols(gr)$mod_id,
-                                mod_type = mcols(gr)$mod_type,
-                                mod_name = mcols(gr)$mod_name,
-                                mod_start = start(gr),
-                                mod_end = end(gr),
-                                transcript_id = mcols(gr)$transcript_id,
-                                transcript_name= mcols(gr)$transcript_name,
-                                ensembltrans = mcols(gr)$ensembltrans,
-                                check.names = FALSE, stringsAsFactors = FALSE)
+    modifications <- list(mod_id = mcols(gr)$mod_id,
+                          mod_type = mcols(gr)$mod_type,
+                          mod_name = mcols(gr)$mod_name,
+                          mod_start = start(gr),
+                          mod_end = end(gr),
+                          transcript_id = mcols(gr)$transcript_id,
+                          transcript_name= mcols(gr)$transcript_name,
+                          ensembltrans = mcols(gr)$ensembltrans,
+                          check.names = FALSE, stringsAsFactors = FALSE)
+    modifications <- modifications[!vapply(modifications, is.null, logical(1))]
+    if(length(modifications) > 1L){
+        modifications <- data.frame(modifications, check.names = FALSE,
+                                stringsAsFactors = FALSE)
+    } else {
+        stop("Couldn't extranct modification information from 'GRanges' object.",
+             call. = FALSE)
+    }
     # extract reactions table
     reactions <- list(mod_id = mcols(gr)$mod_id,
                       mod_rank = mcols(gr)$mod_rank,

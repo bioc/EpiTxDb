@@ -25,7 +25,9 @@ Imports:
     methods,
     GenomicFeatures,
     httr,
+    dplyr,
     BiocGenerics,
+    BiocFileCache,
     S4Vectors
 Suggests:
     BiocStyle,
@@ -43,6 +45,7 @@ Collate:
     'utils.R'
     'makeEpiTxDb.R'
     'makeEpiTxDbFromGRanges.R'
+    'makeEpiTxDbFromRMBase.R'
     'makeEpiTxDbFromtRNAdb.R'
     'modifications.R'
     'modificationsBy.R'
