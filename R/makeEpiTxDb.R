@@ -1,10 +1,10 @@
-#' @include TxModDb-class.R
+#' @include EpiTxDb-class.R
 #' @include utils.R
 NULL
 
-#' @name makeTxModDb
+#' @name makeEpiTxDb
 #'
-#' @title makeTxModDb
+#' @title makeEpiTxDb
 #'
 #' @description
 #' title
@@ -21,7 +21,7 @@ check_colnames <- GenomicFeatures:::check_colnames
 has_col <- GenomicFeatures:::has_col
 dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
-.makeTxModDb_normarg_modifications <- function(modifications){
+.makeEpiTxDb_normarg_modifications <- function(modifications){
     .REQUIRED_COLS <- c("mod_id", "mod_type", "mod_start", "mod_end",
                         "transcript_id")
     .OPTIONAL_COLS <- c("mod_name", "transcript_name", "ensembltrans")
@@ -104,7 +104,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     modifications
 }
 
-.makeTxModDb_normarg_reactions <- function(reactions, modifications_mod_id){
+.makeEpiTxDb_normarg_reactions <- function(reactions, modifications_mod_id){
     if (is.null(reactions)) {
         reactions <- data.frame(mod_id = modifications_mod_id[FALSE],
                                 mod_rank = integer(0),
@@ -165,9 +165,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     reactions
 }
 
-
-
-.makeTxModDb_normarg_specifiers <- function(specifier, modifications_mod_id){
+.makeEpiTxDb_normarg_specifiers <- function(specifier, modifications_mod_id){
     if (is.null(specifier)) {
         specifier <- data.frame(mod_id = modifications_mod_id[FALSE],
                                 specifier_type = character(0),
@@ -206,7 +204,42 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     specifier
 }
 
-.makeTxModDb_normarg_metadata <- function(metadata)
+.makeEpiTxDb_normarg_references <- function(references, modifications_mod_id){
+    if (is.null(references)) {
+        references <- data.frame(mod_id = modifications_mod_id[FALSE],
+                                 reference_type = character(0),
+                                 reference = character(0),
+                                 check.names = FALSE, stringsAsFactors = FALSE)
+        return(references)
+    }
+    .REQUIRED_COLS <- c("mod_id")
+    .OPTIONAL_COLS <- c("reference_type", "reference")
+    check_colnames(references, .REQUIRED_COLS, .OPTIONAL_COLS, "reference")
+    ## Check 'mod_id'.
+    .check_foreign_key(references$mod_id, "integer", "references$mod_id",
+                       modifications_mod_id, "integer", "modifications$mod_id")
+    ## Check 'reference_type'.
+    if (has_col(references, "reference_type")){
+        if(!.is_character_or_factor(references$reference_type)){
+            stop("'references$reference_type' must be a character vector ",
+                 "(or factor)")
+        }
+    } else {
+        references$reference_type <- character(1)
+    }
+    ## Check 'reference'.
+    if (has_col(references, "reference")){
+        if(!.is_character_or_factor(references$reference)){
+            stop("'references$reference' must be a character vector ",
+                 "(or factor)")
+        }
+    } else {
+        references$reference <- character(1)
+    }
+    references
+}
+
+.makeEpiTxDb_normarg_metadata <- function(metadata)
 {
     if (!is.null(metadata)) {
         if (!is.data.frame(metadata))
@@ -311,21 +344,38 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     insert_data_into_table(conn, "specifier", data)
 }
 
+.write_references_table <- function(conn,
+                                    internal_mod_id,
+                                    reference_type,
+                                    reference){
+    data <- data.frame(internal_mod_id = internal_mod_id,
+                       reference_type = reference_type,
+                       reference = reference,
+                       check.names = FALSE, stringsAsFactors = FALSE)
+
+    ## Create the 'reference' table and related indices.
+    SQL <- build_SQL_CREATE_reference_table()
+    dbExecute(conn, SQL)
+
+    ## Fill the 'reference' table.
+    insert_data_into_table(conn, "reference", data)
+}
+
 .write_metadata_table <- function(conn, metadata){
     nb_modifications <- dbEasyQuery(conn,
                                     "SELECT COUNT(*) FROM modification")[[1L]]
-    thispkg_version <- packageDescription("TxModDb")$Version
+    thispkg_version <- packageDescription("EpiTxDb")$Version
     rsqlite_version <- packageDescription("RSQLite")$Version
     mat1 <- matrix(c(
         DB_TYPE_NAME, DB_TYPE_VALUE,
-        "Supporting package", "TxModDb"),
+        "Supporting package", "EpiTxDb"),
         ncol = 2, byrow = TRUE
     )
     mat2 <- matrix(c(
         "Nb of transcripts", nb_modifications,
-        "Db created by",     "TxModDb package from Bioconductor",
+        "Db created by",     "EpiTxDb package from Bioconductor",
         "Creation time",     svn.time(),
-        "TxModDb version at creation time", thispkg_version,
+        "EpiTxDb version at creation time", thispkg_version,
         "RSQLite version at creation time", rsqlite_version,
         "DBSCHEMAVERSION",   DB_SCHEMA_VERSION),
         ncol = 2, byrow = TRUE
@@ -340,19 +390,21 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 }
 
 
-# makeTxModDb ------------------------------------------------------------------
+# makeEpiTxDb------------------------------------------------------------------
 
-#' @rdname makeTxModDb
+#' @rdname makeEpiTxDb
 #' @export
-makeTxModDb <- function(modifications, reactions = NULL, specifier = NULL,
-                        metadata = NULL, reassign.ids = FALSE){
+makeEpiTxDb <- function(modifications, reactions = NULL, specifiers = NULL,
+                        references = NULL, metadata = NULL,
+                        reassign.ids = FALSE){
     if (!isTRUEorFALSE(reassign.ids))
         stop("'reassign.ids' must be TRUE or FALSE")
 
-    modifications <- .makeTxModDb_normarg_modifications(modifications)
-    reactions <- .makeTxModDb_normarg_reactions(reactions, modifications$mod_id)
-    specifier <- .makeTxModDb_normarg_specifiers(specifier, modifications$mod_id)
-    metadata <- .makeTxModDb_normarg_metadata(metadata)
+    modifications <- .makeEpiTxDb_normarg_modifications(modifications)
+    reactions <- .makeEpiTxDb_normarg_reactions(reactions, modifications$mod_id)
+    specifiers <- .makeEpiTxDb_normarg_specifiers(specifiers, modifications$mod_id)
+    references <- .makeEpiTxDb_normarg_references(references, modifications$mod_id)
+    metadata <- .makeEpiTxDb_normarg_metadata(metadata)
 
     modifications_internal_mod_id <-
         .make_modifications_internal_mod_id(modifications, reassign.ids)
@@ -361,7 +413,10 @@ makeTxModDb <- function(modifications, reactions = NULL, specifier = NULL,
                                               reactions$mod_id)
     specifiers_internal_mod_id <- translateIds(modifications$mod_id,
                                                modifications_internal_mod_id,
-                                               specifier$mod_id)
+                                               specifiers$mod_id)
+    references_internal_mod_id <- translateIds(modifications$mod_id,
+                                               modifications_internal_mod_id,
+                                               references$mod_id)
 
     ## Create the db in a temp file.
     conn <- dbConnect(SQLite(), dbname="")
@@ -384,10 +439,14 @@ makeTxModDb <- function(modifications, reactions = NULL, specifier = NULL,
                            reactions$reaction_enzyme)
     .write_specifiers_table(conn,
                             specifiers_internal_mod_id,
-                            specifier$specifier_type,
-                            specifier$specifier_genename,
-                            specifier$specifier_entrezid,
-                            specifier$specifier_ensembl)
+                            specifiers$specifier_type,
+                            specifiers$specifier_genename,
+                            specifiers$specifier_entrezid,
+                            specifiers$specifier_ensembl)
+    .write_references_table(conn,
+                            references_internal_mod_id,
+                            references$reference_type,
+                            references$reference)
     .write_metadata_table(conn, metadata)
-    TxModDb(conn)
+    EpiTxDb(conn)
 }

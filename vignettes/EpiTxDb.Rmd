@@ -1,5 +1,5 @@
 ---
-title: "TxModDB"
+title: "EpiTxDb"
 author: "Felix G.M. Ernst"
 date: "`r Sys.Date()`"
 package: RNAmodR
@@ -9,7 +9,7 @@ output:
     toc_float: true
     df_print: paged
 vignette: >
-  %\VignetteIndexEntry{TxModDB}
+  %\VignetteIndexEntry{EpiTxDb}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: references.bib
@@ -25,29 +25,29 @@ BiocStyle::markdown(css.files = c('custom.css'))
 suppressPackageStartupMessages({
   library(GenomicFeatures)
   library(BSgenome.Hsapiens.UCSC.hg38)
-  library(TxModDb)
-  library(TxModDb.Hsapiens.hg38)
+  library(EpiTxDb)
+  library(EpiTxDb.Hsapiens.hg38)
   library(Modstrings)
 })
 ```
 ```{r, eval = FALSE}
 library(GenomicFeatures)
 library(BSgenome.Hsapiens.UCSC.hg38)
-library(TxModDb)
-library(TxModDb.Hsapiens.hg38)
+library(EpiTxDb)
+library(EpiTxDb.Hsapiens.hg38)
 library(Modstrings)
 ```
 
 
 
 ```{r}
-txmoddb <- TxModDb.Hsapiens.hg38
+epitxdb <- EpiTxDb.Hsapiens.hg38
 ```
 
 
 
 ```{r}
-mod <- modificationsBy(txmoddb)
+mod <- modificationsBy(epitxdb)
 ```
 
 

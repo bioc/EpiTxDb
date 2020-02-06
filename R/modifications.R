@@ -1,4 +1,4 @@
-#' @include TxModDb-class.R
+#' @include EpiTxDb-class.R
 NULL
 
 #' @name modifications
@@ -9,30 +9,30 @@ NULL
 #' @description
 #' title
 #'
-#' @param x a \code{\link[=TxModDb-class]{TxModDb}}
+#' @param x a \code{\link[=EpiTxDb-class]{EpiTxDb}}
 #' @param columns XXX
 #' @param filter XXX
 #' @use.names XXX
 #'
 #' @examples
 #' \dontrun{
-#' library(TxModDb.Hsapiens.hg38)
-#' modifications(TxModDb.Hsapiens.hg38))
+#' library(EpiTxDb.Hsapiens.hg38)
+#' modifications(EpiTxDb.Hsapiens.hg38))
 #' }
 NULL
 
 # helper functions for extracting feature data ---------------------------------
 
-.extract_features <- function(txmoddb, table, mcolumns = character(0),
+.extract_features <- function(epitxdb, table, mcolumns = character(0),
                               filter = list(), core_columns){
-    schema_version <- TxModDb_schema_version(txmoddb)
-    names(mcolumns) <- TXMODDB_column2table(mcolumns, from_table = table,
+    schema_version <- EpiTxDb_schema_version(epitxdb)
+    names(mcolumns) <- EPITXDB_column2table(mcolumns, from_table = table,
                                             schema_version = schema_version)
     proxy_column <- orderby <- c(modification = "_mod_id")
 
     ## 1st SELECT: extract stuff from the proxy table.
     columns1 <- union(core_columns, mcolumns[names(mcolumns) == table])
-    df1 <- TxModDb_SELECT_from_INNER_JOIN(txmoddb, table, columns1,
+    df1 <- EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, table, columns1,
                                           filter = filter, orderby = orderby)
 
     ## Additional SELECTs: 1 additional SELECT per satellite table
@@ -50,7 +50,7 @@ NULL
         }
         columns2 <- c(proxy_column, columns2)
         orderby <- c("_mod_id")
-        TxModDb_SELECT_from_INNER_JOIN(txmoddb, satellite_table, columns2,
+        EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, satellite_table, columns2,
                                        filter = filter2, orderby = orderby)
     })
     df1 <- list(df1)
@@ -67,13 +67,13 @@ NULL
 .as_db_columns <- function(columns)
     sub("^(mod_id)$", "_\\1", columns)
 
-.extract_features_as_GRanges <- function(txmoddb, table,
+.extract_features_as_GRanges <- function(epitxdb, table,
                                          mcolumns = character(0),
                                          filter = list(), use.names = FALSE) {
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
     db_mcolumns <- db_mcolumns0 <- .as_db_columns(mcolumns)
-    proxy_columns <- TXMODDB_table_columns(table)
+    proxy_columns <- EPITXDB_table_columns(table)
     if (use.names) {
         if ("name" %in% names(proxy_columns)) {
             proxy_name_column <- proxy_columns[["name"]]
@@ -86,14 +86,14 @@ NULL
         }
     }
     names(filter) <- .as_db_columns(names(filter))
-    core_columns <- proxy_columns[proxy_columns %in% TXMODDB_MOD_COLUMNS]
-    df_list <- .extract_features(txmoddb, table, db_mcolumns,
+    core_columns <- proxy_columns[proxy_columns %in% EPITXDB_MOD_COLUMNS]
+    df_list <- .extract_features(epitxdb, table, db_mcolumns,
                                  filter, core_columns)
     DF <- .make_DataFrame_from_df_list(df_list)
     DF$seqnames <- .get_seqnames(DF)
     ans <- GenomicRanges::makeGRangesFromDataFrame(
         DF,
-        seqinfo = .get_TxModDb_seqinfo(txmoddb),
+        seqinfo = .get_EpiTxDb_seqinfo(epitxdb),
         seqnames.field = "seqnames",
         start.field = "mod_start",
         end.field = "mod_end")
@@ -107,7 +107,7 @@ NULL
 }
 
 # translate external to internal column names
-translateCols <- function(columns, txmoddb){
+translateCols <- function(columns, epitxdb){
     ## preserve any names
     oriColNames <- names(columns)
     ## and save the original column strings
@@ -115,7 +115,7 @@ translateCols <- function(columns, txmoddb){
 
     oriLen <- length(columns) ## not always the same as length(oriCols)
     ## get the available abbreviations as a translation vector (exp)
-    names <- .makeColAbbreviations(txmoddb)
+    names <- .makeColAbbreviations(epitxdb)
     exp <- sub("^_","", names(names))
     names(exp) <- names
 
@@ -134,26 +134,26 @@ translateCols <- function(columns, txmoddb){
     columns
 }
 
-.extractFromTxModDb <- function(txmoddb, table, mcolumns = NULL,
+.extractFromEpiTxDb <- function(epitxdb, table, mcolumns = NULL,
                                 filter = NULL, use.names = FALSE){
     user_mcolumns <- mcolumns
-    mcolumns <- translateCols(mcolumns, txmoddb)
+    mcolumns <- translateCols(mcolumns, epitxdb)
     if (is.null(filter))
         filter <- list()
-    names(filter) <- translateCols(names(filter), txmoddb)
-    ans <- .extract_features_as_GRanges(txmoddb, table, mcolumns, filter,
+    names(filter) <- translateCols(names(filter), epitxdb)
+    ans <- .extract_features_as_GRanges(epitxdb, table, mcolumns, filter,
                                         use.names)
     names(mcols(ans)) <- if (is.null(names(user_mcolumns))) user_mcolumns
     else names(user_mcolumns)
-    .assignMetadataList(ans, txmoddb)
+    .assignMetadataList(ans, epitxdb)
 }
 
 #' @rdname modifications
 #' @export
-setMethod("modifications", "TxModDb",
+setMethod("modifications", "EpiTxDb",
     function(x, column = c("mod_id","mod_type","mod_name"),
              filter = NULL, use.names = FALSE){
-        .extractFromTxModDb(x, "modification", mcolumns = column,
+        .extractFromEpiTxDb(x, "modification", mcolumns = column,
                             filter = filter, use.names = use.names)
     }
 )

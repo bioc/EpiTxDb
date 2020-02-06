@@ -1,12 +1,12 @@
-#' @include TxModDb.R
+#' @include EpiTxDb.R
 #' @include AllGenerics.R
-#' @include TxModDb-schema.R
-#' @include TxModDb-SELECT-helpers.R
+#' @include EpiTxDb-schema.R
+#' @include EpiTxDb-SELECT-helpers.R
 NULL
 
-#' @name TxModDb-class
+#' @name EpiTxDb-class
 #'
-#' @title TxModDb objects
+#' @title EpiTxDb objects
 #'
 #' @description
 #' title
@@ -15,7 +15,7 @@ NULL
 #' @export
 #'
 #' @examples
-.TxModDb <- setRefClass("TxModDb", contains = "AnnotationDb",
+.EpiTxDb <- setRefClass("EpiTxDb", contains = "AnnotationDb",
                         fields = list( ),
                         methods = list(
                             initialize = function(...) {
@@ -57,8 +57,8 @@ setDataFrameColClass <- GenomicFeatures:::setDataFrameColClass
     modifications
 }
 
-load_modifications <- function(txdb, set.col.class = FALSE){
-    modifications <- TxModDb_SELECT_from_modification(txdb)
+load_modifications <- function(epitxdb, set.col.class = FALSE){
+    modifications <- EpiTxDb_SELECT_from_modification(epitxdb)
     colnames(modifications) <- sub("^_", "", colnames(modifications))
     .format_modifications(modifications, set.col.class = set.col.class)
 }
@@ -86,45 +86,70 @@ load_modifications <- function(txdb, set.col.class = FALSE){
     reactions
 }
 
-load_reactions <- function(txdb, set.col.class = FALSE){
-    reactions <- TxModDb_SELECT_from_reaction(txdb)
+load_reactions <- function(epitxdb, set.col.class = FALSE){
+    reactions <- EpiTxDb_SELECT_from_reaction(epitxdb)
     colnames(reactions) <- sub("^_", "", colnames(reactions))
     .format_reactions(reactions,  set.col.class = set.col.class)
 }
 
 .format_specifiers <- function(specifiers, set.col.class = FALSE){
-    COL2CLASS <- c(
-        mod_id="integer",
-        specifier_type="factor",
-        specifier_genename="character",
-        specifier_entrezid="character",
-        specifier_ensembl="character"
-    )
-    if (is.null(specifiers)) {
-        specifiers <- makeZeroRowDataFrame(COL2CLASS)
-    } else {
-        if (!is.data.frame(specifiers))
-            stop("'specifiers' must be a data frame")
-        if (!identical(names(specifiers), names(COL2CLASS)))
-            specifiers <- specifiers[names(COL2CLASS)]
-        if (set.col.class)
-            specifiers <- setDataFrameColClass(specifiers, COL2CLASS)
-    }
-    specifiers
+  COL2CLASS <- c(
+    mod_id="integer",
+    specifier_type="factor",
+    specifier_genename="character",
+    specifier_entrezid="character",
+    specifier_ensembl="character"
+  )
+  if (is.null(specifiers)) {
+    specifiers <- makeZeroRowDataFrame(COL2CLASS)
+  } else {
+    if (!is.data.frame(specifiers))
+      stop("'specifiers' must be a data frame")
+    if (!identical(names(specifiers), names(COL2CLASS)))
+      specifiers <- specifiers[names(COL2CLASS)]
+    if (set.col.class)
+      specifiers <- setDataFrameColClass(specifiers, COL2CLASS)
+  }
+  specifiers
 }
 
-load_specifiers <- function(txdb, set.col.class = FALSE) {
-    specifiers <- TxModDb_SELECT_from_specifier(txdb)
-    colnames(specifiers) <- sub("^_", "", colnames(specifiers))
-    .format_specifiers(specifiers, set.col.class = set.col.class)
+load_specifiers <- function(epitxdb, set.col.class = FALSE) {
+  specifiers <- EpiTxDb_SELECT_from_specifier(epitxdb)
+  colnames(specifiers) <- sub("^_", "", colnames(specifiers))
+  .format_specifiers(specifiers, set.col.class = set.col.class)
+}
+
+.format_references <- function(references, set.col.class = FALSE){
+  COL2CLASS <- c(
+    mod_id="integer",
+    reference_type="factor",
+    reference="character"
+  )
+  if (is.null(references)) {
+    references <- makeZeroRowDataFrame(COL2CLASS)
+  } else {
+    if (!is.data.frame(references))
+      stop("'references' must be a data frame")
+    if (!identical(names(references), names(COL2CLASS)))
+      references <- references[names(COL2CLASS)]
+    if (set.col.class)
+      references <- setDataFrameColClass(references, COL2CLASS)
+  }
+  references
+}
+
+load_references <- function(epitxdb, set.col.class = FALSE) {
+  references <- EpiTxDb_SELECT_from_reference(epitxdb)
+  colnames(references) <- sub("^_", "", colnames(references))
+  .format_references(references, set.col.class = set.col.class)
 }
 
 
-# validity TxModDb -------------------------------------------------------------
+# validity EpiTxDb -------------------------------------------------------------
 
 .valid.modification.table <- function(conn){
-    schema_version <- TxModDb_schema_version(conn)
-    colnames <- TXMODDB_table_columns("modification",
+    schema_version <- EpiTxDb_schema_version(conn)
+    colnames <- EPITXDB_table_columns("modification",
                                       schema_version=schema_version)
     msg <- AnnotationDbi:::.valid.table.colnames(conn, "modification", colnames)
     if (!is.null(msg))
@@ -133,8 +158,8 @@ load_specifiers <- function(txdb, set.col.class = FALSE) {
 }
 
 .valid.reaction.table <- function(conn){
-    schema_version <- TxModDb_schema_version(conn)
-    colnames <- TXMODDB_table_columns("reaction",
+    schema_version <- EpiTxDb_schema_version(conn)
+    colnames <- EPITXDB_table_columns("reaction",
                                       schema_version=schema_version)
     msg <- AnnotationDbi:::.valid.table.colnames(conn, "reaction", colnames)
     if (!is.null(msg))
@@ -143,33 +168,44 @@ load_specifiers <- function(txdb, set.col.class = FALSE) {
 }
 
 .valid.specifier.table <- function(conn){
-    schema_version <- TxModDb_schema_version(conn)
-    colnames <- TXMODDB_table_columns("specifier",
-                                      schema_version=schema_version)
-    msg <- AnnotationDbi:::.valid.table.colnames(conn, "specifier", colnames)
-    if (!is.null(msg))
-      return(msg)
-    NULL
+  schema_version <- EpiTxDb_schema_version(conn)
+  colnames <- EPITXDB_table_columns("specifier",
+                                    schema_version=schema_version)
+  msg <- AnnotationDbi:::.valid.table.colnames(conn, "specifier", colnames)
+  if (!is.null(msg))
+    return(msg)
+  NULL
 }
 
-.valid.TxModDb <- function(object){
+.valid.reference.table <- function(conn){
+  schema_version <- EpiTxDb_schema_version(conn)
+  colnames <- EPITXDB_table_columns("reference",
+                                    schema_version=schema_version)
+  msg <- AnnotationDbi:::.valid.table.colnames(conn, "reference", colnames)
+  if (!is.null(msg))
+    return(msg)
+  NULL
+}
+
+.valid.EpiTxDb <- function(object){
     conn <- dbconn(object)
     c(AnnotationDbi:::.valid.metadata.table(conn, DB_TYPE_NAME, DB_TYPE_VALUE),
       .valid.modification.table(conn),
       .valid.reaction.table(conn),
-      .valid.specifier.table(conn))
+      .valid.specifier.table(conn),
+      .valid.reference.table(conn))
 }
 
-setValidity("TxModDb", .valid.TxModDb)
+setValidity("EpiTxDb", .valid.EpiTxDb)
 
 # constructor ------------------------------------------------------------------
 
-TxModDb <- function(conn) .TxModDb$new(conn =conn)
+EpiTxDb <- function(conn) .EpiTxDb$new(conn =conn)
 
 # methods ----------------------------------------------------------------------
 
 #' @importFrom BiocGenerics organism
-setMethod("organism", "TxModDb",
+setMethod("organism", "EpiTxDb",
     function(object)
     {
         metadata <- metadata(object)
@@ -210,7 +246,7 @@ setMethod("organism", "TxModDb",
     seqnames
 }
 
-.get_TxModDb_seqinfo <- function(x){
+.get_EpiTxDb_seqinfo <- function(x){
     sql <- paste0("SELECT DISTINCT transcript_id, transcript_name, ",
                   "transcript_ensembltrans FROM modification")
     seqnames_db <- queryAnnotationDb(x, sql)
@@ -223,36 +259,38 @@ setMethod("organism", "TxModDb",
     ans
 }
 
-setMethod("seqinfo", "TxModDb", .get_TxModDb_seqinfo)
+setMethod("seqinfo", "EpiTxDb", .get_EpiTxDb_seqinfo)
 
 # as.list and comparison -------------------------------------------------------
 
 .format_txdb_dump <- function(modifications = NULL, reactions = NULL,
-                              specifiers = NULL, transcripts = NULL){
+                              specifiers = NULL, references = NULL){
     modifications <- .format_modifications(modifications, set.col.class = TRUE)
     reactions <- .format_reactions(reactions, set.col.class = TRUE)
     specifiers <- .format_specifiers(specifiers, set.col.class = TRUE)
+    references <- .format_references(references, set.col.class = TRUE)
     list(modifications = modifications, reactions = reactions,
-         specifiers = specifiers, transcripts = transcripts)
+         specifiers = specifiers, references = references)
 }
 
-setMethod("as.list", "TxModDb",
+setMethod("as.list", "EpiTxDb",
     function(x, ...)
     {
         modifications <- load_modifications(x)
         reactions <- load_reactions(x)
         specifiers <- load_specifiers(x)
-        .format_txdb_dump(modifications, reactions, specifiers, transcripts)
+        references <- load_references(x)
+        .format_txdb_dump(modifications, reactions, specifiers, references)
     }
 )
 
-compareTxModDbs <- function(txmoddb1, txmoddb2)
+compareEpiTxDbs <- function(epitxdb1, epitxdb2)
 {
-    if (!is(txmoddb1, "TxModDb") || !is(txmoddb2, "TxModDb"))
-      stop("'txmoddb1' and 'txmoddb2' must be TxModDb objects")
-    txmoddb1_dump <- as.list(txmoddb1)
-    txmoddb2_dump <- as.list(txmoddb2)
-    identical(txmoddb1_dump, txmoddb2_dump)
+    if (!is(epitxdb1, "EpiTxDb") || !is(epitxdb2, "EpiTxDb"))
+      stop("'epitxdb1' and 'epitxdb2' must be EpiTxDb objects")
+    epitxdb1_dump <- as.list(epitxdb1)
+    epitxdb2_dump <- as.list(epitxdb2)
+    identical(epitxdb1_dump, epitxdb2_dump)
 }
 
 # coercion ---------------------------------------------------------------------
@@ -260,7 +298,7 @@ compareTxModDbs <- function(txmoddb1, txmoddb2)
 
 # show -------------------------------------------------------------------------
 
-setMethod("show", "TxModDb",
+setMethod("show", "EpiTxDb",
           function(object)
           {
               cat(class(object), "object:\n")

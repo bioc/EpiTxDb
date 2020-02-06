@@ -5,9 +5,9 @@
 .build_SQL_SELECT <- GenomicFeatures:::.build_SQL_SELECT
 queryAnnotationDb <- GenomicFeatures:::queryAnnotationDb
 
-# .TXMODDB_join_tables() -------------------------------------------------------
+# .EPITXDB_join_tables() -------------------------------------------------------
 
-.TXMODDB_join_tables <- function(tables)
+.EPITXDB_join_tables <- function(tables)
 {
     tables <- unique(tables)
     if (length(tables) == 1L)
@@ -30,17 +30,17 @@ queryAnnotationDb <- GenomicFeatures:::queryAnnotationDb
     joins
 }
 
-TxModDb_SELECT_from_INNER_JOIN <- function(txmoddb, table, columns,
+EpiTxDb_SELECT_from_INNER_JOIN <- function(epitxdb, table, columns,
                                            filter = list(),
                                            orderby = character(0)){
-    schema_version <- TxModDb_schema_version(txmoddb)
-    tables <- TXMODDB_column2table(columns, from_table = table,
+    schema_version <- EpiTxDb_schema_version(epitxdb)
+    tables <- EPITXDB_column2table(columns, from_table = table,
                                    schema_version = schema_version)
     where_columns <- names(filter)
-    where_tables <- TXMODDB_column2table(where_columns, from_table = table,
+    where_tables <- EPITXDB_column2table(where_columns, from_table = table,
                                          schema_version = schema_version)
-    joins <- .TXMODDB_join_tables(c(table, tables, where_tables))
-    orderby_tables <- TXMODDB_column2table(orderby, from_table = table,
+    joins <- .EPITXDB_join_tables(c(table, tables, where_tables))
+    orderby_tables <- EPITXDB_column2table(orderby, from_table = table,
                                            schema_version = schema_version)
     stopifnot(all(orderby_tables %in% .tables_in_joins(joins)))
     use_joins <- length(joins) > 1L
@@ -52,38 +52,48 @@ TxModDb_SELECT_from_INNER_JOIN <- function(txmoddb, table, columns,
     ## .build_SQL_SELECT() uses INNER joins.
     SQL <- .build_SQL_SELECT(columns, joins, distinct = use_joins,
                              filter = filter, orderby = orderby)
-    queryAnnotationDb(txmoddb, SQL)
+    queryAnnotationDb(epitxdb, SQL)
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-TxModDb_SELECT_from_modification <- function(txmoddb, filter=list(),
+EpiTxDb_SELECT_from_modification <- function(epitxdb, filter=list(),
                                              orderby="_mod_id")
 {
-    schema_version <- TxModDb_schema_version(txmoddb)
-    columns <- TXMODDB_table_columns("modification",
+    schema_version <- EpiTxDb_schema_version(epitxdb)
+    columns <- EPITXDB_table_columns("modification",
                                      schema_version = schema_version)
-    TxModDb_SELECT_from_INNER_JOIN(txmoddb, "modification", columns,
+    EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, "modification", columns,
                                    filter = filter, orderby = orderby)
 }
 
-TxModDb_SELECT_from_reaction <- function(txmoddb, filter=list(),
+EpiTxDb_SELECT_from_reaction <- function(epitxdb, filter=list(),
                                          orderby=c("_mod_id", "mod_rank"))
 {
-    schema_version <- TxModDb_schema_version(txmoddb)
-    columns <- TXMODDB_table_columns("reaction",
+    schema_version <- EpiTxDb_schema_version(epitxdb)
+    columns <- EPITXDB_table_columns("reaction",
                                      schema_version = schema_version)
-    TxModDb_SELECT_from_INNER_JOIN(txmoddb, "reaction", columns,
+    EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, "reaction", columns,
                                    filter = filter, orderby = orderby)
 }
 
-TxModDb_SELECT_from_specifier <- function(txmoddb, filter=list(),
+EpiTxDb_SELECT_from_specifier <- function(epitxdb, filter=list(),
                                           orderby=c("_mod_id"))
 {
-    schema_version <- TxModDb_schema_version(txmoddb)
-    columns <- TXMODDB_table_columns("specifier",
+    schema_version <- EpiTxDb_schema_version(epitxdb)
+    columns <- EPITXDB_table_columns("specifier",
                                      schema_version = schema_version)
-    TxModDb_SELECT_from_INNER_JOIN(txmoddb, "specifier", columns,
+    EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, "specifier", columns,
+                                   filter = filter, orderby = orderby)
+}
+
+EpiTxDb_SELECT_from_reference <- function(epitxdb, filter=list(),
+                                          orderby=c("_mod_id"))
+{
+    schema_version <- EpiTxDb_schema_version(epitxdb)
+    columns <- EPITXDB_table_columns("reference",
+                                     schema_version = schema_version)
+    EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, "reference", columns,
                                    filter = filter, orderby = orderby)
 }

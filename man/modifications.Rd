@@ -3,24 +3,24 @@
 \name{modifications}
 \alias{modifications}
 \alias{modificationsBy}
-\alias{modifications,TxModDb-method}
-\alias{modificationsBy,TxModDb-method}
-\alias{modifiedSeqsByTranscript,TxModDb,DNAStringSet-method}
+\alias{modifications,EpiTxDb-method}
+\alias{modificationsBy,EpiTxDb-method}
+\alias{modifiedSeqsByTranscript,EpiTxDb,DNAStringSet-method}
 \title{modifications}
 \usage{
-\S4method{modifications}{TxModDb}(
+\S4method{modifications}{EpiTxDb}(
   x,
   column = c("mod_id", "mod_type", "mod_name"),
   filter = NULL,
   use.names = FALSE
 )
 
-\S4method{modificationsBy}{TxModDb}(x, by = c("transcript", "type", "reaction", "specifier"))
+\S4method{modificationsBy}{EpiTxDb}(x, by = c("transcript", "type", "reaction", "specifier"))
 
-\S4method{modifiedSeqsByTranscript}{TxModDb,DNAStringSet}(x, sequences)
+\S4method{modifiedSeqsByTranscript}{EpiTxDb,DNAStringSet}(x, sequences)
 }
 \arguments{
-\item{x}{a \code{\link[=TxModDb-class]{TxModDb}}}
+\item{x}{a \code{\link[=EpiTxDb-class]{EpiTxDb}}}
 
 \item{filter}{XXX}
 
@@ -31,7 +31,7 @@ title
 }
 \examples{
 \dontrun{
-library(TxModDb.Hsapiens.hg38)
-modifications(TxModDb.Hsapiens.hg38))
+library(EpiTxDb.Hsapiens.hg38)
+modifications(EpiTxDb.Hsapiens.hg38))
 }
 }

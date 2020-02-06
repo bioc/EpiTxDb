@@ -1,10 +1,10 @@
-#' @include TxModDb-class.R
-#' @include makeTxModDb.R
+#' @include EpiTxDb-class.R
+#' @include makeEpiTxDb.R
 NULL
 
-#' @name makeTxModDbfromtRNAdb
+#' @name makeEpiTxDbfromGRanges
 #'
-#' @title makeTxModDbfromtRNAdb
+#' @title makeEpiTxDbfromGRanges
 #'
 #' @description
 #' title
@@ -12,11 +12,12 @@ NULL
 #'
 NULL
 
-# makeTxModDbfromtRNAdb --------------------------------------------------------
+# makeEpiTxDbfromGRanges --------------------------------------------------------
 
-#' @rdname makeTxModDbfromtRNAdb
+#' @rdname makeEpiTxDbfromGRanges
 #' @export
-makeTxModDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
+makeEpiTxDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
+    # extract modification table
     modifications <- data.frame(mod_id = mcols(gr)$mod_id,
                                 mod_type = mcols(gr)$mod_type,
                                 mod_name = mcols(gr)$mod_name,
@@ -26,6 +27,7 @@ makeTxModDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
                                 transcript_name= mcols(gr)$transcript_name,
                                 ensembltrans = mcols(gr)$ensembltrans,
                                 check.names = FALSE, stringsAsFactors = FALSE)
+    # extract reactions table
     reactions <- list(mod_id = mcols(gr)$mod_id,
                       mod_rank = mcols(gr)$mod_rank,
                       reaction_genename = mcols(gr)$reaction_genename,
@@ -40,18 +42,32 @@ makeTxModDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
     } else {
         reactions <- NULL
     }
-    specifier <- list(mod_id = mcols(gr)$mod_id,
+    # extract specifiers table
+    specifiers <- list(mod_id = mcols(gr)$mod_id,
                       specifier_type = mcols(gr)$specifier_type,
                       specifier_genename = mcols(gr)$specifier_genename,
                       specifier_entrezid = mcols(gr)$reaction_entrezid,
                       specifier_ensembl = mcols(gr)$specifier_ensembl)
-    specifier <- specifier[!vapply(specifier, is.null, logical(1))]
-    if(length(specifier) > 1L){
-        specifier <- data.frame(specifier, check.names = FALSE,
+    specifiers <- specifiers[!vapply(specifiers, is.null, logical(1))]
+    if(length(specifiers) > 1L){
+        specifiers <- data.frame(specifiers, check.names = FALSE,
                                 stringsAsFactors = FALSE)
     } else {
-        specifier <- NULL
+        specifiers <- NULL
     }
-    makeTxModDb(modifications, reactions = reactions, specifier = specifier,
-                metadata = metadata, reassign.ids = reassign.ids)
+    # extract references table
+    ref_lengths <- lengths(mcols(gr)$reference_type)
+    references <- list(mod_id = unlist(Map(rep,mcols(gr)$mod_id,ref_lengths)),
+                       reference_type = unlist(mcols(gr)$reference_type),
+                       reference = unlist(mcols(gr)$reference))
+    references <- references[!vapply(references, is.null, logical(1))]
+    if(length(references) > 1L){
+        references <- data.frame(references, check.names = FALSE,
+                                 stringsAsFactors = FALSE)
+    } else {
+        references <- NULL
+    }
+    makeEpiTxDb(modifications, reactions = reactions, specifiers = specifiers,
+                references = references, metadata = metadata,
+                reassign.ids = reassign.ids)
 }

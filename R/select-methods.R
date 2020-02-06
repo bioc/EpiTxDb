@@ -1,4 +1,4 @@
-#' @include TxModDb-class.R
+#' @include EpiTxDb-class.R
 NULL
 
 # helper functions for column name selection/conversion ------------------------
@@ -20,6 +20,7 @@ NULL
     abbrev <- gsub("^REACTION","RX",abbrev)
     abbrev <- gsub("^SPECIFIER","SPEC",abbrev)
     abbrev <- gsub("^TRANSCRIPT","TX",abbrev)
+    abbrev <- gsub("^REFERENCE","REF",abbrev)
     names(abbrev) <- longNames
     abbrev
 }
@@ -50,38 +51,64 @@ NULL
 # this just takes the 1 letter abrevs and makes them into a sorted string
 # that can be used as a key below
 .encodeSortedTableKey <- function(sTNames){
-    prefSort <- c("m","r","s")
+    prefSort <- c("mod","rea","spe","ref")
     res <- sTNames[match(prefSort, sTNames)]
     paste(res[!is.na(res)], collapse="")
 }
 
 .makeTableKey <- function(x,cnames){
-    sTNames <- substr(.getSimpleTableNames(x, cnames),1,1)
+    sTNames <- substr(.getSimpleTableNames(x, cnames),1,3)
     .encodeSortedTableKey(sTNames)
 }
 
 # real joins for likely combos
 .tableJoinSelector <- function(tName){
-    rs <- paste("(SELECT * FROM reaction ",
-                "LEFT JOIN specifier ON (reaction._mod_id = specifier._mod_id) ) ")
-    ms <- paste("SELECT * FROM modification ",
-                "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id) ")
-    mr <- paste("SELECT * FROM modification ",
-                "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) ")
-    mrs <- paste("(SELECT * FROM modification ",
-                 "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) ",
-                 "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id) ) ")
-
+    reaspe <- paste("(SELECT * FROM reaction ",
+                    "LEFT JOIN specifier ON (reaction._mod_id = specifier._mod_id) ) ")
+    modspe <- paste("SELECT * FROM modification ",
+                    "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id) ")
+    modrea <- paste("SELECT * FROM modification ",
+                    "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) ")
+    modreaspe <- paste("(SELECT * FROM modification ",
+                       "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) ",
+                       "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id) ) ")
+    modref <- paste("(SELECT * FROM modification ",
+                    "LEFT JOIN reference ON (modification._mod_id = reference._mod_id) ) ")
+    rearef <- paste("(SELECT * FROM reaction ",
+                    "LEFT JOIN reference ON (reaction._mod_id = reference._mod_id) ) ) ")
+    speref <- paste("(SELECT * FROM specifier ",
+                       "LEFT JOIN reference ON (specifier._mod_id = reference._mod_id) ) ")
+    reasperef <- paste("(SELECT * FROM reaction ",
+                       "LEFT JOIN specifier ON (reaction._mod_id = specifier._mod_id) ",
+                       "LEFT JOIN reference ON (reaction._mod_id = reference._mod_id) ) ")
+    modsperef <- paste("(SELECT * FROM modification ",
+                       "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id)",
+                       "LEFT JOIN reference ON (modification._mod_id = reference._mod_id) )")
+    modrearef <- paste("(SELECT * FROM modification ",
+                       "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id)",
+                       "LEFT JOIN reference ON (modification._mod_id = reference._mod_id) )")
+    modreasperef <- paste("(SELECT * FROM modification ",
+                       "LEFT JOIN reaction ON (modification._mod_id = reaction._mod_id) ",
+                       "LEFT JOIN specifier ON (modification._mod_id = specifier._mod_id)",
+                       "LEFT JOIN reference ON (modification._mod_id = reference._mod_id) ) ")
     sql <- switch(EXPR = tName,
-                  "m" = "modification",
-                  "r" = "reaction",
-                  "s" = "specifier",
-                  "rs" = rs,
-                  "ms" = ms,
-                  "mr" = mr,
-                  "mrs" = mrs,
+                  "mod" = "modification",
+                  "rea" = "reaction",
+                  "spe" = "specifier",
+                  "ref" = "reference",
+                  "reaspe" = reaspe,
+                  "modspe" = modspe,
+                  "modrea" = modrea,
+                  "modreaspe" = modreaspe,
+                  "modref" = modref,
+                  "rearef" = rearef,
+                  "speref" = speref,
+                  "reasperef" = reasperef,
+                  "modsperef" = modsperef,
+                  "modrearef" = modrearef,
+                  "modreasperef" = modreasperef,
                   stop(paste("No query for this combination of tables.",
-                             "Please add",tName,"to the interpolator")))
+                             "Please add ",tName," to the interpolator")))
     sql
 }
 
@@ -181,7 +208,7 @@ NULL
     res
 }
 
-setMethod("select", "TxModDb",
+setMethod("select", "EpiTxDb",
           function(x, keys, columns, keytype, ...) {
               .select(x, keys, columns, keytype, ...)
           }
@@ -196,7 +223,7 @@ setMethod("select", "TxModDb",
 }
 
 
-setMethod("columns", "TxModDb",
+setMethod("columns", "EpiTxDb",
           function(x) .columns(x)
 )
 
@@ -251,6 +278,12 @@ setMethod("columns", "TxModDb",
         "SPECENTREZID" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT specifier_ensembl FROM specifier", 1L),
+        "REFTYPE" = AnnotationDbi:::dbQuery(
+            dbconn(x),
+            "SELECT DISTINCT reference_type FROM reference", 1L),
+        "REF" = AnnotationDbi:::dbQuery(
+            dbconn(x),
+            "SELECT DISTINCT reference FROM reference", 1L),
         stop(paste(keytype, "is not a supported keytype.",
                    " Please use the keytypes",
                    "method to identify viable keytypes")))
@@ -262,14 +295,14 @@ setMethod("columns", "TxModDb",
     AnnotationDbi:::smartKeys(x=x, keytype=keytype, ..., FUN=.keys)
 }
 
-setMethod("keys", "TxModDb",.keysDispatch)
+setMethod("keys", "EpiTxDb",.keysDispatch)
 
 # keytypes ---------------------------------------------------------------------
 
-setMethod("keytypes", "TxModDb",
+setMethod("keytypes", "EpiTxDb",
           function(x) return(c("MODID","MODTYPE","MODNAME","TXID","TXNAME",
                                "TXENSEMBLTRANS","RXGENENAME",
                                "RXENSEMBL","RXENSEMBLTRANS","RXENTREZID",
                                "RXENZYME","SPECTYPE","SPECGENENAME",
-                               "SPECENSEMBL","SPECENTREZID"))
+                               "SPECENSEMBL","SPECENTREZID", "REFTYPE","REF"))
 )

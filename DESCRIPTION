@@ -1,4 +1,4 @@
-Package: TxModDb
+Package: EpiTxDb
 Type: Package
 Title: Classes for accessing post-transcriptional modifications via the
     AnnotationDbi interfaces.
@@ -24,28 +24,30 @@ Depends:
 Imports:
     methods,
     GenomicFeatures,
-    httr
+    httr,
+    BiocGenerics,
+    S4Vectors
 Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
     testthat,
     BSgenome.Hsapiens.UCSC.hg38,
-    TxModDb.Hsapiens.hg38
+    EpiTxDb.Hsapiens.hg38
 Collate: 
     'AllGenerics.R'
-    'TxModDb-SELECT-helpers.R'
-    'TxModDb-schema.R'
-    'TxModDb.R'
-    'TxModDb-class.R'
+    'EpiTxDb-SELECT-helpers.R'
+    'EpiTxDb-schema.R'
+    'EpiTxDb.R'
+    'EpiTxDb-class.R'
     'utils.R'
-    'makeTxModDb.R'
-    'makeTxModDbFromGRanges.R'
-    'makeTxModDbFromtRNAdb.R'
+    'makeEpiTxDb.R'
+    'makeEpiTxDbFromGRanges.R'
+    'makeEpiTxDbFromtRNAdb.R'
     'modifications.R'
     'modificationsBy.R'
     'select-methods.R'
 RoxygenNote: 7.0.2
-BugReports: https://github.com/FelixErnst/TxModDb/issues
-URL: https://github.com/FelixErnst/TxModDb
+BugReports: https://github.com/FelixErnst/EpiTxDb/issues
+URL: https://github.com/FelixErnst/EpiTxDb
 VignetteBuilder: knitr

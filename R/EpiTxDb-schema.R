@@ -1,5 +1,5 @@
 # =========================================================================
-# TxModDb schema
+# EpiTxDb schema
 # -------------------------------------------------------------------------
 #
 # Nothing in this file is exported.
@@ -12,13 +12,13 @@
 #   - metadata (not described here)
 
 DB_TYPE_NAME <- "Db type"
-DB_TYPE_VALUE <- "TxModDb"
+DB_TYPE_VALUE <- "EpiTxDb"
 DB_SCHEMA_VERSION <- "1.0"
 
 # Return the *effective* schema version.
-TxModDb_schema_version <- function(txmoddb)
+EpiTxDb_schema_version <- function(epitxdb)
 {
-    conn <- if (is(txmoddb, "TxModDb")) dbconn(txmoddb) else txmoddb
+    conn <- if (is(epitxdb, "EpiTxDb")) dbconn(epitxdb) else epitxdb
     version <- AnnotationDbi:::.getMetaValue(conn, "DBSCHEMAVERSION")
     numeric_version(version)
 }
@@ -28,7 +28,7 @@ TxModDb_schema_version <- function(txmoddb)
 
 # 'modification' table
 
-TXMODDB_MOD_COLDEFS <- c(
+EPITXDB_MOD_COLDEFS <- c(
     `_mod_id` = "INTEGER PRIMARY KEY",
     mod_type = "TEXT NOT NULL",
     mod_name = "TEXT NULL",
@@ -38,11 +38,11 @@ TXMODDB_MOD_COLDEFS <- c(
     transcript_name = "TEXT NOT NULL",
     transcript_ensembltrans = "TEXT NULL"
 )
-TXMODDB_MOD_COLUMNS <- names(TXMODDB_MOD_COLDEFS)
+EPITXDB_MOD_COLUMNS <- names(EPITXDB_MOD_COLDEFS)
 
 # modification 'reaction' table
 
-TXMODDB_REACTION_COLDEFS <- c(
+EPITXDB_REACTION_COLDEFS <- c(
     `_mod_id` = "INTEGER PRIMARY KEY",
     mod_rank = "INTEGER NOT NULL",
     reaction_genename = "TEXT NULL",
@@ -52,11 +52,11 @@ TXMODDB_REACTION_COLDEFS <- c(
     reaction_enzyme = "TEXT NOT NULL"
 )
 
-TXMODDB_REACTION_COLUMNS <- names(TXMODDB_REACTION_COLDEFS)
+EPITXDB_REACTION_COLUMNS <- names(EPITXDB_REACTION_COLDEFS)
 
 # modification 'specifier' table
 
-TXMODDB_SPECIFIER_COLDEFS <- c(
+EPITXDB_SPECIFIER_COLDEFS <- c(
     `_mod_id` = "INTEGER NOT NULL",
     specifier_type = "TEXT NOT NULL",
     specifier_genename = "TEXT NOT NULL",
@@ -64,14 +64,25 @@ TXMODDB_SPECIFIER_COLDEFS <- c(
     specifier_ensembl = "TEXT NULL"
 )
 
-TXMODDB_SPECIFIER_COLUMNS <- names(TXMODDB_SPECIFIER_COLDEFS)
+EPITXDB_SPECIFIER_COLUMNS <- names(EPITXDB_SPECIFIER_COLDEFS)
+
+# modification 'reference' table
+
+EPITXDB_REFERENCE_COLDEFS <- c(
+    `_mod_id` = "INTEGER NOT NULL",
+    reference_type = "TEXT NULL",
+    reference = "TEXT NULL"
+)
+
+EPITXDB_REFERENCE_COLUMNS <- names(EPITXDB_REFERENCE_COLDEFS)
 
 #
 
-TXMODDB_COLUMNS <- list(
-    modification = TXMODDB_MOD_COLUMNS,
-    reaction = TXMODDB_REACTION_COLUMNS,
-    specifier = TXMODDB_SPECIFIER_COLUMNS
+EPITXDB_COLUMNS <- list(
+    modification = EPITXDB_MOD_COLUMNS,
+    reaction = EPITXDB_REACTION_COLUMNS,
+    specifier = EPITXDB_SPECIFIER_COLUMNS,
+    reference = EPITXDB_REFERENCE_COLUMNS
 )
 
 
@@ -89,7 +100,7 @@ build_SQL_CREATE_modification_table <- function()
 {
     unique_key <- "UNIQUE (_mod_id)"
     constraints <- c(unique_key)
-    .build_SQL_CREATE_TABLE("modification", TXMODDB_MOD_COLDEFS, constraints)
+    .build_SQL_CREATE_TABLE("modification", EPITXDB_MOD_COLDEFS, constraints)
 }
 
 build_SQL_CREATE_reaction_table <- function()
@@ -97,34 +108,41 @@ build_SQL_CREATE_reaction_table <- function()
     unique_key <- "UNIQUE (_mod_id, mod_rank)"
     foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
     constraints <- c(unique_key, foreign_key)
-    .build_SQL_CREATE_TABLE("reaction", TXMODDB_REACTION_COLDEFS, constraints)
+    .build_SQL_CREATE_TABLE("reaction", EPITXDB_REACTION_COLDEFS, constraints)
 }
 
 build_SQL_CREATE_specifier_table <- function()
 {
     foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
     constraints <- c(foreign_key)
-    .build_SQL_CREATE_TABLE("specifier", TXMODDB_SPECIFIER_COLDEFS, constraints)
+    .build_SQL_CREATE_TABLE("specifier", EPITXDB_SPECIFIER_COLDEFS, constraints)
+}
+
+build_SQL_CREATE_reference_table <- function()
+{
+    foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
+    constraints <- c(foreign_key)
+    .build_SQL_CREATE_TABLE("reference", EPITXDB_REFERENCE_COLDEFS, constraints)
 }
 
 
 # helper functions -------------------------------------------------------------
 
-TXMODDB_tables <- function() names(TXMODDB_COLUMNS)
+EPITXDB_tables <- function() names(EPITXDB_COLUMNS)
 
-TXMODDB_table_columns <- function(table, schema_version = NA){
-    columns <- TXMODDB_COLUMNS[[table]]
+EPITXDB_table_columns <- function(table, schema_version = NA){
+    columns <- EPITXDB_COLUMNS[[table]]
     columns
 }
 
-TXMODDB_column2table <- function(columns, from_table = NA, schema_version = NA){
+EPITXDB_column2table <- function(columns, from_table = NA, schema_version = NA){
     if (length(columns) == 0L)
         return(character(0))
     tables <- sapply(columns,
                      function(column) {
-                         for (table in TXMODDB_tables()) {
+                         for (table in EPITXDB_tables()) {
                              table_columns <-
-                                 TXMODDB_table_columns(table,
+                                 EPITXDB_table_columns(table,
                                                        schema_version = schema_version)
                              if (column %in% table_columns)
                                  return(table)
@@ -137,7 +155,7 @@ TXMODDB_column2table <- function(columns, from_table = NA, schema_version = NA){
                          stop(column, ": no such column", in_schema)
                      })
     if (!is.na(from_table)) {
-        table_columns <- TXMODDB_table_columns(from_table,
+        table_columns <- EPITXDB_table_columns(from_table,
                                                schema_version = schema_version)
         tables[columns %in% table_columns] <- from_table
     }
