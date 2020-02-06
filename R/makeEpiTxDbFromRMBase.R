@@ -134,9 +134,11 @@ makeEpiTxDbfromRMBase <- function(organism, genome, type, tx,
         warning("Dropping modifications which could not be associated with a ",
                 "transcript ...", call. = FALSE)
     }
+    # transfer transcript information
     gr <- gr[!f_na]
     mcols(gr)$transcript_ensembltrans <- mcols(tx)$transcript_ensembltrans
     mcols(gr)$transcript_name <- mcols(tx)$transcript_name
+    # reposition modification on transcript
     pos <- start(gr)
     plus_strand <- as.logical(strand(tx) == "+")
     pos[plus_strand] <- pos[plus_strand] - start(tx[plus_strand]) + 1L

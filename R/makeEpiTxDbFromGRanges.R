@@ -25,12 +25,11 @@ makeEpiTxDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
                           mod_end = end(gr),
                           transcript_id = mcols(gr)$transcript_id,
                           transcript_name= mcols(gr)$transcript_name,
-                          ensembltrans = mcols(gr)$ensembltrans,
-                          check.names = FALSE, stringsAsFactors = FALSE)
+                          ensembltrans = mcols(gr)$ensembltrans)
     modifications <- modifications[!vapply(modifications, is.null, logical(1))]
     if(length(modifications) > 1L){
         modifications <- data.frame(modifications, check.names = FALSE,
-                                stringsAsFactors = FALSE)
+                                    stringsAsFactors = FALSE)
     } else {
         stop("Couldn't extranct modification information from 'GRanges' object.",
              call. = FALSE)
