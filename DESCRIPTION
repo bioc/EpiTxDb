@@ -20,7 +20,8 @@ biocViews:
     Homo_sapiens
 Depends:
     R (>= 3.6),
-    AnnotationDbi
+    AnnotationDbi,
+    Modstrings
 Imports:
     methods,
     GenomicFeatures,
@@ -42,13 +43,14 @@ Collate:
     'EpiTxDb-schema.R'
     'EpiTxDb.R'
     'EpiTxDb-class.R'
-    'utils.R'
     'makeEpiTxDb.R'
     'makeEpiTxDbFromGRanges.R'
+    'shiftToTranscriptCoordinates.R'
     'makeEpiTxDbFromRMBase.R'
     'makeEpiTxDbFromtRNAdb.R'
     'modifications.R'
     'modificationsBy.R'
+    'ranges-helpers.R'
     'select-methods.R'
 RoxygenNote: 7.0.2
 BugReports: https://github.com/FelixErnst/EpiTxDb/issues

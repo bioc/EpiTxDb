@@ -1,5 +1,6 @@
 #' @include EpiTxDb-class.R
 #' @include makeEpiTxDb.R
+#' @include shiftToTranscriptCoordinates.R
 NULL
 
 EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
@@ -16,31 +17,74 @@ NULL
 
 # makeEpiTxDbfromRMBase --------------------------------------------------------
 
-.norm_tx <- function(tx){
-    if(missing(tx) || !is(tx,"GRanges")){
-        stop("'tx' must be an object of type 'TxDb' or 'GRanges'.")
+.get_RMBase_rnames <- function(organism, genome, type){
+    paste0("RMBase_",organism,"_",genome,"_",type)
+}
+
+.check_RMBase_files_available <- function(bfc, organism, genome, type){
+    # get BiocFileCache information
+    rnames <- .get_RMBase_rnames(organism, genome, type)
+    bfci <- BiocFileCache::bfcinfo(bfc)
+    m <- match(rnames,bfci$rname)
+    m <- m[!is.na(m)]
+    res <- bfci[m,]
+    #
+    nrow(res) == length(rnames)
+}
+
+.get_RMBase_files_available <- function(bfc, organism, genome, type){
+    # get BiocFileCache information
+    rnames <- .get_RMBase_rnames(organism, genome, type)
+    bfci <- BiocFileCache::bfcinfo(bfc)
+    m <- match(rnames,bfci$rname)
+    m <- m[!is.na(m)]
+    res <- bfci[m,]
+    #
+    files <- as.list(res$rpath)
+    if(length(rnames) != length(files)){
+        stop(".")
     }
-    if(!any("gene_name" %in% colnames(mcols(tx)))){
-        stop("'tx' must contain a 'gene_name' column.")
-    }
-    tx
+    #
+    m <- match(bfci$rname, rnames)
+    m <- m[!is.na(m)]
+    # update resource if expired
+    check_update_required <- BiocFileCache::bfcneedsupdate(bfc, res$rid)
+    files[check_update_required] <-
+        Map(function(rid){
+            BiocFileCache::bfcdownload(bfc,rid)
+        },
+        res$rid[check_update_required])
+    unname(unlist(files))
 }
 
 #' @importFrom BiocFileCache bfcquery bfcadd BiocFileCache
-.download_RMBase_files <- function(organism, genome, type, files){
+.download_RMBase_files <- function(bfc, organism, genome, type){
+    # get file names
+    files <- .get_RMBase_files(organism)
+    f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
+    f_mod <- vapply(strsplit(files[f_genome],"_"),"[",character(1),4L) == type
+    files <- files[f_genome][f_mod]
     urls <- paste0(EPITXDB_RMBASE_URL,organism,"/zip/",files)
-    bfc <- BiocFileCache()
-    rnames <- paste0("RMBase_",genome,"_",type)
-    rnames_available <- rnames %in% bfcinfo(bfc)[,"rname"]
+    #
+    rnames <- .get_RMBase_rnames(organism, genome, type)
+    if(length(rnames) != length(urls)){
+        stop(".")
+    }
+    # get BiocFileCache info
+    bfci <- BiocFileCache::bfcinfo(bfc)
+    # check which rnames are available
+    rnames_available <- rnames %in% bfci$rname
+    # get file name if available
     files <- as.list(rep("",length(rnames)))
     files[rnames_available] <-
         Map(function(rname){
-            bfcquery(bfc,rname)[,"rpath"]
+            BiocFileCache::bfcquery(bfc,rname)[,"rpath"]
         },
         rnames[rnames_available])
+    # download if not available and return file name
     files[!rnames_available] <-
         Map(function(url, rname){
-            bfcadd(bfc,rname,url)
+            BiocFileCache::bfcadd(bfc,rname,url)
         },
         urls[!rnames_available],
         rnames[!rnames_available])
@@ -49,24 +93,33 @@ NULL
 
 #' @rdname makeEpiTxDbfromRMBase
 #' @export
-makeEpiTxDbfromRMBase <- function(organism, genome, type, tx,
-                                  metadata = NULL, reassign.ids = FALSE){
-    tx <- .norm_tx(tx)
-    types <- listAvailableModFromRMBase(organism, genome)
-    if(!(type %in% types)){
-        stop("'type' must be a valid modification type from ",
-             "listAvailableModFromRMBase() for the given 'organism' and ",
-             "'genome'.")
+downloadRMBaseFiles <- function(organism, genome, type){
+    bfc <- BiocFileCache::BiocFileCache()
+    if(!.check_RMBase_files_available(bfc, organism, genome, type)){
+        types <- listAvailableModFromRMBase(organism, genome)
+        if(!all(type %in% types)){
+            stop("'type' must be a valid modification type from ",
+                 "listAvailableModFromRMBase() for the given 'organism' and ",
+                 "'genome'.")
+        }
+        files <- .download_RMBase_files(bfc, organism, genome, type)
+    } else {
+        files <- .get_RMBase_files_available(bfc, organism, genome, type)
     }
-    files <- .get_RMBase_files(organism)
-    f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
-    f_mod <- vapply(strsplit(files[f_genome],"_"),"[",character(1),4L) == type
-    files <- files[f_genome][f_mod]
-    files <- .download_RMBase_files(organism, genome, type, files)
+    files
+}
+
+#' @rdname makeEpiTxDbfromRMBase
+#' @export
+makeEpiTxDbfromRMBase <- function(organism, genome, type, tx, sequences = NULL,
+                                  metadata = NULL, reassign.ids = FALSE){
+    message("Downloading RMBase files ...")
+    files <- downloadRMBaseFiles(organism, genome, type)
     makeEpiTxDbfromRMBaseFile(files, tx, metadata = metadata,
                               reassign.ids = reassign.ids)
 }
 
+# makeEpiTxDbfromRMBaseFiles ---------------------------------------------------
 
 .get_RMBase_header <- function(file){
     header <- readLines(file,7L)
@@ -80,100 +133,177 @@ makeEpiTxDbfromRMBase <- function(organism, genome, type, tx,
 
 .read_RMBase_file <- function(file){
     rmb <- read.table(file)
-    colnames(rmb) <- .get_RMBase_colnames(file)
+    if(ncol(rmb) != 15L){
+        stop(".")
+    }
+    colnames <- .get_RMBase_colnames(file)
+    if(length(colnames) != ncol(rmb)){
+        stop(".")
+    }
+    colnames(rmb) <- colnames
     rmb
 }
 
-.extract_GRanges_from_RMBase <- function(rmb){
+# if a prefix in the chromosome identifier is present, try to remove it
+# only if it simplifies the result
+.simplify_chromosome_identifiers <- function(chromosome, seqlevels){
+    # mismatching chromosomes
+    mm_chr <- !(chromosome %in% seqlevels)
+    f_chr_remove <- grepl("Chr|chr",chromosome[mm_chr])
+    if(any(f_chr_remove)){
+        if(all(levels(factor(gsub("Chr|chr","",chromosome[mm_chr][f_chromosome]))) %in%
+               levels(chromosome[mm_chr][f_chromosome])) ||
+           all(levels(chromosome[mm_chr][f_chromosome]) %in%
+               levels(factor(gsub("Chr|chr","",chromosome[mm_chr][f_chromosome]))))){
+            tmp <- gsub("Chr|chr","",chromosome[mm_chr])
+            chromosome[mm_chr] <- tmp
+        }
+    } else {
+        chr_add1 <- paste0("chr",chromosome[mm_chr])
+        if(all(chr_add1 %in% seqlevels)){
+            chromosome[mm_chr] <- chr_add1
+        } else {
+            chr_add2 <- paste0("Chr",chromosome[mm_chr])
+            if(all(chr_add2 %in% seqlevels)){
+                chromosome[mm_chr] <- chr_add2
+            }
+        }
+    }
+    chromosome
+}
+
+.fix_non_standard_mod_types <- function(mod_type){
+    gsub("m62","m6,6",gsub("m42","m4,4",gsub("m22","m2,2",mod_type)))
+}
+
+.extract_GRanges_from_RMBase <- function(rmb, seqlevels = NA, seqtype = "RNA"){
+    ############################################################################
+    ### check modification information on correct base
+    seq <- Biostrings::DNAStringSet(rmb$sequence)
+    if(unique(width(seq)) != 41L){
+        stop(".")
+    }
+    seqtype(seq) <- seqtype
+    seqtype <- paste0("Mod",seqtype(seq))
+    # get the type of modification annotation
+    mod_type <- .fix_non_standard_mod_types(as.character(rmb$modType))
+    nc_type <- Modstrings:::.get_nc_type(mod_type, seqtype)
+    if(nc_type != "short"){
+        stop(".")
+    }
+    # get original base
+    codec <- Modstrings:::modscodec(seqtype)
+    modValues <- Modstrings:::.norm_seqtype_modtype(mod_type, seqtype,
+                                                    nc_type)
+    f <- Modstrings:::values(codec)[match(modValues,
+                                          Modstrings:::values(codec))]
+    # check if reported base matches original base
+    base_mm <- Modstrings:::originatingBase(codec)[f] != subseq(seq,21L,21L)
+    # if not delete the modifications with a warning
+    if(any(base_mm)){
+        warning("Not all modifications match the reported base in the ",
+                "nucleotide sequence. Removing them ... ",
+                call. = FALSE)
+        rmb <- rmb[!base_mm,]
+    }
+    ############################################################################
     # extract position data
-    pos <- rmb$modStart
-    pos[rmb$strand == "-"] <- rmb$modEnd[rmb$strand == "-"]
+    strand <- rmb$strand
+    # pos <- rmb$modStart
+    # pos[strand == "-"] <- rmb$modEnd[strand == "-"]
+    pos <- rmb$modEnd
     # extract modification information
     mod_id <- rmb$modId
-    mod_type <- rmb$modType
+    mod_type <- .fix_non_standard_mod_types(as.character(rmb$modType))
     mod_name <- rmb$modName
-    transcript_id <- as.integer(factor(rmb$geneName,unique(rmb$geneName)))
     # extract intermediate transcript data
     chromosome <- rmb$chromosome
     gene_name <- rmb$geneName
+    chromosome <- .simplify_chromosome_identifiers(chromosome, seqlevels)
+    if(any(is.na(gene_name)) || any(is.null(gene_name))){
+        stop(".")
+    }
     # extract references
     reference_type <- pc(IRanges::CharacterList(as.list(rep("PMID",nrow(rmb)))),
-                         IRanges::CharacterList(as.list(rep("RMBase_SUPPORT",nrow(rmb)))))
-    reference <- pc(IRanges::CharacterList(as.list(rmb$pubmedIds)),
-                    IRanges::CharacterList(as.list(rmb$supportList)))
+                         IRanges::CharacterList(as.list(rep("RMBase_REF",nrow(rmb)))))
+    reference <- pc(relist(rmb$pubmedIds,IRanges::PartitioningByWidth(lengths(rmb$pubmedIds))),
+                    relist(as.character(rmb$supportList),IRanges::PartitioningByWidth(lengths(rmb$supportList))))
     # assemble metadata columns
     mcols <- DataFrame(mod_id = mod_id,
                        mod_type = mod_type,
                        mod_name = mod_name,
-                       transcript_id = transcript_id,
-                       reference_type = reference_type,
-                       reference = reference,
                        chromosome = chromosome,
-                       gene_name = gene_name)
+                       gene_name = gene_name,
+                       score = rmb$score,
+                       reference_type = reference_type,
+                       reference = reference)
     # create GRanges result
-    GenomicRanges::GRanges(seqnames = transcript_id,
+    GenomicRanges::GRanges(seqnames = chromosome,
                            ranges = IRanges::IRanges(pos, width = 1L),
-                           strand = "*",
+                           strand = strand,
                            mcols)
 }
 
-.add_transcript_information <- function(gr, tx){
-    msg <- "Couldn't associate transcript information  to results."
-    if(missing(tx) || is.null(tx) || length(tx) == 0L){
-        stop(msg, call. = FALSE)
-    }
-    tx <- tx[!is.na(mcols(tx)$tx_name) & !is.na(mcols(tx)$gene_name)]
-    if(length(tx) == 0L){
-        stop("No information available from the 'tx_name' or 'gene_name'.")
-    }
-    m_tx <- match(mcols(gr)$gene_name,mcols(tx)$gene_name)
-    f_na <- is.na(m_tx)
-    tx <- tx[m_tx[!f_na]]
-    # drop problematic modifications
-    if(any(!f_na)){
-        warning("Dropping modifications which could not be associated with a ",
-                "transcript ...", call. = FALSE)
-    }
-    # transfer transcript information
-    gr <- gr[!f_na]
-    mcols(gr)$transcript_ensembltrans <- mcols(tx)$transcript_ensembltrans
-    mcols(gr)$transcript_name <- mcols(tx)$transcript_name
-    # reposition modification on transcript
-    pos <- start(gr)
-    plus_strand <- as.logical(strand(tx) == "+")
-    pos[plus_strand] <- pos[plus_strand] - start(tx[plus_strand]) + 1L
-    pos[!plus_strand] <- end(tx[!plus_strand]) - pos[!plus_strand] + 1L
-    # drop problematic modifications
-    invalid_pos <- pos < 1L
-    if(any(invalid_pos)){
-        warning("Dropping modifications which could not be repositioned on the",
-                " transcript (negative position) ...", call. = FALSE)
-    }
-    gr <- gr[!invalid_pos]
-    pos <- pos[!invalid_pos]
-    ranges <- IRanges::IRanges(pos, width = 1L)
-    ranges(gr) <- ranges
-    # reformat GRanges results
-    mcols(gr)$mod_id <- as.integer(factor(mcols(gr)$mod_id,unique(mcols(gr)$mod_id)))
-    GenomicRanges::GRanges(seqnames = mcols(gr)$transcript_id,
+#' @rdname makeEpiTxDbfromRMBase
+#' @export
+getRMBaseData <- function(files, seqlevels = NA){
+    grl <- lapply(files,
+                  function(file){
+                      rmb <- .read_RMBase_file(file)
+                      .extract_GRanges_from_RMBase(rmb, seqlevels)
+                  })
+    grl
+}
+
+.gene_names_to_chromosome <- function(gr){
+    chromosome <- mcols(gr)$gene_name
+    GenomicRanges::GRanges(seqnames = chromosome,
                            ranges = ranges(gr),
                            strand = strand(gr),
                            mcols(gr))
 }
 
+
+
+.check_tx_sequences <- function(tx, sequences){
+    if(is.null(sequences)){
+        return()
+    }
+    if(!is(sequences,"DNAStringSet") & !is(sequences,"RNAStringSet")){
+        stop("'sequences' must be a DNA/RNAStringSet.", call. = FALSE)
+    }
+    if(is.null(names(sequences)) || !all(names(sequences) == names(tx) )){
+        stop("'sequences' must be named and names have to match 'tx'",
+             call. = FALSE)
+    }
+    if(!all(sum(width(tx)) == width(sequences))){
+        stop("'sequences' and 'tx' must have the same dimensions, e.g. the ",
+             "length of sequences and annotation must match.",
+             call. = FALSE)
+    }
+}
+
 #' @rdname makeEpiTxDbfromRMBase
 #' @export
-makeEpiTxDbfromRMBaseFile <- function(files, tx, metadata = NULL,
-                                      reassign.ids = FALSE){
+makeEpiTxDbfromRMBaseFiles <- function(files, tx, sequences = NULL,
+                                       metadata = NULL, reassign.ids = FALSE){
     tx <- .norm_tx(tx)
-    grl <- lapply(files,
-                  function(file){
-                      rmb <- .read_RMBase_file(file)
-                      .extract_GRanges_from_RMBase(rmb)
-                  })
-    gr <- unlist(GRangesList(grl))
-    gr <- .add_transcript_information(gr, txdb)
-    makeEpiTxDbfromGRanges(gr, metadata = metadata, reassign.ids = reassign.ids)
+    .check_tx_sequences(tx, sequences)
+    message("Shifting RMBase result's coordinates based on transcript data ...")
+    grl <- getRMBaseData(files, GenomeInfoDb::seqlevels(tx))
+    gr <- unlist(GenomicRanges::GRangesList(grl))
+    message("Shifting RMBase result's coordinates based on transcript data ...")
+    gr <- shiftToTranscriptCoordinates(gr, tx)
+    mcols(gr)$mod_id <- seq_along(gr)
+    if(!is.null(sequences)){
+        # remove any positions which do not match the originating base
+        colnames(mcols(gr)) <- gsub("mod_type","mod",colnames(mcols(gr)))
+        gr <- Modstrings::removeIncompatibleModifications(gr, sequences)
+        colnames(mcols(gr)) <- gsub("^mod$","mod_type",colnames(mcols(gr)))
+    }
+    #
+    makeEpiTxDbfromGRanges(unique(gr), metadata = metadata,
+                           reassign.ids = reassign.ids)
 }
 
 

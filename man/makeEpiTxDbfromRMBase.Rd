@@ -2,22 +2,35 @@
 % Please edit documentation in R/makeEpiTxDbFromRMBase.R
 \name{makeEpiTxDbfromRMBase}
 \alias{makeEpiTxDbfromRMBase}
-\alias{makeEpiTxDbfromRMBaseFile}
+\alias{downloadRMBaseFiles}
+\alias{getRMBaseData}
+\alias{makeEpiTxDbfromRMBaseFiles}
 \alias{listAvailableOrganismsFromRMBase}
 \alias{listAvailableGenomesFromRMBase}
 \alias{listAvailableModFromRMBase}
 \title{makeEpiTxDbfromRMBase}
 \usage{
+downloadRMBaseFiles(organism, genome, type)
+
 makeEpiTxDbfromRMBase(
   organism,
   genome,
   type,
   tx,
+  sequences = NULL,
   metadata = NULL,
   reassign.ids = FALSE
 )
 
-makeEpiTxDbfromRMBaseFile(files, tx, metadata = NULL, reassign.ids = FALSE)
+getRMBaseData(files, seqlevels = NA)
+
+makeEpiTxDbfromRMBaseFiles(
+  files,
+  tx,
+  sequences = NULL,
+  metadata = NULL,
+  reassign.ids = FALSE
+)
 
 listAvailableOrganismsFromRMBase()
 
