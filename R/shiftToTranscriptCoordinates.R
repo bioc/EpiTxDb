@@ -14,7 +14,7 @@ NULL
 #' is reflected in the name. \code{shiftToGenomicCoordinates} implements the
 #' reverse operation.
 #'
-#' @param gr a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
+#' @param subject a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
 #' \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' with a \code{type} metadata column. In addition the metadata \code{mcols(tx)}
@@ -50,24 +50,24 @@ NULL
 
 # helper functions -------------------------------------------------------------
 
-.REQUIRED_GR_COLNAMES_TO_TRANS <- c("gene_name")
-.REQUIRED_GR_COLNAMES_TO_GENOMIC <- c("transcript_name")
+.REQUIRED_SUBJECT_COLNAMES_TO_TRANS <- c("gene_name")
+.REQUIRED_SUBJECT_COLNAMES_TO_GENOMIC <- c("transcript_name")
 .REQUIRED_TX_COLNAMES <- c("type")
 .REQUIRED_TX_MCOLS_COLNAMES <- c("gene_name","transcript_name")
 
-.norm_gr <- function(gr, .required_columns){
-    if(is(gr,"GRangesList")){
-        tmp_gr <- unlist(gr)
+.norm_subject <- function(subject, .required_columns){
+    if(is(subject,"subjectangesList")){
+        tmp_subject <- unlist(subject)
     } else {
-        tmp_gr <- gr
+        tmp_subject <- subject
     }
-    if(!all(.required_columns %in% colnames(mcols(tmp_gr)))){
-        stop("'gr' must contain the following columns: '",
+    if(!all(.required_columns %in% colnames(mcols(tmp_subject)))){
+        stop("'subject' must contain the following columns: '",
              paste(.required_columns, collapse = "','"),
              "'",
              call. = FALSE)
     }
-    gr
+    subject
 }
 
 .norm_tx <- function(tx){
@@ -115,60 +115,72 @@ NULL
 
 # shiftToGenomicCoordinates ----------------------------------------------------
 
-.shiftToGenomicCoordinates <- function(gr, tx){
+.shiftToGenomicCoordinates <- function(subject, tx){
     # expand by gene names
-    transcript_name <- IRanges::CharacterList(strsplit(as.character(mcols(gr)$transcript_name),","))
-    gr <- gr[unlist(Map(rep,seq_along(transcript_name),lengths(transcript_name)))]
-    mcols(gr)$transcript_name <- unlist(transcript_name)
-    # match seqnames of gr and names of tx
+    transcript_name <- IRanges::CharacterList(strsplit(as.character(mcols(subject)$transcript_name),","))
+    subject <- subject[unlist(Map(rep,seq_along(transcript_name),lengths(transcript_name)))]
+    mcols(subject)$transcript_name <- unlist(transcript_name)
+    # match seqnames of subject and names of tx
     hits_names <- suppressWarnings(findMatches(mcols(tx)$transcript_name,
-                                               as.character(mcols(gr)$transcript_name)))
+                                               as.character(mcols(subject)$transcript_name)))
     n <- length(hits_names)
-    f_non_hit <- seq_along(gr)
+    f_non_hit <- seq_along(subject)
     f_non_hit <- f_non_hit[!(f_non_hit %in% subjectHits(hits_names))]
     # match the remaining elements be coordinates
     hits_coordinates <- new("SortedByQueryHits")
     if(length(f_non_hit) > 0L){
-        hits_coordinates <- suppressWarnings(findOverlaps(tx,gr[f_non_hit]))
+        hits_coordinates <- suppressWarnings(findOverlaps(tx,subject[f_non_hit]))
         n <- n + length(hits_coordinates)
     }
     # assemble results vectors
     if(n == 0L){
-        stop("No ranges/transcript matches found.",
+        stop("No 'subject'/'tx' matches found.",
              call. = FALSE)
     }
     qh <- c(queryHits(hits_names),queryHits(hits_coordinates))
     sh <- c(subjectHits(hits_names), f_non_hit[subjectHits(hits_coordinates)])
-    f <- seq_along(gr) %in% sh
+    f <- seq_along(subject) %in% sh
     if(!all(f)){
-        warning("Coordinates for some ranges of 'gr' not found: '",
-                paste(unique(mcols(gr)$transcript_name[!f]),collapse = "','"),
-                "'.", call. = FALSE)
+        warning("Coordinates for some ranges of 'subject' not found: '",
+                paste(unique(mcols(subject)$transcript_name[!f]),collapse = "','"),
+                "'.",
+                call. = FALSE)
     }
     tx_hits <- tx[qh]
-    gr_hits <- gr[sh]
+    subject_hits <- subject[sh]
     # reposition modification on transcript
-    seqs <- positionSequence(tx)[qh]
-    starts <- seqs[IRanges::IntegerList(as.list(start(gr_hits)))]
+    chunk_size <- 10^5
+    chunks_n <- ceiling(length(qh) / chunk_size)
+    f <- factor(unlist(Map(rep.int,seq_len(chunks_n),chunk_size)))
+    f <- f[seq_along(qh)]
+    seqs <- positionSequence(tx)
+    starts <- Map(
+        function(y, z){
+            seqs[y][IRanges::IntegerList(as.list(z))]
+        },
+        split(qh, f),
+        split(start(subject_hits), f))
+    starts <- do.call(c,unname(starts))
     # drop problematic modifications a bit later
     invalid_pos <- lengths(starts) < 1L
     if(any(invalid_pos)){
-        warning("Dropping ranges which could not be repositioned on the",
-                " genome ...", call. = FALSE)
+        warning("Dropping elements of 'subject' which could not be ",
+                "repositioned on the genome.",
+                call. = FALSE)
     }
     tx_hits <- tx_hits[!invalid_pos]
-    gr_hits <- gr_hits[!invalid_pos]
+    subject_hits <- subject_hits[!invalid_pos]
     starts <- starts[!invalid_pos]
     # transfer gene information
-    mcols(gr_hits)$gene_name <- ""
-    mcols(gr_hits)$gene_name <- mcols(tx_hits)$gene_name
+    mcols(subject_hits)$gene_name <- ""
+    mcols(subject_hits)$gene_name <- mcols(tx_hits)$gene_name
     # prepare reformat of GRanges results
     seqnames <- unlist(unique(seqnames(tx_hits)),use.names = FALSE)
     strand <- unlist(unique(strand(tx_hits)),use.names = FALSE)
-    mcols <- mcols(gr_hits)[,!(colnames(mcols(gr)) %in% "transcript_name"),
+    mcols <- mcols(subject_hits)[,!(colnames(mcols(subject)) %in% "transcript_name"),
                             drop=FALSE]
     ranges <- IRanges::IRanges(start = unlist(starts),
-                               width = width(gr_hits))
+                               width = width(subject_hits))
     # reformat GRanges results
     ans <- GenomicRanges::GRanges(seqnames = seqnames,
                                   ranges = ranges,
@@ -180,83 +192,96 @@ NULL
 #' @rdname shiftToTranscriptCoordinates
 #' @export
 setMethod("shiftToGenomicCoordinates", c("GRanges","GRangesList"),
-    function(gr, tx){
-        gr <- .norm_gr(gr, .REQUIRED_GR_COLNAMES_TO_GENOMIC)
+    function(subject, tx){
+        subject <- .norm_subject(subject, .REQUIRED_SUBJECT_COLNAMES_TO_GENOMIC)
         tx <- .norm_tx(tx)
-        .shiftToGenomicCoordinates(gr, tx)
+        .shiftToGenomicCoordinates(subject, tx)
     })
 
 #' @rdname shiftToTranscriptCoordinates
 #' @export
 setMethod("shiftToGenomicCoordinates", c("GRangesList","GRangesList"),
-    function(gr, tx){
-        gr <- .norm_gr(gr, .REQUIRED_GR_COLNAMES_TO_GENOMIC)
+    function(subject, tx){
+        subject <- .norm_subject(subject, .REQUIRED_SUBJECT_COLNAMES_TO_GENOMIC)
         tx <- .norm_tx(tx)
-        ans <- lapply(gr,.shiftToGenomicCoordinates,tx)
+        ans <- lapply(subject,.shiftToGenomicCoordinates,tx)
         GenomicRanges::GRangesList(ans)
     })
 
 
 # shiftToTranscriptCoordinates ----------------------------------------------------
 
-.shiftToTranscriptCoordinates <- function(gr, tx){
+.shiftToTranscriptCoordinates <- function(subject, tx){
     # expand by gene names
-    gene_name <- IRanges::CharacterList(strsplit(as.character(mcols(gr)$gene_name),","))
-    gr <- gr[unlist(Map(rep,seq_along(gene_name),lengths(gene_name)))]
-    mcols(gr)$gene_name <- unlist(gene_name)
-    # match seqnames of gr and names of tx
+    gene_name <- IRanges::CharacterList(strsplit(as.character(mcols(subject)$gene_name),","))
+    subject <- subject[unlist(Map(rep,seq_along(gene_name),lengths(gene_name)))]
+    mcols(subject)$gene_name <- unlist(gene_name)
+    # match seqnames of subject and names of tx
     hits_names <- suppressWarnings(findMatches(mcols(tx)$gene_name,
-                                               as.character(mcols(gr)$gene_name)))
+                                               as.character(mcols(subject)$gene_name)))
     n <- length(hits_names)
-    f_non_hit <- seq_along(gr)
+    f_non_hit <- seq_along(subject)
     f_non_hit <- f_non_hit[!(f_non_hit %in% subjectHits(hits_names))]
     # match the remaining elements be coordinates
     hits_coordinates <- new("SortedByQueryHits")
     if(length(f_non_hit) > 0L){
-        hits_coordinates <- suppressWarnings(findOverlaps(tx,gr[f_non_hit]))
+        hits_coordinates <- suppressWarnings(findOverlaps(tx,subject[f_non_hit]))
         n <- n + length(hits_coordinates)
     }
     # assemble results vectors
     if(n == 0L){
-        stop("No ranges/transcript matches found.",
+        stop("No 'subject'/'tx' matches found.",
              call. = FALSE)
     }
     qh <- c(queryHits(hits_names),queryHits(hits_coordinates))
     sh <- c(subjectHits(hits_names), f_non_hit[subjectHits(hits_coordinates)])
-    f <- seq_along(gr) %in% sh
+    f <- seq_along(subject) %in% sh
     if(!all(f)){
-        warning("Coordinates for some ranges of 'gr' not found: '",
-                paste(unique(mcols(gr)$gene_name[!f]),collapse = "','"),
-                "'.")
+        warning("Coordinates for some ranges of 'subject' not found: '",
+                paste(unique(mcols(subject)$gene_name[!f]),collapse = "','"),
+                "'.",
+                call. = FALSE)
     }
     tx_hits <- tx[qh]
-    gr_hits <- gr[sh]
-    # reposition modification on transcript
-    seqs <- positionSequence(tx)[qh]
-    starts <- which(seqs == start(gr_hits))
+    subject_hits <- subject[sh]
+    # reposition modification on transcript because of size constraint split it
+    # up into batches
+    chunk_size <- 10^5
+    chunks_n <- ceiling(length(qh) / chunk_size)
+    f <- factor(unlist(Map(rep.int,seq_len(chunks_n),chunk_size)))
+    f <- f[seq_along(qh)]
+    seqs <- positionSequence(tx)
+    starts <- Map(
+        function(y, z){
+            which(seqs[y] == z)
+        },
+        split(qh, f),
+        split(start(subject_hits), f))
+    starts <- do.call(c,unname(starts))
     # drop problematic modifications
     invalid_pos <- lengths(starts) < 1L
     if(any(invalid_pos)){
-        warning("Dropping ranges which could not be repositioned on the",
-                " transcript ...", call. = FALSE)
+        warning("Dropping elements of 'subject' which could not be ",
+                "repositioned on the transcript.",
+                call. = FALSE)
     }
     tx_hits <- tx_hits[!invalid_pos]
-    gr_hits <- gr_hits[!invalid_pos]
+    subject_hits <- subject_hits[!invalid_pos]
     starts <- starts[!invalid_pos]
     # transfer transcript information
-    mcols(gr_hits)$transcript_name <- ""
-    mcols(gr_hits)$transcript_name <- mcols(tx_hits)$transcript_name
+    mcols(subject_hits)$transcript_name <- ""
+    mcols(subject_hits)$transcript_name <- mcols(tx_hits)$transcript_name
     # reformat GRanges results
-    seqnames <- mcols(gr_hits)$transcript_name
+    seqnames <- mcols(subject_hits)$transcript_name
     if(anyNA(seqnames)){
-        stop("Some 'transcript_name' matching the ranges of 'gr' are NA.",
+        stop("Some 'transcript_name' matching the ranges of 'subject' are NA.",
              call. = FALSE)
     }
-    mcols <- mcols(gr_hits)[,!(colnames(mcols(gr_hits)) %in% "gene_name"),
+    mcols <- mcols(subject_hits)[,!(colnames(mcols(subject_hits)) %in% "gene_name"),
                             drop=FALSE]
     seqnames <- seqnames
     ranges <- IRanges::IRanges(start = unlist(starts),
-                               width = width(gr_hits))
+                               width = width(subject_hits))
     ans <- GenomicRanges::GRanges(seqnames = seqnames,
                                   ranges = ranges,
                                   strand = "+",
@@ -267,18 +292,18 @@ setMethod("shiftToGenomicCoordinates", c("GRangesList","GRangesList"),
 #' @rdname shiftToTranscriptCoordinates
 #' @export
 setMethod("shiftToTranscriptCoordinates", c("GRanges","GRangesList"),
-    function(gr, tx){
-        gr <- .norm_gr(gr, .REQUIRED_GR_COLNAMES_TO_TRANS)
+    function(subject, tx){
+        subject <- .norm_subject(subject, .REQUIRED_SUBJECT_COLNAMES_TO_TRANS)
         tx <- .norm_tx(tx)
-        .shiftToTranscriptCoordinates(gr, tx)
+        .shiftToTranscriptCoordinates(subject, tx)
     })
 
 #' @rdname shiftToTranscriptCoordinates
 #' @export
 setMethod("shiftToTranscriptCoordinates", c("GRangesList","GRangesList"),
-    function(gr, tx){
-        gr <- .norm_gr(gr, .REQUIRED_GR_COLNAMES_TO_TRANS)
+    function(subject, tx){
+        subject <- .norm_subject(subject, .REQUIRED_SUBJECT_COLNAMES_TO_TRANS)
         tx <- .norm_tx(tx)
-        ans <- lapply(gr,.shiftToTranscriptCoordinates,tx)
+        ans <- lapply(subject,.shiftToTranscriptCoordinates,tx)
         GenomicRanges::GRangesList(ans)
     })

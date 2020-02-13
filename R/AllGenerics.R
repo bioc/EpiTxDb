@@ -4,11 +4,11 @@ setGeneric("positionSequence",
                standardGeneric("positionSequence"))
 
 setGeneric("shiftToGenomicCoordinates",
-           function(gr, tx)
+           function(subject, tx)
                standardGeneric("shiftToGenomicCoordinates"))
 
 setGeneric("shiftToTranscriptCoordinates",
-           function(gr, tx)
+           function(subject, tx)
                standardGeneric("shiftToTranscriptCoordinates"))
 
 
