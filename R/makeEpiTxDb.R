@@ -80,8 +80,9 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     if(!has_col(modifications, "transcript_id") &&
        (has_col(modifications, "ensembltrans") ||
         has_col(modifications, "transcript_name"))){
-        transcript_id <- factor(paste0(modifications$ensembltrans,"_",
-                                       modifications$transcript_name))
+        transcript_id <- paste0(modifications$ensembltrans,"_",
+                                modifications$transcript_name)
+        transcript_id <- factor(transcript_id,unique(transcript_id))
         modifications$transcript_id <- as.integer(transcript_id)
     }
     check_colnames(modifications, .REQUIRED_COLS, .OPTIONAL_COLS,
@@ -131,7 +132,22 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         if(!.is_character_or_factor(modifications$transcript_name)
            || any(is.na(modifications$transcript_name))){
             stop("'modifications$transcript_name' must be a character vector ",
-                 "(or factor) with no NAs")
+                 "(or factor)makeEpiTxDbFromtRNAdb with no NAs")
+        }
+        if(length(unique(modifications$transcript_id)) !=
+           length(unique(modifications$transcript_name))){
+            stop("'modifications$transcript_name' must match ",
+                 "'modifications$transcript_id' in meaning.")
+        }
+        f1 <- factor(modifications$transcript_id,
+                     unique(modifications$transcript_id))
+        p1 <- PartitioningByWidth(split(modifications$transcript_id,f1))
+        f2 <- factor(modifications$transcript_name,
+                     unique(modifications$transcript_name))
+        p2 <- PartitioningByWidth(split(modifications$transcript_name,f2))
+        if(!all(p1 == p2)){
+            stop("'modifications$transcript_name' must match ",
+                 "'modifications$transcript_id' in meaning.")
         }
     } else {
         modifications$transcript_name <- character(1)
@@ -142,6 +158,21 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
            || any(is.na(modifications$ensembltrans))){
             stop("'modifications$ensembltrans' must be a character vector",
                  " (or factor) with no NAs")
+        }
+        if(length(unique(modifications$transcript_id)) !=
+           length(unique(modifications$ensembltrans))){
+            stop("'modifications$transcript_name' must match ",
+                 "'modifications$ensembltrans' in meaning.")
+        }
+        f1 <- factor(modifications$transcript_id,
+                     unique(modifications$transcript_id))
+        p1 <- PartitioningByWidth(split(modifications$transcript_id,f1))
+        f2 <- factor(modifications$ensembltrans,
+                     unique(modifications$ensembltrans))
+        p2 <- PartitioningByWidth(split(modifications$ensembltrans,f2))
+        if(!all(p1 == p2)){
+            stop("'modifications$transcript_name' must match ",
+                 "'modifications$ensembltrans' in meaning.")
         }
     } else {
         modifications$ensembltrans <- character(1)
@@ -417,7 +448,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         ncol = 2, byrow = TRUE
     )
     mat2 <- matrix(c(
-        "Nb of transcripts", nb_modifications,
+        "Nb of modifications", nb_modifications,
         "Db created by",     "EpiTxDb package from Bioconductor",
         "Creation time",     svn.time(),
         "EpiTxDb version at creation time", thispkg_version,
@@ -443,8 +474,9 @@ makeEpiTxDb <- function(modifications, reactions = NULL, specifiers = NULL,
                         references = NULL, metadata = NULL,
                         reassign.ids = FALSE){
     message("Creating EpiTxDb object ... ", appendLF = FALSE)
-    if (!isTRUEorFALSE(reassign.ids))
+    if (!isTRUEorFALSE(reassign.ids)){
         stop("'reassign.ids' must be TRUE or FALSE")
+    }
 
     modifications <- .makeEpiTxDb_normarg_modifications(modifications)
     reactions <- .makeEpiTxDb_normarg_reactions(reactions, modifications$mod_id)
