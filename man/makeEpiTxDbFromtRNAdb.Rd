@@ -2,9 +2,12 @@
 % Please edit documentation in R/makeEpiTxDbFromtRNAdb.R
 \name{makeEpiTxDbFromtRNAdb}
 \alias{makeEpiTxDbFromtRNAdb}
+\alias{gettRNAdbDataAsGRanges}
 \alias{listAvailableOrganismsFromtRNAdb}
 \title{makeEpiTxDbFromtRNAdb}
 \usage{
+gettRNAdbDataAsGRanges(organism, tx = NULL, sequences = NULL)
+
 makeEpiTxDbFromtRNAdb(organism, tx = NULL, sequences = NULL, metadata = NULL)
 
 listAvailableOrganismsFromtRNAdb()

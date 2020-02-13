@@ -1,7 +1,6 @@
 Package: EpiTxDb
 Type: Package
-Title: Classes for accessing post-transcriptional modifications via the
-    AnnotationDbi interfaces.
+Title: Storing and accessing epitranscriptomic information using the AnnotationDbi interface.
 Version: 0.1.0
 Authors@R: person("Felix G.M.", 
                   "Ernst", 

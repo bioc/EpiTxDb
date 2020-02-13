@@ -3,7 +3,7 @@
 \name{makeEpiTxDbfromRMBase}
 \alias{makeEpiTxDbfromRMBase}
 \alias{downloadRMBaseFiles}
-\alias{getRMBaseData}
+\alias{getRMBaseDataAsGRanges}
 \alias{makeEpiTxDbfromRMBaseFiles}
 \alias{listAvailableOrganismsFromRMBase}
 \alias{listAvailableGenomesFromRMBase}
@@ -22,7 +22,13 @@ makeEpiTxDbfromRMBase(
   reassign.ids = FALSE
 )
 
-getRMBaseData(files, seqlevels = NA)
+getRMBaseDataAsGRanges(
+  files,
+  tx = NULL,
+  sequences = NULL,
+  shift.to.transcript = FALSE,
+  check.vs.sequence = FALSE
+)
 
 makeEpiTxDbfromRMBaseFiles(
   files,

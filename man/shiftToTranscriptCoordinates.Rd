@@ -9,16 +9,16 @@
 \title{Shift \code{GRanges} coordinates based on another \code{GRanges}
 object}
 \usage{
-\S4method{shiftToGenomicCoordinates}{GRanges,GRangesList}(gr, tx)
+\S4method{shiftToGenomicCoordinates}{GRanges,GRangesList}(subject, tx)
 
-\S4method{shiftToGenomicCoordinates}{GRangesList,GRangesList}(gr, tx)
+\S4method{shiftToGenomicCoordinates}{GRangesList,GRangesList}(subject, tx)
 
-\S4method{shiftToTranscriptCoordinates}{GRanges,GRangesList}(gr, tx)
+\S4method{shiftToTranscriptCoordinates}{GRanges,GRangesList}(subject, tx)
 
-\S4method{shiftToTranscriptCoordinates}{GRangesList,GRangesList}(gr, tx)
+\S4method{shiftToTranscriptCoordinates}{GRangesList,GRangesList}(subject, tx)
 }
 \arguments{
-\item{gr}{a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
+\item{subject}{a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
 \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object}
 
 \item{tx}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
