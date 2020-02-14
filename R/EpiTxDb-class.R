@@ -20,10 +20,6 @@ NULL
                         methods = list(
                             initialize = function(...) {
                                 callSuper(...)
-                                if (length(dbListTables(conn) != 0L)) {
-
-
-                                }
                                 .self
                             }))
 

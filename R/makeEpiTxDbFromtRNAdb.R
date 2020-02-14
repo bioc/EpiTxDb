@@ -37,7 +37,7 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
     }
 
     # get tRNAdb information
-    message("Downloading data from tRNAdb ...")
+    message("Loading data from tRNAdb ...")
     gr <- lapply(c("allothers","plastid","mitochondrial"),
                  function(origin){
                      try(tRNAdbImport::import.tRNAdb(organism = organism,

@@ -115,7 +115,7 @@ downloadRMBaseFiles <- function(organism, genome, type){
 #' @export
 makeEpiTxDbfromRMBase <- function(organism, genome, type, tx, sequences = NULL,
                                   metadata = NULL, reassign.ids = FALSE){
-    message("Downloading RMBase files ...")
+    message("Loading RMBase files ...")
     files <- downloadRMBaseFiles(organism, genome, type)
     makeEpiTxDbfromRMBaseFiles(files, tx = tx, sequences = sequences,
                                metadata = metadata, reassign.ids = reassign.ids)
@@ -169,6 +169,12 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
 # if a prefix in the chromosome identifier is present, try to remove it
 # only if it simplifies the result
 .simplify_chromosome_identifiers <- function(chromosome, seqlevels){
+    chromosome <- as.character(chromosome)
+    # fix some weird mito chromosome annotation
+    f <- chromosome %in% "Mito"
+    if(any(f)){
+        chromosome[f] <- gsub("Mito","M",chromosome[f])
+    }
     # mismatching chromosomes
     mm_chr <- !(chromosome %in% seqlevels)
     f_chr_remove <- grepl("Chr|chr",chromosome[mm_chr])
@@ -191,7 +197,7 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
             }
         }
     }
-    chromosome
+    factor(chromosome,unique(chromosome))
 }
 
 .fix_non_standard_mod_types <- function(mod_type){
@@ -371,6 +377,11 @@ getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
 }
 
 .add_sequence_check_to_metadata <- function(metadata){
+    metadata <- rbind(metadata,
+                      data.frame(name = "Checked against sequence",
+                                 value = "Yes",
+                                 check.names = FALSE,
+                                 stringsAsFactors = FALSE))
     metadata
 }
 
