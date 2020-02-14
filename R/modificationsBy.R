@@ -22,7 +22,7 @@ NULL
     f <- switch(by,
                 "transcript" = seqnames(gr),
                 "type" = gr_mcols$mod,
-                "reaction" = FUN(gr_mcols$reaction_enzyme),
+                "reaction" = FUN(gr_mcols$reaction_genename),
                 "specifier" = FUN(gr_mcols$specifier_type),
                 stop("unsupported 'by' value."))
     grl <- S4Vectors::split(gr, f)
@@ -38,8 +38,7 @@ NULL
                                          c("MODTYPE", "MODID", "MODNAME")),
                   "reaction" = modifications(epitxdb,
                                              c("RXENSEMBL", "RXENSEMBLTRANS",
-                                               "RXENTREZID", "RXENZYME",
-                                               "RXGENENAME")),
+                                               "RXENTREZID", "RXGENENAME")),
                   "specifier" = modifications(epitxdb,
                                               c("SPECENSEMBL","SPECENTREZID",
                                                 "SPECGENENAME", "SPECTYPE")),

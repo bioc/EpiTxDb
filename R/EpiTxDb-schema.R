@@ -48,8 +48,7 @@ EPITXDB_REACTION_COLDEFS <- c(
     reaction_genename = "TEXT NULL",
     reaction_ensembl = "TEXT NULL",
     reaction_ensembltrans = "TEXT NULL",
-    reaction_entrezid = "TEXT NULL",
-    reaction_enzyme = "TEXT NOT NULL"
+    reaction_entrezid = "TEXT NULL"
 )
 
 EPITXDB_REACTION_COLUMNS <- names(EPITXDB_REACTION_COLDEFS)

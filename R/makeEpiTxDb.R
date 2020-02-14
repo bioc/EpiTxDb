@@ -132,7 +132,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         if(!.is_character_or_factor(modifications$transcript_name)
            || any(is.na(modifications$transcript_name))){
             stop("'modifications$transcript_name' must be a character vector ",
-                 "(or factor)makeEpiTxDbFromtRNAdb with no NAs")
+                 "(or factor) with no NAs")
         }
         if(length(unique(modifications$transcript_id)) !=
            length(unique(modifications$transcript_name))){
@@ -188,14 +188,12 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                                 reaction_ensembl = character(0),
                                 reaction_ensembltrans = character(0),
                                 reaction_entrezid = character(0),
-                                reaction_enzyme = character(0),
                                 check.names = FALSE, stringsAsFactors = FALSE)
         return(reactions)
     }
     .REQUIRED_COLS <- c("mod_id", "mod_rank")
     .OPTIONAL_COLS <- c("reaction_genename", "reaction_ensembl",
-                        "reaction_ensembltrans", "reaction_entrezid",
-                        "reaction_enzyme")
+                        "reaction_ensembltrans", "reaction_entrezid")
     check_colnames(reactions, .REQUIRED_COLS, .OPTIONAL_COLS, "reactions")
     ## Check 'mod_id'.
     .check_foreign_key(reactions$mod_id, "integer", "reactions$mod_id",
@@ -232,11 +230,6 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     if (has_col(reactions, "reaction_entrezid")
         && !.is_character_or_factor(reactions$reaction_entrezid))
         stop("'reactions$reaction_entrezid' must be a character vector ",
-             "(or factor)")
-    ## Check 'reaction_enzyme'.
-    if (has_col(reactions, "reaction_enzyme")
-        && !.is_character_or_factor(reactions$reaction_enzyme))
-        stop("'reactions$reaction_enzyme' must be a character vector ",
              "(or factor)")
     reactions
 }
@@ -380,15 +373,13 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                                    reaction_genename,
                                    reaction_ensembl,
                                    reaction_ensembltrans,
-                                   reaction_entrezid,
-                                   reaction_enzyme){
+                                   reaction_entrezid){
     data <- data.frame(internal_mod_id = internal_mod_id,
                        mod_rank = mod_rank,
                        reaction_genename = reaction_genename,
                        reaction_ensembl = reaction_ensembl,
                        reaction_ensembltrans = reaction_ensembltrans,
                        reaction_entrezid = reaction_entrezid,
-                       reaction_enzyme = reaction_enzyme,
                        check.names = FALSE, stringsAsFactors = FALSE)
 
     ## Create the 'reaction' table and related indices.
@@ -513,8 +504,7 @@ makeEpiTxDb <- function(modifications, reactions = NULL, specifiers = NULL,
                            reactions$reaction_genename,
                            reactions$reaction_ensembl,
                            reactions$reaction_ensembltrans,
-                           reactions$reaction_entrezid,
-                           reactions$reaction_enzyme)
+                           reactions$reaction_entrezid)
     .write_specifiers_table(conn,
                             specifiers_internal_mod_id,
                             specifiers$specifier_type,

@@ -42,8 +42,7 @@ NULL
                       reaction_genename = mcols(gr)$reaction_genename,
                       reaction_ensembl = mcols(gr)$reaction_ensembl,
                       reaction_ensembltrans = mcols(gr)$reaction_ensembltrans,
-                      reaction_entrezid = mcols(gr)$reaction_entrezid,
-                      reaction_enzyme= mcols(gr)$reaction_enzyme)
+                      reaction_entrezid = mcols(gr)$reaction_entrezid)
     reactions <- reactions[!vapply(reactions, is.null, logical(1))]
     if(length(reactions) > 1L){
         reactions <- data.frame(reactions, check.names = FALSE,

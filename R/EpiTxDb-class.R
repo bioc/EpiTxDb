@@ -70,8 +70,7 @@ load_modifications <- function(epitxdb, set.col.class = FALSE){
         reaction_genename = "factor",
         reaction_ensembl = "factor",
         reaction_ensembltrans = "factor",
-        reaction_entrezid = "factor",
-        reaction_enzyme = "factor"
+        reaction_entrezid = "factor"
     )
     if (is.null(reactions)) {
         reactions <- makeZeroRowDataFrame(COL2CLASS)

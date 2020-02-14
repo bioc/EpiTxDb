@@ -263,9 +263,6 @@ setMethod("columns", "EpiTxDb",
         "RXENTREZID" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT reaction_entrezid FROM reaction", 1L),
-        "RXENZYME" = AnnotationDbi:::dbQuery(
-            dbconn(x),
-            "SELECT DISTINCT reaction_enzyme FROM reaction", 1L),
         "SPECTYPE" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT specifier_type FROM specifier", 1L),
