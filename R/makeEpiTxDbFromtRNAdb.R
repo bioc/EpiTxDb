@@ -54,14 +54,30 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
     seq_gr <- gr$tRNA_seq
     mod <- separate(seq_gr)
     # collect references
+    f_ref <- mcols(gr)$tRNAdb_reference != ""
+    f_pmid <- mcols(gr)$tRNAdb_pmid != ""
+
+    ref_type <- list(IRanges::CharacterList(as.list(rep("tRNAdb_ID",
+                                                        length(gr)))),
+                     IRanges::CharacterList(as.list(rep("tRNAdb_REF",
+                                                        length(gr)))),
+                     IRanges::CharacterList(as.list(rep("PMID",
+                                                        length(gr)))))
+    ref_type[[2]][!f_ref] <- ""
+    ref_type[[3]][!f_pmid] <- ""
+    ref_type <- do.call(pc,ref_type)
+    ref_type <- ref_type[ref_type != ""]
+
+    references <- list(mcols(gr)$tRNAdb_ID,
+                      mcols(gr)$tRNAdb_reference,
+                      mcols(gr)$tRNAdb_pmid)
+    references[[2]][!f_ref] <- ""
+    references[[3]][!f_pmid] <- ""
+    references <- do.call(pc,references)
+    references <- references[references != ""]
+
     m <- as.integer(S4Vectors::match(seqnames(mod), seqnames(gr)))
-    reftype <- do.call(pc,list(IRanges::CharacterList(as.list(rep("tRNAdb_ID",length(gr)))),
-                               IRanges::CharacterList(as.list(rep("tRNAdb_REF",length(gr))))[mcols(gr)$tRNAdb_reference != ""],
-                               IRanges::CharacterList(as.list(rep("PMID",length(gr))))[mcols(gr)$tRNAdb_pmid != ""]))
-    references <- do.call(pc,list(mcols(gr)$tRNAdb_ID,
-                                  mcols(gr)$tRNAdb_reference[mcols(gr)$tRNAdb_reference != ""],
-                                  mcols(gr)$tRNAdb_pmid[mcols(gr)$tRNAdb_pmid != ""]))
-    mcols(mod)$reference_type <- reftype[m]
+    mcols(mod)$reference_type <- ref_type[m]
     mcols(mod)$reference <- references[m]
     # assemble metadata columns
     mod <- .add_tRNAdb_metadata_columns(mod)
@@ -89,7 +105,8 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
                      length(sequences), length(seq_rna_gr))
         hits_mod <- findMatches(seqnames(mod),names(seq_rna_gr))
         # transfer genenames to modifications
-        transcript_name <- mcols(tx)[queryHits(hits),"transcript_name"]
+        transcript_name <-
+            unlist(unique(mcols(tx,level="within")[queryHits(hits),"tx_id"]))
         transcript_name <- IRanges::CharacterList(split(transcript_name,subjectHits(hits)))
         transcript_name <- vapply(transcript_name,paste,character(1),collapse=",")
         hits_mod <- hits_mod[subjectHits(hits_mod) %in% unique(subjectHits(hits))]

@@ -1,6 +1,6 @@
 #' @include EpiTxDb-class.R
 #' @include makeEpiTxDb.R
-#' @include shiftToTranscriptCoordinates.R
+#' @include shiftGenomicToTranscript.R
 NULL
 
 EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
@@ -49,6 +49,8 @@ NULL
     m <- m[!is.na(m)]
     # update resource if expired
     check_update_required <- BiocFileCache::bfcneedsupdate(bfc, res$rid)
+    check_update_required <- check_update_required &
+        !is.na(check_update_required)
     files[check_update_required] <-
         Map(function(rid){
             BiocFileCache::bfcdownload(bfc,rid)
@@ -228,8 +230,9 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
     base_mm <- Modstrings:::originatingBase(codec)[f] != subseq(seq,21L,21L)
     # if not delete the modifications with a warning
     if(any(base_mm)){
-        warning("Not all modifications match the reported base in the ",
-                "nucleotide sequence. Removing them ... ",
+        warning("Detected mismatch of modification and originating base in ",
+                "RMBase data for '", paste(unique(mod_type), collapse = "', '"),
+                "'. Removing them ... ",
                 call. = FALSE)
         rmb <- rmb[!base_mm,]
     }
@@ -251,20 +254,28 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
         stop(".")
     }
     # extract references
-    reference_type <- list(IRanges::CharacterList(as.list(rep("RMBASE_MOD_ID",
-                                                              nrow(rmb)))),
-                           IRanges::CharacterList(as.list(rep("PMID",
-                                                              nrow(rmb)))),
-                           IRanges::CharacterList(as.list(rep("RMBase_REF",
-                                                              nrow(rmb)))))
-    reference_type <- do.call(pc,reference_type)
-    reference <- list(relist(rmb$modId,
+    f_pmid <- rmb$pubmedIds != "" & rmb$pubmedIds != "-"
+    f_ref <- rmb$supportList != "" & rmb$supportList != "-"
+    ref_type <- list(IRanges::CharacterList(as.list(rep("RMBASE_MOD_ID",
+                                                        nrow(rmb)))),
+                     IRanges::CharacterList(as.list(rep("PMID",
+                                                        nrow(rmb)))),
+                     IRanges::CharacterList(as.list(rep("RMBase_REF",
+                                                        nrow(rmb)))))
+    ref_type[[2]][!f_pmid] <- ""
+    ref_type[[3]][!f_ref] <- ""
+    ref_type <- do.call(pc,ref_type)
+    ref_type <- ref_type[ref_type != ""]
+    reference <- list(relist(as.character(rmb$modId),
                              IRanges::PartitioningByWidth(lengths(rmb$modId))),
-                      relist(rmb$pubmedIds,
+                      relist(as.character(rmb$pubmedIds),
                              IRanges::PartitioningByWidth(lengths(rmb$pubmedIds))),
                       relist(as.character(rmb$supportList),
                              IRanges::PartitioningByWidth(lengths(rmb$supportList))))
+    reference[[2]][!f_pmid] <- ""
+    reference[[3]][!f_ref] <- ""
     reference <- do.call(pc,reference)
+    reference <- reference[reference != ""]
     # assemble metadata columns
     mcols <- DataFrame(mod_id = mod_id,
                        mod_type = mod_type,
@@ -272,13 +283,22 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
                        chromosome = chromosome,
                        gene_name = gene_name,
                        score = rmb$score,
-                       reference_type = reference_type,
+                       reference_type = ref_type,
                        reference = reference)
     # create GRanges result
-    GenomicRanges::GRanges(seqnames = chromosome,
-                           ranges = IRanges::IRanges(pos, width = 1L),
-                           strand = strand,
-                           mcols)
+    ans <- GenomicRanges::GRanges(seqnames = chromosome,
+                                  ranges = IRanges::IRanges(pos, width = 1L),
+                                  strand = strand,
+                                  mcols)
+    # expand by gene names
+    gene_name <-
+        IRanges::CharacterList(strsplit(as.character(mcols(ans)$gene_name),","))
+    ans <- ans[unlist(Map(rep,seq_along(gene_name),lengths(gene_name)))]
+    mcols(ans)$gene_name <- unlist(gene_name)
+    ans <- ans[mcols(ans)$gene_name != ""]
+    ans <- ans[!duplicated(ans) | !duplicated(mcols(ans))]
+    #
+    ans
 }
 
 .get_RMBase_data <- function(files, seqlevels = NA){
@@ -336,7 +356,7 @@ getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
         tx <- .norm_tx(tx)
         .check_tx_sequences(tx, sequences)
         message("Shifting RMBase result's coordinates based on transcript data ...")
-        gr <- shiftToTranscriptCoordinates(gr, tx)
+        gr <- shiftGenomicToTranscript(gr, tx)
         f <- !duplicated(paste0(as.character(gr),"-",mcols(gr)$mod_type))
         gr <- gr[f]
         # check if all the referenced modification match their originating base
@@ -350,6 +370,10 @@ getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
     gr
 }
 
+.add_sequence_check_to_metadata <- function(metadata){
+    metadata
+}
+
 #' @rdname makeEpiTxDbfromRMBase
 #' @export
 makeEpiTxDbfromRMBaseFiles <- function(files, tx, sequences = NULL,
@@ -359,20 +383,28 @@ makeEpiTxDbfromRMBaseFiles <- function(files, tx, sequences = NULL,
                                  check.vs.sequence = TRUE)
     #
     mcols(gr)$mod_id <- seq_along(gr)
+    mcols(gr)$transcript_name <- mcols(gr)$tx_id
+    mcols(gr)$transcript_id <-
+        as.integer(factor(mcols(gr)$transcript_name,
+                          unique(mcols(gr)$transcript_name)))
+    mcols(gr)$tx_id <- NULL
+    if(!is.null(sequences)){
+        metadata <- .add_sequence_check_to_metadata(metadata)
+    }
     makeEpiTxDbfromGRanges(gr, metadata = metadata, reassign.ids = reassign.ids)
 }
 
 
 #' @rdname makeEpiTxDbfromRMBase
-#' @importFrom curl curl
-#' @importFrom xml2 xml_find_all xml_attr
 #' @export
 listAvailableOrganismsFromRMBase <- function(){
-    con <- curl::curl(EPITXDB_RMBASE_URL)
-    page <- xml2::read_html(con)
-    organisms <- xml2::xml_attr(xml2::xml_find_all(page,'//img[@alt="[DIR]"]//../following::a'),"href")
-    organisms <- gsub("/","",organisms)
-    organisms[!(organisms %in% c("ajax","otherspecies"))]
+    # con <- curl::curl(EPITXDB_RMBASE_URL)
+    # page <- xml2::read_html(con)
+    # organisms <- xml2::xml_attr(xml2::xml_find_all(page,'//img[@alt="[DIR]"]//../following::a'),"href")
+    # organisms <- gsub("/","",organisms)
+    # organisms[!(organisms %in% c("ajax","otherspecies"))]
+    load(system.file("extdata", "rmbase_data.rda", package = "EpiTxDb"))
+    as.character(unique(rmbase_data$organism))
 }
 
 
@@ -388,12 +420,13 @@ listAvailableOrganismsFromRMBase <- function(){
 }
 
 .listAvailableGenomesFromRMBase <- function(organism){
-    files <- .get_RMBase_files(organism)
-    .get_RMBase_genomes(files)
+    # files <- .get_RMBase_files(organism)
+    # .get_RMBase_genomes(files)
+    load(system.file("extdata", "rmbase_data.rda", package = "EpiTxDb"))
+    as.character(unique(rmbase_data[rmbase_data$organism == organism,]$genome))
 }
 
 #' @rdname makeEpiTxDbfromRMBase
-#' @importFrom curl curl
 #' @export
 listAvailableGenomesFromRMBase <- function(organism){
     if(!(organism %in% listAvailableOrganismsFromRMBase())){
@@ -403,25 +436,25 @@ listAvailableGenomesFromRMBase <- function(organism){
     .listAvailableGenomesFromRMBase(organism)
 }
 
-.get_RMBase_mod <- function(files, genome){
-    f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
-    ans <- unique(vapply(strsplit(files[f_genome],"_"),"[",character(1),4L))
-    ans[!grepl("mod",ans)]
+.get_RMBase_mod <- function(organism, genome){
+    # f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
+    # ans <- unique(vapply(strsplit(files[f_genome],"_"),"[",character(1),4L))
+    # ans[!grepl("mod",ans)]
+    load(system.file("extdata", "rmbase_data.rda", package = "EpiTxDb"))
+    as.character(rmbase_data[rmbase_data$organism == organism &
+                                 rmbase_data$genome == genome,]$mod)
 }
 
 #' @rdname makeEpiTxDbfromRMBase
-#' @importFrom curl curl
 #' @export
 listAvailableModFromRMBase <- function(organism, genome){
     if(!(organism %in% listAvailableOrganismsFromRMBase())){
         stop("'organism' must be a valid organism from ",
              "listAvailableOrganismsfromRMBase()")
     }
-    files <- .get_RMBase_files(organism)
-    genomes <- .get_RMBase_genomes(files)
-    if(!(genome %in% genomes)){
+    if(!(genome %in% listAvailableGenomesFromRMBase(organism))){
         stop("'genome' must be a valid genome for the fiven 'organism' from ",
              "listAvailableGenomesFromRMBase()")
     }
-    .get_RMBase_mod(files,genome)
+    .get_RMBase_mod(organism, genome)
 }
