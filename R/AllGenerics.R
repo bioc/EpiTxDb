@@ -3,13 +3,13 @@ setGeneric("positionSequence",
            function(x, ...)
                standardGeneric("positionSequence"))
 
-setGeneric("shiftToGenomicCoordinates",
+setGeneric("shiftTranscriptToGenomic",
            function(subject, tx)
-               standardGeneric("shiftToGenomicCoordinates"))
+               standardGeneric("shiftTranscriptToGenomic"))
 
-setGeneric("shiftToTranscriptCoordinates",
+setGeneric("shiftGenomicToTranscript",
            function(subject, tx)
-               standardGeneric("shiftToTranscriptCoordinates"))
+               standardGeneric("shiftGenomicToTranscript"))
 
 
 setGeneric("modifications",

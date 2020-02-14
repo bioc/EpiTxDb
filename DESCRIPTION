@@ -44,7 +44,7 @@ Collate:
     'EpiTxDb-class.R'
     'makeEpiTxDb.R'
     'makeEpiTxDbFromGRanges.R'
-    'shiftToTranscriptCoordinates.R'
+    'shiftGenomicToTranscript.R'
     'makeEpiTxDbFromRMBase.R'
     'makeEpiTxDbFromtRNAdb.R'
     'modifications.R'
