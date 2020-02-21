@@ -155,7 +155,7 @@ NULL
     sh <- subjectHits(hits_coordinates)
     f <- seq_along(subject) %in% sh
     if(!all(f)){
-        warning("Coordinates for some ranges of 'subject' not found: '",
+        warning("Coordinates for ",sum(!f)," ranges of 'subject' not found: '",
                 paste(unique(as.character(subject[!f])),collapse = "','"),
                 "'.",
                 call. = FALSE)

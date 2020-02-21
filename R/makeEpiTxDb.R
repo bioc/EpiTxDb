@@ -579,7 +579,6 @@ makeEpiTxDb <- function(modifications, reactions = NULL, specifiers = NULL,
     if (!isTRUEorFALSE(reassign.ids)){
         stop("'reassign.ids' must be TRUE or FALSE")
     }
-    browser()
     #
     modifications <- .makeEpiTxDb_normarg_modifications(modifications)
     reactions <- .makeEpiTxDb_normarg_reactions(reactions, modifications$mod_id)

@@ -171,8 +171,8 @@ build_SQL_CREATE_reference_table <- function()
 
 build_SQL_CREATE_modification2reaction_table <- function(){
     unique_key <- "UNIQUE (_mod_id, _rx_id)"
-    foreign_key <- paste0("FOREIGN KEY (_mod_id) REFERENCES modification",
-                          "FOREIGN KEY (_rx_id) REFERENCES reaction")
+    foreign_key <- paste("FOREIGN KEY (_mod_id) REFERENCES modification",
+                         "FOREIGN KEY (_rx_id) REFERENCES reaction")
     constraints <- c(unique_key, foreign_key)
     .build_SQL_CREATE_TABLE("modification2reaction", EPITXDB_MOD2RX_COLDEFS,
                             constraints)
@@ -180,8 +180,8 @@ build_SQL_CREATE_modification2reaction_table <- function(){
 
 build_SQL_CREATE_modification2specifier_table <- function(){
     unique_key <- "UNIQUE (_mod_id, _spec_id)"
-    foreign_key <- paste0("FOREIGN KEY (_mod_id) REFERENCES modification",
-                          "FOREIGN KEY (_spec_id) REFERENCES specifier")
+    foreign_key <- paste("FOREIGN KEY (_mod_id) REFERENCES modification",
+                         "FOREIGN KEY (_spec_id) REFERENCES specifier")
     constraints <- c(unique_key, foreign_key)
     .build_SQL_CREATE_TABLE("modification2specifier", EPITXDB_MOD2SPEC_COLDEFS,
                             constraints)
@@ -189,8 +189,8 @@ build_SQL_CREATE_modification2specifier_table <- function(){
 
 build_SQL_CREATE_modification2reference_table <- function(){
     unique_key <- "UNIQUE (_mod_id, _ref_id)"
-    foreign_key <- paste0("FOREIGN KEY (_mod_id) REFERENCES modification",
-                          "FOREIGN KEY (_ref_id) REFERENCES reference")
+    foreign_key <- paste("FOREIGN KEY (_mod_id) REFERENCES modification",
+                         "FOREIGN KEY (_ref_id) REFERENCES reference")
     constraints <- c(unique_key, foreign_key)
     .build_SQL_CREATE_TABLE("modification2reference", EPITXDB_MOD2REF_COLDEFS,
                             constraints)
