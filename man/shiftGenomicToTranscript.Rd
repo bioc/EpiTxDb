@@ -51,7 +51,7 @@ tx3 <- GRanges("chr2", IRanges(1, 10),
                strand="-", type="exon")
 tx <- GRangesList(a=tx1, b=tx2, c=tx3)
 mcols(tx) <- DataFrame(gene_name = c("a_g","b_g","c_g"),
-                       transcript_name = c("a","b","c"))
+                       tx_name = c("a","b","c"))
 
 # shift to transcript coordinates
 shifted_grl <- shiftGenomicToTranscript(grl,tx)

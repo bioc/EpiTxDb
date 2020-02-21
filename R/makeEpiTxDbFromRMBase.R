@@ -289,8 +289,8 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
                        chromosome = chromosome,
                        gene_name = gene_name,
                        score = rmb$score,
-                       reference_type = ref_type,
-                       reference = reference)
+                       ref_type = ref_type,
+                       ref = reference)
     # create GRanges result
     ans <- GenomicRanges::GRanges(seqnames = chromosome,
                                   ranges = IRanges::IRanges(pos, width = 1L),
@@ -361,7 +361,8 @@ getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
     if(shift.to.transcript){
         tx <- .norm_tx(tx)
         .check_tx_sequences(tx, sequences)
-        message("Shifting RMBase result's coordinates based on transcript data ...")
+        message("Shifting RMBase result's coordinates based on transcript ",
+                "data ...")
         gr <- shiftGenomicToTranscript(gr, tx)
         f <- !duplicated(paste0(as.character(gr),"-",mcols(gr)$mod_type))
         gr <- gr[f]
@@ -394,11 +395,10 @@ makeEpiTxDbfromRMBaseFiles <- function(files, tx, sequences = NULL,
                                  check.vs.sequence = TRUE)
     #
     mcols(gr)$mod_id <- seq_along(gr)
-    mcols(gr)$transcript_name <- mcols(gr)$tx_id
-    mcols(gr)$transcript_id <-
-        as.integer(factor(mcols(gr)$transcript_name,
-                          unique(mcols(gr)$transcript_name)))
-    mcols(gr)$tx_id <- NULL
+    mcols(gr)$tx_name <- mcols(gr)$tx_id
+    mcols(gr)$tx_id <-
+        as.integer(factor(mcols(gr)$tx_name,
+                          unique(mcols(gr)$tx_name)))
     if(!is.null(sequences)){
         metadata <- .add_sequence_check_to_metadata(metadata)
     }

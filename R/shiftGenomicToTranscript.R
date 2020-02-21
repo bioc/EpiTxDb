@@ -38,7 +38,7 @@ NULL
 #'                strand="-", type="exon")
 #' tx <- GRangesList(a=tx1, b=tx2, c=tx3)
 #' mcols(tx) <- DataFrame(gene_name = c("a_g","b_g","c_g"),
-#'                        transcript_name = c("a","b","c"))
+#'                        tx_name = c("a","b","c"))
 #'
 #' # shift to transcript coordinates
 #' shifted_grl <- shiftGenomicToTranscript(grl,tx)
@@ -156,7 +156,7 @@ NULL
     f <- seq_along(subject) %in% sh
     if(!all(f)){
         warning("Coordinates for some ranges of 'subject' not found: '",
-                paste(unique(mcols(subject)$transcript_name[!f]),collapse = "','"),
+                paste(unique(as.character(subject[!f])),collapse = "','"),
                 "'.",
                 call. = FALSE)
     }

@@ -15,15 +15,15 @@ NULL
 # makeEpiTxDbfromGRanges -------------------------------------------------------
 
 # extract modification table
-.extract_modifications <- function(gr){
+.get_gr_modifications <- function(gr){
     modifications <- list(mod_id = mcols(gr)$mod_id,
                           mod_type = mcols(gr)$mod_type,
                           mod_name = mcols(gr)$mod_name,
                           mod_start = start(gr),
                           mod_end = end(gr),
-                          transcript_id = mcols(gr)$transcript_id,
-                          transcript_name= mcols(gr)$transcript_name,
-                          ensembltrans = mcols(gr)$ensembltrans)
+                          tx_id = mcols(gr)$tx_id,
+                          tx_name= mcols(gr)$tx_name,
+                          tx_ensembl = mcols(gr)$tx_ensembl)
     modifications <- modifications[!vapply(modifications, is.null, logical(1))]
     if(length(modifications) > 1L){
         modifications <- data.frame(modifications, check.names = FALSE,
@@ -36,13 +36,13 @@ NULL
 }
 
 # extract reactions table
-.extract_reactions <- function(gr){
+.get_gr_reactions <- function(gr){
     reactions <- list(mod_id = mcols(gr)$mod_id,
-                      mod_rank = mcols(gr)$mod_rank,
-                      reaction_genename = mcols(gr)$reaction_genename,
-                      reaction_ensembl = mcols(gr)$reaction_ensembl,
-                      reaction_ensembltrans = mcols(gr)$reaction_ensembltrans,
-                      reaction_entrezid = mcols(gr)$reaction_entrezid)
+                      rx_genename = mcols(gr)$rx_genename,
+                      rx_rank = mcols(gr)$rx_rank,
+                      rx_ensembl = mcols(gr)$rx_ensembl,
+                      rx_ensembltrans = mcols(gr)$rx_ensembltrans,
+                      rx_entrezid = mcols(gr)$rx_entrezid)
     reactions <- reactions[!vapply(reactions, is.null, logical(1))]
     if(length(reactions) > 1L){
         reactions <- data.frame(reactions, check.names = FALSE,
@@ -54,12 +54,13 @@ NULL
 }
 
 # extract specifiers table
-.extract_specifiers <- function(gr){
+.get_gr_specifiers <- function(gr){
     specifiers <- list(mod_id = mcols(gr)$mod_id,
-                       specifier_type = mcols(gr)$specifier_type,
-                       specifier_genename = mcols(gr)$specifier_genename,
-                       specifier_entrezid = mcols(gr)$reaction_entrezid,
-                       specifier_ensembl = mcols(gr)$specifier_ensembl)
+                       spec_type = mcols(gr)$spec_type,
+                       spec_genename = mcols(gr)$spec_genename,
+                       spec_ensembl = mcols(gr)$spec_ensembl,
+                       spec_ensembltrans = mcols(gr)$spec_ensembltrans,
+                       spec_entrezid = mcols(gr)$spec_entrezid)
     specifiers <- specifiers[!vapply(specifiers, is.null, logical(1))]
     if(length(specifiers) > 1L){
         specifiers <- data.frame(specifiers, check.names = FALSE,
@@ -71,11 +72,11 @@ NULL
 }
 
 # extract references table
-.extract_references <- function(gr){
-    ref_lengths <- lengths(mcols(gr)$reference_type)
+.get_gr_references <- function(gr){
+    ref_lengths <- lengths(mcols(gr)$ref_type)
     references <- list(mod_id = unlist(Map(rep,mcols(gr)$mod_id,ref_lengths)),
-                       reference_type = unlist(mcols(gr)$reference_type),
-                       reference = unlist(mcols(gr)$reference))
+                       ref_type = unlist(mcols(gr)$ref_type),
+                       ref = unlist(mcols(gr)$ref))
     references <- references[!vapply(references, is.null, logical(1))]
     if(length(references) > 1L){
         references <- data.frame(references, check.names = FALSE,
@@ -89,10 +90,10 @@ NULL
 #' @rdname makeEpiTxDbfromGRanges
 #' @export
 makeEpiTxDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
-    modifications <- .extract_modifications(gr)
-    reactions <- .extract_reactions(gr)
-    specifiers <- .extract_specifiers(gr)
-    references <- .extract_references(gr)
+    modifications <- .get_gr_modifications(gr)
+    reactions <- .get_gr_reactions(gr)
+    specifiers <- .get_gr_specifiers(gr)
+    references <- .get_gr_references(gr)
     makeEpiTxDb(modifications = modifications, reactions = reactions,
                 specifiers = specifiers, references = references,
                 metadata = metadata, reassign.ids = reassign.ids)

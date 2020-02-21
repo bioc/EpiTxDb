@@ -9,6 +9,9 @@
 
 }
 \description{
-title
+The \code{EpiTxDb} class
 }
 
+\examples{
+
+}

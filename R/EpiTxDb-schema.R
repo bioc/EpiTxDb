@@ -4,11 +4,15 @@
 #
 # Nothing in this file is exported.
 #
-# 3 tables:
+# 9 tables:
 #   - modification
+#   - transcript
 #   - reaction
 #   - specifier
-#   - transcript
+#   - reference
+#   - modification2reaction
+#   - modification2specifier
+#   - modification2reference
 #   - metadata (not described here)
 
 DB_TYPE_NAME <- "Db type"
@@ -34,54 +38,88 @@ EPITXDB_MOD_COLDEFS <- c(
     mod_name = "TEXT NULL",
     mod_start = "INTEGER NOT NULL",
     mod_end = "INTEGER NOT NULL",
-    transcript_id = "TEXT NOT NULL",
-    transcript_name = "TEXT NOT NULL",
-    transcript_ensembltrans = "TEXT NULL"
+    `_tx_id` = "INTEGER NOT NULL"
 )
 EPITXDB_MOD_COLUMNS <- names(EPITXDB_MOD_COLDEFS)
 
-# modification 'reaction' table
+# 'transcript' table
 
-EPITXDB_REACTION_COLDEFS <- c(
-    `_mod_id` = "INTEGER PRIMARY KEY",
-    mod_rank = "INTEGER NOT NULL",
-    reaction_genename = "TEXT NULL",
-    reaction_ensembl = "TEXT NULL",
-    reaction_ensembltrans = "TEXT NULL",
-    reaction_entrezid = "TEXT NULL"
+EPITXDB_TX_COLDEFS <- c(
+    `_tx_id` = "INTEGER NOT NULL",
+    tx_name = "TEXT NOT NULL",
+    tx_ensembl = "TEXT NULL"
+)
+EPITXDB_TX_COLUMNs <- names(EPITXDB_TX_COLDEFS)
+
+# 'reaction' table
+
+EPITXDB_RX_COLDEFS <- c(
+    `_rx_id` = "INTEGER PRIMARY KEY",
+    rx_genename = "TEXT NULL",
+    rx_rank = "INTEGER NULL",
+    rx_ensembl = "TEXT NULL",
+    rx_ensembltrans = "TEXT NULL",
+    rx_entrezid = "TEXT NULL"
+)
+EPITXDB_RX_COLUMNS <- names(EPITXDB_RX_COLDEFS)
+
+# 'specifier' table
+
+EPITXDB_SPEC_COLDEFS <- c(
+    `_spec_id` = "INTEGER NOT NULL",
+    spec_type = "TEXT NOT NULL",
+    spec_genename = "TEXT NOT NULL",
+    spec_ensembl = "TEXT NULL",
+    spec_ensembltrans = "TEXT NULL",
+    spec_entrezid = "TEXT NULL"
 )
 
-EPITXDB_REACTION_COLUMNS <- names(EPITXDB_REACTION_COLDEFS)
+EPITXDB_SPEC_COLUMNS <- names(EPITXDB_SPEC_COLDEFS)
 
-# modification 'specifier' table
+# 'reference' table
 
-EPITXDB_SPECIFIER_COLDEFS <- c(
+EPITXDB_REF_COLDEFS <- c(
+    `_ref_id` = "INTEGER NOT NULL",
+    ref_type = "TEXT NULL",
+    ref = "TEXT NULL"
+)
+
+EPITXDB_REF_COLUMNS <- names(EPITXDB_REF_COLDEFS)
+
+# modification2* tables
+
+EPITXDB_MOD2RX_COLDEFS <- c(
     `_mod_id` = "INTEGER NOT NULL",
-    specifier_type = "TEXT NOT NULL",
-    specifier_genename = "TEXT NOT NULL",
-    specifier_entrezid = "TEXT NULL",
-    specifier_ensembl = "TEXT NULL"
+    `_rx_id` = "INTEGER NOT NULL"
 )
 
-EPITXDB_SPECIFIER_COLUMNS <- names(EPITXDB_SPECIFIER_COLDEFS)
+EPITXDB_MOD2RX_COLUMNS <- names(EPITXDB_MOD2RX_COLDEFS)
 
-# modification 'reference' table
-
-EPITXDB_REFERENCE_COLDEFS <- c(
+EPITXDB_MOD2SPEC_COLDEFS <- c(
     `_mod_id` = "INTEGER NOT NULL",
-    reference_type = "TEXT NULL",
-    reference = "TEXT NULL"
+    `_spec_id` = "INTEGER NOT NULL"
 )
 
-EPITXDB_REFERENCE_COLUMNS <- names(EPITXDB_REFERENCE_COLDEFS)
+EPITXDB_MOD2SPEC_COLUMNS <- names(EPITXDB_MOD2SPEC_COLDEFS)
+
+EPITXDB_MOD2REF_COLDEFS <- c(
+    `_mod_id` = "INTEGER NOT NULL",
+    `_ref_id` = "INTEGER NOT NULL"
+)
+
+EPITXDB_MOD2REF_COLUMNS <- names(EPITXDB_MOD2REF_COLDEFS)
 
 #
 
 EPITXDB_COLUMNS <- list(
     modification = EPITXDB_MOD_COLUMNS,
-    reaction = EPITXDB_REACTION_COLUMNS,
-    specifier = EPITXDB_SPECIFIER_COLUMNS,
-    reference = EPITXDB_REFERENCE_COLUMNS
+    transcript = EPITXDB_TX_COLUMNs,
+    reaction = EPITXDB_RX_COLUMNS,
+    specifier = EPITXDB_SPEC_COLUMNS,
+    reference = EPITXDB_REF_COLUMNS,
+    modification2reaction = EPITXDB_MOD2RX_COLUMNS,
+    modification2specifier = EPITXDB_MOD2SPEC_COLUMNS,
+    modification2reference = EPITXDB_MOD2REF_COLUMNS
 )
 
 
@@ -97,33 +135,66 @@ EPITXDB_COLUMNS <- list(
 
 build_SQL_CREATE_modification_table <- function()
 {
-    unique_key <- "UNIQUE (_mod_id)"
-    constraints <- c(unique_key)
+    unique_key <- "UNIQUE (_mod_id, _tx_id)"
+    foreign_key <- "FOREIGN KEY (_tx_id) REFERENCES transcript"
+    constraints <- c(unique_key, foreign_key)
     .build_SQL_CREATE_TABLE("modification", EPITXDB_MOD_COLDEFS, constraints)
+}
+
+build_SQL_CREATE_transcript_table <- function()
+{
+    unique_key <- "UNIQUE (_tx_id)"
+    constraints <- c(unique_key)
+    .build_SQL_CREATE_TABLE("transcript", EPITXDB_TX_COLDEFS, constraints)
 }
 
 build_SQL_CREATE_reaction_table <- function()
 {
-    unique_key <- "UNIQUE (_mod_id, mod_rank)"
-    foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
-    constraints <- c(unique_key, foreign_key)
-    .build_SQL_CREATE_TABLE("reaction", EPITXDB_REACTION_COLDEFS, constraints)
+    unique_key <- "UNIQUE (_rx_id)"
+    constraints <- c(unique_key)
+    .build_SQL_CREATE_TABLE("reaction", EPITXDB_RX_COLDEFS, constraints)
 }
 
 build_SQL_CREATE_specifier_table <- function()
 {
-    foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
-    constraints <- c(foreign_key)
-    .build_SQL_CREATE_TABLE("specifier", EPITXDB_SPECIFIER_COLDEFS, constraints)
+    unique_key <- "UNIQUE (_spec_id)"
+    constraints <- c(unique_key)
+    .build_SQL_CREATE_TABLE("specifier", EPITXDB_SPEC_COLDEFS, constraints)
 }
 
 build_SQL_CREATE_reference_table <- function()
 {
-    foreign_key <- "FOREIGN KEY (_mod_id) REFERENCES modification"
-    constraints <- c(foreign_key)
-    .build_SQL_CREATE_TABLE("reference", EPITXDB_REFERENCE_COLDEFS, constraints)
+    unique_key <- "UNIQUE (_ref_id)"
+    constraints <- c(unique_key)
+    .build_SQL_CREATE_TABLE("reference", EPITXDB_REF_COLDEFS, constraints)
 }
 
+build_SQL_CREATE_modification2reaction_table <- function(){
+    unique_key <- "UNIQUE (_mod_id, _rx_id)"
+    foreign_key <- paste0("FOREIGN KEY (_mod_id) REFERENCES modification",
+                          "FOREIGN KEY (_rx_id) REFERENCES reaction")
+    constraints <- c(unique_key, foreign_key)
+    .build_SQL_CREATE_TABLE("modification2reaction", EPITXDB_MOD2RX_COLDEFS,
+                            constraints)
+}
+
+build_SQL_CREATE_modification2specifier_table <- function(){
+    unique_key <- "UNIQUE (_mod_id, _spec_id)"
+    foreign_key <- paste0("FOREIGN KEY (_mod_id) REFERENCES modification",
+                          "FOREIGN KEY (_spec_id) REFERENCES specifier")
+    constraints <- c(unique_key, foreign_key)
+    .build_SQL_CREATE_TABLE("modification2specifier", EPITXDB_MOD2SPEC_COLDEFS,
+                            constraints)
+}
+
+build_SQL_CREATE_modification2reference_table <- function(){
+    unique_key <- "UNIQUE (_mod_id, _ref_id)"
+    foreign_key <- paste0("FOREIGN KEY (_mod_id) REFERENCES modification",
+                          "FOREIGN KEY (_ref_id) REFERENCES reference")
+    constraints <- c(unique_key, foreign_key)
+    .build_SQL_CREATE_TABLE("modification2reference", EPITXDB_MOD2REF_COLDEFS,
+                            constraints)
+}
 
 # helper functions -------------------------------------------------------------
 
@@ -158,5 +229,26 @@ EPITXDB_column2table <- function(columns, from_table = NA, schema_version = NA){
                                                schema_version = schema_version)
         tables[columns %in% table_columns] <- from_table
     }
+    tables
+}
+
+EPITXDB_table2joinColumns <- function(tables, schema_version = NA){
+    if (length(tables) == 0L)
+        return(character(0))
+    tables <- sapply(tables,
+                     function(table) {
+                         if(table %in% EPITXDB_tables()){
+                             table_columns <-
+                                 EPITXDB_table_columns(table,
+                                                       schema_version = schema_version)
+                             return(table_columns[1L])
+                         }
+                         if (is.na(schema_version)) {
+                             in_schema <- ""
+                         } else {
+                             in_schema <- c(" in db schema ", as.character(schema_version))
+                         }
+                         stop(column, ": no such column", in_schema)
+                     })
     tables
 }

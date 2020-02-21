@@ -17,14 +17,14 @@ NULL
 #' @examples
 #' \dontrun{
 #' library(EpiTxDb.Hsapiens.hg38)
-#' modifications(EpiTxDb.Hsapiens.hg38))
+#' modifications(EpiTxDb.Hsapiens.hg38.snoRNAdb())
 #' }
 NULL
 
 # helper functions for extracting feature data ---------------------------------
 
-.extract_features <- function(epitxdb, table, mcolumns = character(0),
-                              filter = list(), core_columns){
+.extract_modifications <- function(epitxdb, table, mcolumns = character(0),
+                                   filter = list(), core_columns){
     schema_version <- EpiTxDb_schema_version(epitxdb)
     names(mcolumns) <- EPITXDB_column2table(mcolumns, from_table = table,
                                             schema_version = schema_version)
@@ -32,8 +32,8 @@ NULL
 
     ## 1st SELECT: extract stuff from the proxy table.
     columns1 <- union(core_columns, mcolumns[names(mcolumns) == table])
-    df1 <- EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, table, columns1,
-                                          filter = filter, orderby = orderby)
+    df1 <- EpiTxDb_SELECT_from_LEFT_JOIN(epitxdb, table, columns1,
+                                         filter = filter, orderby = orderby)
 
     ## Additional SELECTs: 1 additional SELECT per satellite table
     foreign_columns <- mcolumns[names(mcolumns) != table]
@@ -48,14 +48,19 @@ NULL
             filter2 <- list(df1[[proxy_column]])
             names(filter2) <- proxy_column
         }
-        columns2 <- c(proxy_column, columns2)
-        orderby <- c("_mod_id")
-        EpiTxDb_SELECT_from_INNER_JOIN(epitxdb, satellite_table, columns2,
-                                       filter = filter2, orderby = orderby)
+        if (satellite_table %in% c("transcript","reaction","specifier",
+                                   "reference")) {
+            columns2 <- c(proxy_column, columns2)
+            EpiTxDb_SELECT_from_LEFT_JOIN(epitxdb, satellite_table, columns2,
+                                          filter = filter2, orderby = orderby)
+        } else {
+            stop(satellite_table, ": unsupported satellite table")
+        }
     })
     df1 <- list(df1)
     names(df1) <- table
-    c(df1, df_list)
+    ans <- c(df1, df_list)
+    ans
 }
 
 
@@ -65,30 +70,25 @@ NULL
 .assignMetadataList <- GenomicFeatures:::.assignMetadataList
 
 .as_db_columns <- function(columns)
-    sub("^(mod_id)$", "_\\1", columns)
+    sub("^(mod_id|tx_id|rx_id|spec_id|ref_id)$", "_\\1", columns)
 
-.extract_features_as_GRanges <- function(epitxdb, table,
-                                         mcolumns = character(0),
-                                         filter = list(), use.names = FALSE) {
-    if (!isTRUEorFALSE(use.names))
+.extract_modifications_as_GRanges <- function(epitxdb, mcolumns = character(0),
+                                              filter = list(),
+                                              use.names = FALSE)
+{
+    if (!isTRUEorFALSE(use.names)) {
         stop("'use.names' must be TRUE or FALSE")
-    db_mcolumns <- db_mcolumns0 <- .as_db_columns(mcolumns)
-    proxy_columns <- EPITXDB_table_columns(table)
-    if (use.names) {
-        if ("name" %in% names(proxy_columns)) {
-            proxy_name_column <- proxy_columns[["name"]]
-            if (!(proxy_name_column %in% db_mcolumns0))
-                db_mcolumns <- c(db_mcolumns0, proxy_name_column)
-        } else {
-            warning("no column in '", table, "' table to retrieve the feature ",
-                    "names from")
-            use.names <- FALSE
-        }
     }
+    table <- c("modification")
+    # save the selected metadata columns for subsetting later on
+    mcolumns0 <- mcolumns
+    # add the transcript columns, since the always need to be extracted
+    mcolumns <- unique(c(mcolumns,"tx_id","tx_name","tx_ensembl"))
+    db_mcolumns <- db_mcolumns0 <- .as_db_columns(mcolumns)
+    core_columns <- EPITXDB_table_columns(table)
     names(filter) <- .as_db_columns(names(filter))
-    core_columns <- proxy_columns[proxy_columns %in% EPITXDB_MOD_COLUMNS]
-    df_list <- .extract_features(epitxdb, table, db_mcolumns,
-                                 filter, core_columns)
+    df_list <- .extract_modifications(epitxdb, table, db_mcolumns, filter,
+                                      core_columns)
     DF <- .make_DataFrame_from_df_list(df_list)
     DF$seqnames <- .get_seqnames(DF)
     ans <- GenomicRanges::makeGRangesFromDataFrame(
@@ -98,11 +98,13 @@ NULL
         start.field = "mod_start",
         end.field = "mod_end")
     if (use.names) {
-        ans_names <- DF[ , proxy_name_column]
-        ans_names[is.na(ans_names)] <- ""  # replace NAs with empty strings
+        ans_names <- DF[ ,"mod_name"]
         names(ans) <- ans_names
     }
-    mcols(ans) <- setNames(DF[db_mcolumns0], mcolumns)
+    mcols(ans) <- DF[db_mcolumns0]
+    colnames(mcols(ans)) <- mcolumns
+    # subset to the selected columns
+    mcols(ans) <- mcols(ans)[,colnames(mcols(ans)) %in% mcolumns0,drop = FALSE]
     ans
 }
 
@@ -134,15 +136,15 @@ translateCols <- function(columns, epitxdb){
     columns
 }
 
-.extractFromEpiTxDb <- function(epitxdb, table, mcolumns = NULL,
+.extractFromEpiTxDb <- function(epitxdb, mcolumns = NULL,
                                 filter = NULL, use.names = FALSE){
     user_mcolumns <- mcolumns
     mcolumns <- translateCols(mcolumns, epitxdb)
     if (is.null(filter))
         filter <- list()
     names(filter) <- translateCols(names(filter), epitxdb)
-    ans <- .extract_features_as_GRanges(epitxdb, table, mcolumns, filter,
-                                        use.names)
+    ans <- .extract_modifications_as_GRanges(epitxdb, mcolumns, filter,
+                                             use.names)
     names(mcols(ans)) <- if (is.null(names(user_mcolumns))) user_mcolumns
     else names(user_mcolumns)
     .assignMetadataList(ans, epitxdb)
@@ -153,7 +155,7 @@ translateCols <- function(columns, epitxdb){
 setMethod("modifications", "EpiTxDb",
     function(x, column = c("mod_id","mod_type","mod_name"),
              filter = NULL, use.names = FALSE){
-        .extractFromEpiTxDb(x, "modification", mcolumns = column,
-                            filter = filter, use.names = use.names)
+        .extractFromEpiTxDb(x, mcolumns = column, filter = filter,
+                            use.names = use.names)
     }
 )

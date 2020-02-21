@@ -22,8 +22,9 @@ NULL
     f <- switch(by,
                 "transcript" = seqnames(gr),
                 "type" = gr_mcols$mod,
-                "reaction" = FUN(gr_mcols$reaction_genename),
-                "specifier" = FUN(gr_mcols$specifier_type),
+                "reaction" = FUN(gr_mcols$rx_genename),
+                "specifier" = FUN(gr_mcols$spec_genename),
+                "specifier_type" = FUN(gr_mcols$spec_type),
                 stop("unsupported 'by' value."))
     grl <- S4Vectors::split(gr, f)
     .assignMetadataList(grl, epitxdb)
@@ -42,6 +43,9 @@ NULL
                   "specifier" = modifications(epitxdb,
                                               c("SPECENSEMBL","SPECENTREZID",
                                                 "SPECGENENAME", "SPECTYPE")),
+                  "specifier_type" = modifications(epitxdb,
+                                                   c("SPECENSEMBL","SPECENTREZID",
+                                                     "SPECGENENAME", "SPECTYPE")),
                   stop("unsupported 'by' value."))
     mcolumns <- .format_feature_columns(epitxdb, colnames(mcols(ans)), by)
     .split_into_GRL(epitxdb, ans, mcolumns, by, use.names)
@@ -50,7 +54,8 @@ NULL
 #' @rdname modifications
 #' @export
 setMethod("modificationsBy", "EpiTxDb",
-    function(x, by = c("transcript","type","reaction","specifier")){
+    function(x, by = c("transcript","type","reaction","specifier",
+                       "specifier_type")){
       by <- match.arg(by)
       .extract_features_by(x, by = by)
     }

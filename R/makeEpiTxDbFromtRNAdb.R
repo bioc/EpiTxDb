@@ -20,8 +20,8 @@ NULL
     colnames(mcols) <- gsub("^mod$","mod_type",colnames(mcols))
     mcols$mod_name <- paste0(mcols$mod_type,"_",start(gr))
     mcols$mod_id <- seq_len(nrow(mcols))
-    mcols$transcript_id <- as.integer(seqnames(gr))
-    mcols$transcript_name <- as.character(seqnames(gr))
+    mcols$tx_id <- as.integer(seqnames(gr))
+    mcols$tx_name <- as.character(seqnames(gr))
     mcols(gr) <- mcols
     gr
 }
@@ -77,8 +77,8 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
     references <- references[references != ""]
 
     m <- as.integer(S4Vectors::match(seqnames(mod), seqnames(gr)))
-    mcols(mod)$reference_type <- ref_type[m]
-    mcols(mod)$reference <- references[m]
+    mcols(mod)$ref_type <- ref_type[m]
+    mcols(mod)$ref <- references[m]
     # assemble metadata columns
     mod <- .add_tRNAdb_metadata_columns(mod)
     #
@@ -105,17 +105,16 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
                      length(sequences), length(seq_rna_gr))
         hits_mod <- findMatches(seqnames(mod),names(seq_rna_gr))
         # transfer genenames to modifications
-        transcript_name <-
+        tx_name <-
             unlist(unique(mcols(tx,level="within")[queryHits(hits),"tx_id"]))
-        transcript_name <- IRanges::CharacterList(split(transcript_name,subjectHits(hits)))
-        transcript_name <- vapply(transcript_name,paste,character(1),collapse=",")
+        tx_name <- IRanges::CharacterList(split(tx_name,subjectHits(hits)))
+        tx_name <- vapply(tx_name,paste,character(1),collapse=",")
         hits_mod <- hits_mod[subjectHits(hits_mod) %in% unique(subjectHits(hits))]
-        mod[queryHits(hits_mod)]$transcript_name <- transcript_name[as.character(subjectHits(hits_mod))]
-        transcript_name <- IRanges::CharacterList(strsplit(as.character(mcols(mod)$transcript_name),","))
-        mod <- mod[unlist(Map(rep,seq_along(transcript_name),lengths(transcript_name)))]
-        mcols(mod)$transcript_name <- unlist(transcript_name)
+        mod[queryHits(hits_mod)]$tx_name <- tx_name[as.character(subjectHits(hits_mod))]
+        tx_name <- IRanges::CharacterList(strsplit(as.character(mcols(mod)$tx_name),","))
+        mod <- mod[unlist(Map(rep,seq_along(tx_name),lengths(tx_name)))]
         mcols(mod)$mod_id <- seq_along(mod)
-        mod <- GenomicRanges::GRanges(seqnames = mcols(mod)$transcript_name,
+        mod <- GenomicRanges::GRanges(seqnames = unlist(tx_name),
                                       ranges = ranges(mod),
                                       strand = strand(mod),
                                       mcols(mod))

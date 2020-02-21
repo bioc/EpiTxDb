@@ -15,7 +15,10 @@
   use.names = FALSE
 )
 
-\S4method{modificationsBy}{EpiTxDb}(x, by = c("transcript", "type", "reaction", "specifier"))
+\S4method{modificationsBy}{EpiTxDb}(
+  x,
+  by = c("transcript", "type", "reaction", "specifier", "specifier_type")
+)
 
 \S4method{modifiedSeqsByTranscript}{EpiTxDb,DNAStringSet}(x, sequences)
 }
@@ -32,6 +35,6 @@ title
 \examples{
 \dontrun{
 library(EpiTxDb.Hsapiens.hg38)
-modifications(EpiTxDb.Hsapiens.hg38))
+modifications(EpiTxDb.Hsapiens.hg38.snoRNAdb())
 }
 }
