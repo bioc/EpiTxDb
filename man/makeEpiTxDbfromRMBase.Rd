@@ -21,7 +21,7 @@ makeEpiTxDbFromRMBase(
   organism,
   genome,
   type,
-  tx,
+  tx = NULL,
   sequences = NULL,
   metadata = NULL,
   reassign.ids = FALSE

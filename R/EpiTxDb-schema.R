@@ -111,8 +111,8 @@ EPITXDB_MOD2REF_COLUMNS <- names(EPITXDB_MOD2REF_COLDEFS)
 #
 
 EPITXDB_COLUMNS <- list(
-    modification = EPITXDB_MOD_COLUMNS,
     seqnames = EPITXDB_SN_COLUMNs,
+    modification = EPITXDB_MOD_COLUMNS,
     reaction = EPITXDB_RX_COLUMNS,
     specifier = EPITXDB_SPEC_COLUMNS,
     reference = EPITXDB_REF_COLUMNS,

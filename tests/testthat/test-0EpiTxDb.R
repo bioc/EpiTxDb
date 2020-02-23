@@ -3,13 +3,13 @@ test_that("EpiTxDb:",{
     expect_error(EpiTxDb:::.format_modifications(),
                  'argument "modifications" is missing')
     expect_error(EpiTxDb:::.format_seqnames(),
-                 'argument "modifications" is missing')
+                 'argument "seqnames" is missing')
     expect_error(EpiTxDb:::.format_reactions(),
-                 'argument "modifications" is missing')
+                 'argument "reactions" is missing')
     expect_error(EpiTxDb:::.format_specifiers(),
-                 'argument "modifications" is missing')
+                 'argument "specifiers" is missing')
     expect_error(EpiTxDb:::.format_references(),
-                 'argument "modifications" is missing')
+                 'argument "references" is missing')
     #
     actual <- EpiTxDb:::.format_modifications(NULL)
     expect_s3_class(actual,"data.frame")
@@ -30,10 +30,10 @@ test_that("EpiTxDb:",{
     df <- data.frame(sn_id = 1, sn_name = 1)
     actual <- EpiTxDb:::.format_seqnames(df)
     expect_type(actual[,1],"double")
-    expect_type(actual[,3],"double")
+    expect_type(actual[,2],"double")
     actual <- EpiTxDb:::.format_seqnames(df, set.col.class = TRUE)
     expect_type(actual[,1],"integer")
-    expect_type(actual[,3],"character")
+    expect_type(actual[,2],"character")
     #
     actual <- EpiTxDb:::.format_reactions(NULL)
     expect_s3_class(actual,"data.frame")
@@ -91,4 +91,118 @@ test_that("EpiTxDb:",{
                           "specifiers","references"))
     # compareEpiTxDbs
     expect_true(EpiTxDb:::compareEpiTxDbs(etdb,etdb))
+})
+
+context("EpiTxDb SQL")
+test_that("EpiTxDb SQL:",{
+    expect_type(EpiTxDb:::build_SQL_CREATE_modification_table(),"character")
+    expect_type(EpiTxDb:::build_SQL_CREATE_seqnames_table(),"character")
+    expect_type(EpiTxDb:::build_SQL_CREATE_reaction_table(),"character")
+    expect_type(EpiTxDb:::build_SQL_CREATE_specifier_table(),"character")
+    expect_type(EpiTxDb:::build_SQL_CREATE_reference_table(),"character")
+    expect_type(EpiTxDb:::build_SQL_CREATE_modification2reaction_table(),
+                "character")
+    expect_type(EpiTxDb:::build_SQL_CREATE_modification2specifier_table(),
+                "character")
+    expect_type(EpiTxDb:::build_SQL_CREATE_modification2reference_table(),
+                "character")
+    #
+    expect_error(EpiTxDb:::EPITXDB_column2table(),
+                 'argument "columns" is missing')
+    expect_null(EpiTxDb:::EPITXDB_table_columns("test"))
+    expect_error(EpiTxDb:::EPITXDB_column2table("mod_id"),
+                 "mod_id: no such column")
+    actual <- EpiTxDb:::EPITXDB_column2table("_mod_id")
+    expect_equal(actual,c(`_mod_id` = "modification"))
+    actual <- EpiTxDb:::EPITXDB_column2table("_sn_id")
+    expect_equal(actual,c(`_sn_id` = "seqnames"))
+    actual <- EpiTxDb:::EPITXDB_column2table("_rx_id")
+    expect_equal(actual,c(`_rx_id` = "reaction"))
+    actual <- EpiTxDb:::EPITXDB_column2table("_spec_id")
+    expect_equal(actual,c(`_spec_id` = "specifier"))
+    actual <- EpiTxDb:::EPITXDB_column2table("_ref_id")
+    expect_equal(actual,c(`_ref_id` = "reference"))
+    #
+    expect_error(EpiTxDb:::EPITXDB_table2joinColumns(),
+                 'argument "tables" is missing')
+    expect_error(EpiTxDb:::EPITXDB_table2joinColumns("test"),
+                 'test: no such table')
+    actual <- EpiTxDb:::EPITXDB_table2joinColumns("modification")
+    expect_equal(actual,c(modification = "_mod_id"))
+    actual <- EpiTxDb:::EPITXDB_table2joinColumns("seqnames")
+    expect_equal(actual,c(seqnames = "_sn_id"))
+    actual <- EpiTxDb:::EPITXDB_table2joinColumns("reaction")
+    expect_equal(actual,c(reaction = "_rx_id"))
+    actual <- EpiTxDb:::EPITXDB_table2joinColumns("specifier")
+    expect_equal(actual,c(specifier = "_spec_id"))
+    actual <- EpiTxDb:::EPITXDB_table2joinColumns("reference")
+    expect_equal(actual,c(reference = "_ref_id"))
+    #
+    expect_error(EpiTxDb:::.EPITXDB_add_table_bundle(),
+                 'argument "tables" is missing')
+    expect_equal(EpiTxDb:::.EPITXDB_add_table_bundle("modification"),
+                 "modification")
+    expect_equal(EpiTxDb:::.EPITXDB_add_table_bundle(c("modification",
+                                                       "seqnames")),
+                 c("modification", "seqnames"))
+    expect_equal(EpiTxDb:::.EPITXDB_add_table_bundle(c("modification",
+                                                       "reaction")),
+                 c("modification", "modification2reaction", "reaction"))
+    expect_equal(EpiTxDb:::.EPITXDB_add_table_bundle(c("modification",
+                                                       "specifier")),
+                 c("modification", "modification2specifier", "specifier"))
+    expect_equal(EpiTxDb:::.EPITXDB_add_table_bundle(c("modification",
+                                                       "reference")),
+                 c("modification", "modification2reference", "reference"))
+    #
+    expect_error(EpiTxDb:::.EPITXDB_join_tables(),
+                 'argument "tables" is missing')
+    expect_error(EpiTxDb:::.EPITXDB_join_tables(c("specifier", "reference")),
+                 'length\\(tables\\) == length\\(joinColumn\\)')
+    expect_equal(EpiTxDb:::.EPITXDB_join_tables(c("modification", "reference"),
+                                                c("_mod_id","_ref_id")),
+                 c("modification",
+                   "modification._mod_id=modification2reference._mod_id",
+                   "modification2reference",
+                   "modification2reference._ref_id=reference._ref_id",
+                   "reference"))
+    #
+    etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
+                             package="EpiTxDb")
+    etdb <- loadDb(etdb_file)
+    actual <- EpiTxDb:::EpiTxDb_SELECT_from_modification(etdb)
+    expect_s3_class(actual,"data.frame")
+    expect_equal(colnames(actual),c("_mod_id","mod_type","mod_name","mod_start",
+                                    "mod_end","_sn_id"))
+    actual <- EpiTxDb:::EpiTxDb_SELECT_from_seqnames(etdb)
+    expect_s3_class(actual,"data.frame")
+    expect_equal(colnames(actual),c("_sn_id","sn_name"))
+    actual <- EpiTxDb:::EpiTxDb_SELECT_from_reaction(etdb)
+    expect_s3_class(actual,"data.frame")
+    expect_equal(colnames(actual),c("_rx_id","rx_genename","rx_rank",
+                                    "rx_ensembl","rx_ensembltrans",
+                                    "rx_entrezid"))
+    actual <- EpiTxDb:::EpiTxDb_SELECT_from_specifier(etdb)
+    expect_s3_class(actual,"data.frame")
+    expect_equal(colnames(actual),c("_spec_id","spec_type","spec_genename",
+                                    "spec_ensembl","spec_ensembltrans",
+                                    "spec_entrezid"))
+    actual <- EpiTxDb:::EpiTxDb_SELECT_from_reference(etdb)
+    expect_s3_class(actual,"data.frame")
+    expect_equal(colnames(actual),c("_ref_id","ref_type","ref"))
+    #
+    expect_error(EpiTxDb:::EpiTxDb_SELECT_from_LEFT_JOIN(),
+                 'argument "epitxdb" is missing')
+    expect_error(EpiTxDb:::EpiTxDb_SELECT_from_LEFT_JOIN(etdb),
+                 'argument "columns" is missing')
+    table <- "modification"
+    cols <- c("_mod_id","mod_name","spec_genename")
+    actual <- EpiTxDb:::EpiTxDb_SELECT_from_LEFT_JOIN(etdb, table, cols)
+    expect_s3_class(actual,"data.frame")
+    expect_equal(colnames(actual),cols)
+    table <- "specifier"
+    cols <- c("rx_genename","spec_genename")
+    actual <- EpiTxDb:::EpiTxDb_SELECT_from_LEFT_JOIN(etdb, table, cols)
+    expect_s3_class(actual,"data.frame")
+    expect_equal(colnames(actual),cols)
 })

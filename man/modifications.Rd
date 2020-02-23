@@ -10,9 +10,19 @@
 \alias{modifiedSeqsByTranscript,EpiTxDb,DNAStringSet-method}
 \title{Getting modification data from a \code{EpiTxDb-object}}
 \usage{
-modifications(x, columns, filter, use.names, ...)
+modifications(
+  x,
+  columns = c("mod_id", "mod_type", "mod_name"),
+  filter = NULL,
+  use.names = FALSE,
+  ...
+)
 
-modificationsBy(x, by, ...)
+modificationsBy(
+  x,
+  by = c("seqnames", "mod_type", "reaction", "specifier", "specifier_type"),
+  ...
+)
 
 modifiedSeqsByTranscript(x, sequences, ...)
 

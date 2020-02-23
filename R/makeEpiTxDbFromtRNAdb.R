@@ -21,10 +21,6 @@ NULL
 #'
 #' @param organism A \code{character} value for an organism available on the
 #'   tRNAdb website.
-#' @param tx A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
-#'   which will be used to shift the genomic coordinates to transcript
-#'   coordinates. This is optional, but highly recommended (default: \code{tx =
-#'   NULL}).
 #' @param sequences A named \code{DNAStringSet} or \code{RNAStringSet}, which
 #'   will be used to associate a tRNAdb result with a specific transcript.
 #' @param dbURL The URL to the tRNA db website.

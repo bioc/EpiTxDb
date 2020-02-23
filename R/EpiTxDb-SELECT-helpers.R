@@ -69,6 +69,9 @@ EpiTxDb_SELECT_from_LEFT_JOIN <- function(epitxdb, table, columns,
     schema_version <- EpiTxDb_schema_version(epitxdb)
     tables <- EPITXDB_column2table(columns, from_table = table,
                                    schema_version = schema_version)
+    if(!("modification" %in% tables)){
+        tables <- c("modification",tables)
+    }
     where_columns <- names(filter)
     where_tables <- EPITXDB_column2table(where_columns, from_table = table,
                                          schema_version = schema_version)
@@ -80,7 +83,7 @@ EpiTxDb_SELECT_from_LEFT_JOIN <- function(epitxdb, table, columns,
     stopifnot(all(orderby_tables %in% .tables_in_joins(joins)))
     use_joins <- length(joins) > 1L
     if (use_joins) {
-        columns <- .as_qualified(tables, columns)
+        columns <- .as_qualified(tables[names(tables) != ""], columns)
         names(filter) <- .as_qualified(where_tables, where_columns)
         orderby <- .as_qualified(orderby_tables, orderby)
     }

@@ -6,7 +6,7 @@
 \alias{positionSequence,RangesList-method}
 \title{Generate integer sequences from position information of \code{Ranges}}
 \usage{
-positionSequence(x, order, decreasing)
+positionSequence(x, order = FALSE, decreasing = FALSE)
 
 \S4method{positionSequence}{Ranges}(x, order = FALSE, decreasing = FALSE)
 

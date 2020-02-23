@@ -31,11 +31,6 @@ will be used to associate a tRNAdb result with a specific transcript.}
 \item{dbURL}{The URL to the tRNA db website.}
 
 \item{metadata}{See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}}
-
-\item{tx}{A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
-which will be used to shift the genomic coordinates to transcript
-coordinates. This is optional, but highly recommended (default: \code{tx =
-NULL}).}
 }
 \description{
 \code{makeEpiTxDbFromtRNAdb} will make use of the tRNAdb online

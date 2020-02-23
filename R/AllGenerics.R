@@ -1,7 +1,7 @@
 
 #' @rdname positionSequence
 setGeneric("positionSequence",
-           function(x, order, decreasing)
+           function(x, order = FALSE, decreasing = FALSE)
                standardGeneric("positionSequence"))
 
 #' @rdname shiftGenomicToTranscript
@@ -17,12 +17,16 @@ setGeneric("shiftGenomicToTranscript",
 
 #' @rdname modifications
 setGeneric("modifications",
-           function(x, columns, filter, use.names, ...)
+           function(x, columns  = c("mod_id","mod_type","mod_name"),
+                    filter = NULL, use.names = FALSE, ...)
                standardGeneric("modifications"))
 
 #' @rdname modifications
 setGeneric("modificationsBy",
-           function(x, by, ...) standardGeneric("modificationsBy"))
+           function(x, by = c("seqnames","mod_type","reaction","specifier",
+                              "specifier_type"),
+                    ...)
+               standardGeneric("modificationsBy"))
 
 #' @rdname modifications
 setGeneric("modifiedSeqsByTranscript",

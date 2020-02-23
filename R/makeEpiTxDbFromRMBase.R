@@ -141,8 +141,9 @@ downloadRMBaseFiles <- function(organism, genome, type){
 
 #' @rdname makeEpiTxDbFromRMBase
 #' @export
-makeEpiTxDbFromRMBase <- function(organism, genome, type, tx, sequences = NULL,
-                                  metadata = NULL, reassign.ids = FALSE){
+makeEpiTxDbFromRMBase <- function(organism, genome, type, tx = NULL,
+                                  sequences = NULL, metadata = NULL,
+                                  reassign.ids = FALSE){
     message("Loading RMBase files ...")
     files <- downloadRMBaseFiles(organism, genome, type)
     makeEpiTxDbFromRMBaseFiles(files, tx = tx, sequences = sequences,
@@ -392,7 +393,8 @@ getRMBaseDataAsGRanges <- function(files){
     gr_minus <- gr[strand(gr) == "-"]
     strand(gr_minus) <- "+"
     gr_minus <-
-        Modstrings::removeIncompatibleModifications(gr_minus, complement(seq))
+        Modstrings::removeIncompatibleModifications(gr_minus,
+                                                    Biostrings::complement(seq))
     strand(gr_minus) <- "-"
     gr <- c(gr_plus,gr_minus)
     gr <- gr[order(seqnames(gr),start(gr),strand(gr))]
@@ -422,10 +424,10 @@ makeEpiTxDbFromRMBaseFiles <- function(files, tx = NULL, sequences = NULL,
                 "data ...")
         sl <- GenomeInfoDb::seqlevels(tx)
         chromosome <- .simplify_chromosome_identifiers(seqnames(gr), sl)
-        gr <- GenomicRanges(seqnames = chromosome,
-                            ranges = IRanges::ranges(gr),
-                            strand = BiocGenerics::strand(gr),
-                            S4Vectors::mcols(gr))
+        gr <- GenomicRanges::GRanges(seqnames = chromosome,
+                                     ranges = IRanges::ranges(gr),
+                                     strand = BiocGenerics::strand(gr),
+                                     S4Vectors::mcols(gr))
         gr <- shiftGenomicToTranscript(gr, tx)
         f <- !duplicated(paste0(as.character(gr),"-",mcols(gr)$mod_type))
         gr <- gr[f]
@@ -450,7 +452,7 @@ listAvailableOrganismsFromRMBase <- function(){
     # organisms <- xml2::xml_attr(xml2::xml_find_all(page,'//img[@alt="[DIR]"]//../following::a'),"href")
     # organisms <- gsub("/","",organisms)
     # organisms[!(organisms %in% c("ajax","otherspecies"))]
-    data("rmbase_data", envir = environment(), package = "EpiTxDb")
+    utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
     as.character(unique(rmbase_data$organism))
 }
 
@@ -469,7 +471,7 @@ listAvailableOrganismsFromRMBase <- function(){
 .listAvailableGenomesFromRMBase <- function(organism){
     # files <- .get_RMBase_files(organism)
     # .get_RMBase_genomes(files)
-    data("rmbase_data", envir = environment(), package = "EpiTxDb")
+    utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
     as.character(unique(rmbase_data[rmbase_data$organism == organism,]$genome))
 }
 
@@ -487,7 +489,7 @@ listAvailableGenomesFromRMBase <- function(organism){
     # f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
     # ans <- unique(vapply(strsplit(files[f_genome],"_"),"[",character(1),4L))
     # ans[!grepl("mod",ans)]
-    data("rmbase_data", envir = environment(), package = "EpiTxDb")
+    utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
     as.character(rmbase_data[rmbase_data$organism == organism &
                                  rmbase_data$genome == genome,]$mod)
 }
