@@ -9,13 +9,50 @@ NULL
 #' @title EpiTxDb objects
 #'
 #' @description
-#' The \code{EpiTxDb} class
+#' The \code{EpiTxDb} class is a
+#' \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} type container
+#' for storing Epitranscriptomic information.
 #'
-#' @return
+#' The information are typically stored on a per transcript and not as genomic
+#' coordinates, but the \code{EpiTxDb} class is agnostic to this. In case of
+#' genomic coordinates \code{transcriptsBy} will return modifications per
+#' chromosome.
+#'
+#' @param x,object a \code{EpiTxDb} object
+#'
+#' @seealso
+#'   \itemize{
+#'     \item{\code{\link[=makeEpiTxDbFromGRanges]{makeEpiTxDbFromGRanges}} for
+#'       creating a \code{EpiTxDb} object from a
+#'       \code{\link[GenomicRanges:GRanges-class]{GRanges}} object and it's
+#'        metadata columns}
+#'     \item{\code{\link[=makeEpiTxDbFromRMBase]{makeEpiTxDbFromRMBase}} for
+#'       creating a \code{EpiTxDb} object from RMBase online resources}
+#'     \item{\code{\link[=makeEpiTxDbFromtRNAdb]{makeEpiTxDbFromtRNAdb}} for
+#'       creating a \code{EpiTxDb} object from tRNAdb online resources}
+#'     \item{\code{\link[=makeEpiTxDb]{makeEpiTxDb}} for creating a
+#'       \code{EpiTxDb} object from \code{data.frames}}
+#'     \item{\code{\link[=modifications]{modifications}},
+#'       \code{\link[=modifications]{modificationsBy}} for getting
+#'       epitranscriptomic modification locations}
+#'     \item{\code{\link[=select]{select}} for using the default interface of
+#'       \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} objects.}
+#'     \item{\code{\link[=shiftGenomicToTranscript]{shiftGenomicToTranscript}}
+#'       and \code{\link[=shiftGenomicToTranscript]{shiftTranscriptToGenomic}}
+#'       for transfering genomic to transcript coordinates and back again.}
+#' }
+#'
 #' @export
 #'
 #' @examples
+#' etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
+#'                         package="EpiTxDb")
+#' etdb <- loadDb(etdb_file)
+#' etdb
 #'
+#' # general methods
+#' seqinfo(etdb) #
+#' seqlevels(etdb) # easy access to all transcript names
 .EpiTxDb <- setRefClass("EpiTxDb", contains = "AnnotationDb",
                         fields = list( ),
                         methods = list(
@@ -235,13 +272,16 @@ EpiTxDb <- function(conn) .EpiTxDb$new(conn = conn)
 
 # methods ----------------------------------------------------------------------
 
+#' @rdname EpiTxDb-class
 #' @importFrom BiocGenerics organism
+#' @export
 setMethod("organism", "EpiTxDb",
     function(object)
     {
         metadata <- metadata(object)
-        metadata <- setNames(metadata[ , "value"],
-                             tolower(metadata[ , "name"]))
+        names <- tolower(metadata[ , "name"])
+        metadata <- metadata[ , "value"]
+        names(metadata) <- names
         unname(metadata["organism"])
     }
 )
@@ -303,6 +343,9 @@ setMethod("organism", "EpiTxDb",
     ans
 }
 
+#' @rdname EpiTxDb-class
+#' @importFrom GenomeInfoDb seqinfo
+#' @export
 setMethod("seqinfo", "EpiTxDb", .get_EpiTxDb_seqinfo)
 
 # as.list and comparison -------------------------------------------------------
@@ -320,8 +363,10 @@ setMethod("seqinfo", "EpiTxDb", .get_EpiTxDb_seqinfo)
          references = references)
 }
 
+#' @rdname EpiTxDb-class
+#' @export
 setMethod("as.list", "EpiTxDb",
-    function(x, ...)
+    function(x)
     {
         modifications <- load_modifications(x)
         transcripts <- load_transcripts(x)

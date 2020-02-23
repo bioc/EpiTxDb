@@ -145,7 +145,8 @@ NULL
 
 .shift <- function(subject, tx, .compareFUN, .resultFUN){
     # match seqnames of subject and names of tx
-    hits_coordinates <- suppressWarnings(findOverlaps(tx,subject))
+    hits_coordinates <-
+        suppressWarnings(GenomicRanges::findOverlaps(tx,subject))
     if(length(hits_coordinates) == 0L){
         stop("No 'subject'/'tx' matches found.",
              call. = FALSE)
@@ -208,7 +209,8 @@ setMethod("shiftTranscriptToGenomic", c("GRangesList","GRangesList"),
     function(subject, tx){
         subject <- .norm_subject(subject)
         tx <- .norm_tx(tx)
-        ans <- lapply(subject,.shiftTranscriptToGenomic,tx)
+        ans <- lapply(subject, .shift, tx, .compareFUN_TX_TO_GENOME,
+                      .resultFUN_TX_TO_GENOME)
         GenomicRanges::GRangesList(ans)
     })
 
@@ -230,6 +232,7 @@ setMethod("shiftGenomicToTranscript", c("GRangesList","GRangesList"),
     function(subject, tx){
         subject <- .norm_subject(subject)
         tx <- .norm_tx(tx)
-        ans <- lapply(subject,.shiftGenomicToTranscript,tx)
+        ans <- lapply(subject, .shift, tx, .compareFUN_GENOME_TO_TX,
+                      .resultFUN_GENOME_TO_TX)
         GenomicRanges::GRangesList(ans)
     })

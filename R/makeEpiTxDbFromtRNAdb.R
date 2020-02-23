@@ -4,11 +4,36 @@ NULL
 
 #' @name makeEpiTxDbFromtRNAdb
 #'
-#' @title makeEpiTxDbFromtRNAdb
+#' @title Create a \code{EpiTxDb} object from tRNAdb resources
 #'
 #' @description
-#' title
+#' \code{makeEpiTxDbFromtRNAdb} will make use of the tRNAdb online
+#' resources.
 #'
+#' \code{makeEpiTxDbFromtRNAdb} uses the functions provided by the
+#' \code{\link[tRNAdbImport:tRNAdbImport]{tRNAdbImport}} package.
+#' \code{\link[tRNAdbImport:import.tRNAdb]{import.tRNAdb}} will be used with
+#' \code{database = "RNA"} and the three different values for \code{origin}.
+#'
+#' @param organism A \code{character} value for an organism available on the
+#'   tRNAdb website.
+#' @param tx A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
+#'   which will be used to shift the genomic coordinates to transcript
+#'   coordinates. This is optional, but highly recommended (default: \code{tx =
+#'   NULL}).
+#' @param sequences A named \code{DNAStringSet} or \code{RNAStringSet}, which
+#'   will be used to associate a tRNAdb result with a specific transcript.
+#' @param dbURL The URL to the tRNA db website.
+#' @param metadata See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}
+#'
+#' @references
+#' Jühling F, Mörl M, Hartmann RK, Sprinzl M, Stadler PF, Pütz J. 2009. "tRNAdb
+#' 2009: compilation of tRNA sequences and tRNA genes." Nucleic Acids Research,
+#' Volume 37 (suppl_1): D159–162. doi:10.1093/nar/gkn772.
+#'
+#' @export
+#'
+#' @examples
 #'
 NULL
 
@@ -29,7 +54,8 @@ NULL
 #' @rdname makeEpiTxDbFromtRNAdb
 #' @importFrom tRNAdbImport import.tRNAdb
 #' @export
-gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
+gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL,
+                                   dbURL = tRNAdbImport::TRNA_DB_URL){
     if(!assertive::is_a_non_empty_string(organism) ||
        !(organism %in% listAvailableOrganismsFromtRNAdb())){
         stop("'organism' must be a single character value and match an entry ",
@@ -42,7 +68,8 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
                  function(origin){
                      try(tRNAdbImport::import.tRNAdb(organism = organism,
                                                      database = "RNA",
-                                                     origin = origin),
+                                                     origin = origin,
+                                                     dbURL = dbURL),
                          silent = TRUE)
                  })
     gr <- gr[!vapply(gr,is,logical(1),"try-error")]
@@ -89,7 +116,7 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
         seq_rna_gr <- as(seq_gr,"RNAStringSet")
         width <- nchar(seq_rna_gr)
         width[gr$tRNA_CCA.end] <- width[gr$tRNA_CCA.end] - 3L
-        seq_rna_gr <- subseq(seq_rna_gr, 1L, width)
+        seq_rna_gr <- Biostrings::subseq(seq_rna_gr, 1L, width)
         # remove sequences which are definitly to long
         max_length <- max(lengths(seq_rna_gr))
         min_length <- min(lengths(seq_rna_gr))
@@ -99,8 +126,8 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
         sequences[lengths(sequences) < min_length] <-
             do.call(class(sequences),
                     list(paste0(rep("A",(max_length + 50)),collapse = "")))
-        hits <- vwhichPDict(sequences, seq_rna_gr, with.indels = TRUE,
-                            max.mismatch = 6)
+        hits <- Biostrings::vwhichPDict(sequences, seq_rna_gr,
+                                        with.indels = TRUE, max.mismatch = 6)
         hits <- Hits(unlist(hits),as.integer(unlist(Map(rep.int,seq_along(hits),lengths(hits)))),
                      length(sequences), length(seq_rna_gr))
         hits_mod <- findMatches(seqnames(mod),names(seq_rna_gr))
@@ -115,7 +142,7 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
         mod <- mod[unlist(Map(rep,seq_along(tx_name),lengths(tx_name)))]
         mcols(mod)$mod_id <- seq_along(mod)
         mod <- GenomicRanges::GRanges(seqnames = unlist(tx_name),
-                                      ranges = ranges(mod),
+                                      ranges = IRanges::ranges(mod),
                                       strand = strand(mod),
                                       mcols(mod))
         # assemble metadata columns
@@ -127,15 +154,17 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL){
 #' @rdname makeEpiTxDbFromtRNAdb
 #' @export
 makeEpiTxDbFromtRNAdb <- function(organism, tx = NULL, sequences = NULL,
-                                  metadata = NULL){
-    gr <- gettRNAdbDataAsGRanges(organism, tx = tx, sequences = sequences)
+                                  metadata = NULL,
+                                  dbURL = tRNAdbImport::TRNA_DB_UR){
+    gr <- gettRNAdbDataAsGRanges(organism, tx = tx, sequences = sequences,
+                                 dbURL = dbURL)
     if(!is.null(sequences)){
         gr <- gr[!duplicated(paste0(as.character(gr),"-",gr$mod_type))]
         colnames(mcols(gr)) <- gsub("mod_type","mod",colnames(mcols(gr)))
         gr <- Modstrings::removeIncompatibleModifications(gr, sequences)
         colnames(mcols(gr)) <- gsub("^mod$","mod_type",colnames(mcols(gr)))
     }
-    makeEpiTxDbfromGRanges(gr, metadata = NULL)
+    makeEpiTxDbFromGRanges(gr, metadata = NULL, reassign.ids = FALSE)
 }
 
 

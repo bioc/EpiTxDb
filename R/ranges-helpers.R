@@ -5,19 +5,20 @@ NULL
 #'
 #' @title Generate integer sequences from position information of \code{Ranges}
 #'
-#' @description
-#' \code{positionSequence} generates sequences of integer values along the range
-#' information of \code{x}. This can be used for navigating specific positions
-#' on a range information.
+#' @description \code{positionSequence} generates sequences of integer values
+#' along the range information of \code{x}. This can be used for navigating
+#' specific positions on a range information.
 #'
 #' @param x a \code{Ranges} object, like a
-#' \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
-#' \code{\link[IRanges:IRanges-class]{IRanges}}, or a \code{RangesList} object,
-#' like a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} or
-#' \code{\link[IRanges:IRangesList-class]{IRangesList}}
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
+#'   \code{\link[IRanges:IRanges-class]{IRanges}}, or a \code{RangesList}
+#'   object, like a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
+#'   or \code{\link[IRanges:IRangesList-class]{IRangesList}}
 #' @param order \code{TRUE} or \code{FALSE}: Should the position be ordered?
-#' @param decreasing \code{TRUE} or \code{FALSE}: If \code{order = TRUE}
-#' Should the position be ordered in a decreasing order?
+#'   (default: \code{order = FALSE})
+#' @param decreasing \code{TRUE} or \code{FALSE}: If \code{order = TRUE} Should
+#'   the position be ordered in a decreasing order? (default: \code{order =
+#'   FALSE})
 #'
 #' @examples
 #' library(EpiTxDb)
@@ -27,6 +28,7 @@ NULL
 #' # returns an IntegerList
 #' grl <- GRangesList("1" = gr,"2" = gr,"3" = gr) # must be named
 #' positionSequence(gr)
+NULL
 
 # per element of GRangesList unique
 .get_strand_u_GRangesList <- function(grl){

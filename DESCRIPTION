@@ -1,6 +1,6 @@
 Package: EpiTxDb
 Type: Package
-Title: Storing and accessing epitranscriptomic information using the AnnotationDbi interface.
+Title: Storing and accessing epitranscriptomic information using the AnnotationDbi interface
 Version: 0.99.0
 Authors@R: person("Felix G.M.", 
                   "Ernst", 
@@ -15,7 +15,6 @@ LazyData: false
 biocViews:
     AnnotationData,
     Epitranscriptomics,
-    TxDb,
     Homo_sapiens
 Depends:
     R (>= 3.6),
@@ -23,19 +22,25 @@ Depends:
     Modstrings
 Imports:
     methods,
-    GenomicFeatures,
+    utils,
     httr,
+    xml2,
+    GenomicFeatures,
+    GenomeInfoDb,
     dplyr,
     BiocGenerics,
     BiocFileCache,
-    S4Vectors
+    S4Vectors,
+    IRanges,
+    RSQLite,
+    tRNAdbImport
 Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
     testthat,
     BSgenome.Hsapiens.UCSC.hg38,
-    EpiTxDb.Hsapiens.hg38
+    EpiTxDb.Hs.hg38
 Collate: 
     'AllGenerics.R'
     'EpiTxDb-SELECT-helpers.R'

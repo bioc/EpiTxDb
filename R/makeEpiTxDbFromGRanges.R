@@ -2,13 +2,37 @@
 #' @include makeEpiTxDb.R
 NULL
 
-#' @name makeEpiTxDbfromGRanges
+#' @name makeEpiTxDbFromGRanges
 #'
-#' @title makeEpiTxDbfromGRanges
+#' @title Create a \code{EpiTxDb} object from a \code{GRanges} object
 #'
 #' @description
-#' title
+#' \code{makeEpiTxDbFromGRanges} extracts informations from a
+#' \code{\link[GenomicRanges:GRanges-class]{GRanges}} object. The following
+#' metadata columns can be used:
+#' \itemize{
+#' \item{\code{mod_id}, \code{mod_type}, \code{mod_name} and \code{tx_ensembl}.
+#' The first three are mandatory, whereas \code{tx_ensembl} is optional.}
+#' \item{\code{rx_genename}, \code{rx_rank}, \code{rx_ensembl},
+#' \code{rx_ensembltrans} and \code{rx_entrezid}}
+#' \item{\code{spec_type}, \code{spec_genename}, \code{spec_ensembl},
+#' \code{spec_ensembltrans} and \code{spec_entrezid}}
+#' \item{\code{ref_type} and \code{ref}}
+#' }
+#' ... and passed on the \code{\link[=makeEpiTxDb]{makeEpiTxDb}}.
 #'
+#' @param gr A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object, which
+#' contains at least the mandatory columns.
+#' @param metadata A 2-column \code{data.frame} containing meta information to
+#' be included in the \code{EpiTxDb} object. This \code{data.frame} is just
+#' passed to \code{\link[=makeEpiTxDb]{makeEpiTxDb}}. See
+#' \code{\link[=makeEpiTxDb]{makeEpiTxDb}} for more information about the format
+#' of metadata. (default: \code{metadata = NULL})
+#' @param reassign.ids = FALSE
+#'
+#' @export
+#'
+#' @examples
 #'
 NULL
 
@@ -21,8 +45,8 @@ NULL
                           mod_name = mcols(gr)$mod_name,
                           mod_start = start(gr),
                           mod_end = end(gr),
-                          tx_id = mcols(gr)$tx_id,
-                          tx_name= mcols(gr)$tx_name,
+                          tx_id = as.integer(seqnames(gr)),
+                          tx_name= seqnames(gr),
                           tx_ensembl = mcols(gr)$tx_ensembl)
     modifications <- modifications[!vapply(modifications, is.null, logical(1))]
     if(length(modifications) > 1L){
@@ -87,9 +111,9 @@ NULL
     references
 }
 
-#' @rdname makeEpiTxDbfromGRanges
+#' @rdname makeEpiTxDbFromGRanges
 #' @export
-makeEpiTxDbfromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
+makeEpiTxDbFromGRanges <- function(gr, metadata = NULL, reassign.ids = FALSE){
     modifications <- .get_gr_modifications(gr)
     reactions <- .get_gr_reactions(gr)
     specifiers <- .get_gr_specifiers(gr)

@@ -248,7 +248,7 @@ EPITXDB_table2joinColumns <- function(tables, schema_version = NA){
                          } else {
                              in_schema <- c(" in db schema ", as.character(schema_version))
                          }
-                         stop(column, ": no such column", in_schema)
+                         stop(table, ": no such table", in_schema)
                      })
     tables
 }

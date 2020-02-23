@@ -4,14 +4,55 @@
 \alias{makeEpiTxDbFromtRNAdb}
 \alias{gettRNAdbDataAsGRanges}
 \alias{listAvailableOrganismsFromtRNAdb}
-\title{makeEpiTxDbFromtRNAdb}
+\title{Create a \code{EpiTxDb} object from tRNAdb resources}
 \usage{
-gettRNAdbDataAsGRanges(organism, tx = NULL, sequences = NULL)
+gettRNAdbDataAsGRanges(
+  organism,
+  tx = NULL,
+  sequences = NULL,
+  dbURL = tRNAdbImport::TRNA_DB_URL
+)
 
-makeEpiTxDbFromtRNAdb(organism, tx = NULL, sequences = NULL, metadata = NULL)
+makeEpiTxDbFromtRNAdb(
+  organism,
+  tx = NULL,
+  sequences = NULL,
+  metadata = NULL,
+  dbURL = tRNAdbImport::TRNA_DB_UR
+)
 
 listAvailableOrganismsFromtRNAdb()
 }
+\arguments{
+\item{organism}{A \code{character} value for an organism available on the
+tRNAdb website.}
+
+\item{tx}{A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
+which will be used to shift the genomic coordinates to transcript
+coordinates. This is optional, but highly recommended (default: \code{tx =
+NULL}).}
+
+\item{sequences}{A named \code{DNAStringSet} or \code{RNAStringSet}, which
+will be used to associate a tRNAdb result with a specific transcript.}
+
+\item{dbURL}{The URL to the tRNA db website.}
+
+\item{metadata}{See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}}
+}
 \description{
-title
+\code{makeEpiTxDbFromtRNAdb} will make use of the tRNAdb online
+resources.
+
+\code{makeEpiTxDbFromtRNAdb} uses the functions provided by the
+\code{\link[tRNAdbImport:tRNAdbImport]{tRNAdbImport}} package.
+\code{\link[tRNAdbImport:import.tRNAdb]{import.tRNAdb}} will be used with
+\code{database = "RNA"} and the three different values for \code{origin}.
+}
+\examples{
+
+}
+\references{
+Jühling F, Mörl M, Hartmann RK, Sprinzl M, Stadler PF, Pütz J. 2009. "tRNAdb
+2009: compilation of tRNA sequences and tRNA genes." Nucleic Acids Research,
+Volume 37 (suppl_1): D159–162. doi:10.1093/nar/gkn772.
 }

@@ -2,7 +2,7 @@
 title: "EpiTxDb"
 author: "Felix G.M. Ernst"
 date: "`r Sys.Date()`"
-package: RNAmodR
+package: EpiTxDb
 output:
   BiocStyle::html_document:
     toc: true
@@ -26,7 +26,7 @@ suppressPackageStartupMessages({
   library(GenomicFeatures)
   library(BSgenome.Hsapiens.UCSC.hg38)
   library(EpiTxDb)
-  library(EpiTxDb.Hsapiens.hg38)
+  library(EpiTxDb.Hs.hg38)
   library(Modstrings)
 })
 ```
@@ -34,45 +34,14 @@ suppressPackageStartupMessages({
 library(GenomicFeatures)
 library(BSgenome.Hsapiens.UCSC.hg38)
 library(EpiTxDb)
-library(EpiTxDb.Hsapiens.hg38)
+library(EpiTxDb.Hs.hg38)
 library(Modstrings)
 ```
 
 
 
-```{r}
-epitxdb <- EpiTxDb.Hsapiens.hg38
-```
-
-
-
-```{r}
-mod <- modificationsBy(epitxdb)
-```
-
-
 # Ribosomal modifications (Y and 2'-O)
 
-```{r}
-txdb <- makeTxDbFromUCSC(genome = "hg38", tablename = "refGene")
-```
-
-```{r}
-seqnames <- as.character(unlist(unique(seqnames(mod))))
-tx <- transcripts(txdb, filter=list(TXNAME = seqnames))
-# some transcripts are invalid and too long 
-tx <- tx[width(tx) < 6000] 
-# 28S rRNA does not have a consistent length. Keep the valid one
-tx <- tx[tx$tx_name != "NR_003287" | (tx$tx_name == "NR_003287" & width(tx) == 5070L)] 
-
-sequences <- getSeq(BSgenome.Hsapiens.UCSC.hg38, tx)
-seqtype(sequences) <- "RNA"
-names(sequences) <- mcols(tx)$tx_name
-```
-
-```{r}
-combineIntoModstrings(sequences, mod)
-```
 
 # Session info
 

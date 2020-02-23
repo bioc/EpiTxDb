@@ -4,21 +4,53 @@ NULL
 #' @name modifications
 #' @aliases modifications modificationsBy
 #'
-#' @title modifications
+#' @title Getting modification data from a \code{EpiTxDb-object}
 #'
-#' @description
-#' title
+#' @description \code{modifications} and \code{modificationsBy} are functions to
+#' extract modification annotation from a \code{\link[=EpiTxDb-class]{EpiTxDb}}
+#' object.
+#'
+#' \code{modifiedSeqsByTranscript} returns a
+#' \code{\link[Modstrings:ModStringSet]{ModRNAStringSet}} from a \code{EpiTxDb}
+#' object and compatible \code{RNAStringSet} object. This used the
+#' \code{\link[Modstrings:separate]{combineIntoModstrings()}} function from the
+#' \code{Modstrings} package.
 #'
 #' @param x a \code{\link[=EpiTxDb-class]{EpiTxDb}}
-#' @param columns XXX
-#' @param filter XXX
-#' @use.names XXX
+#' @param columns Columns to include in the result. If the vector is named,
+#'   those names are used for the corresponding column in the element metadata
+#'   of the returned object. (default: \code{columns =
+#'   c("mod_id","mod_type","mod_name")})
+#' @param by By which information type should the result be split into? A
+#'   \code{character} value from one of the following values:
+#'   \itemize{
+#'     \item{transcript}
+#'     \item{mod_type}
+#'     \item{reaction}
+#'     \item{specifier}
+#'     \item{specifier_type}
+#'   }
+#' @param filter Either NULL or a named list of vectors to be used to restrict
+#'   the output. Valid names for this list are: "mod_id", "mod_type",
+#'   "mod_name", "tx_id", "tx_name", "tx_ensembl", "rx_genename", "rx_ensembl",
+#'   "rx_ensembltrans", "rx_entrezid", "spec_genename", "spec_type",
+#'   "spec_ensembl", "spec_ensembltrans", "spec_entrezid" , "ref_type" and
+#'   "ref". (default: \code{filter = NULL})
+#' @param use.names \code{TRUE} or \code{FALSE}. If \code{TRUE}, the
+#'   modification names are set as the names of the returned object. (default:
+#'   \code{use.names = FALSE})
+#' @param sequences A \code{RNAStringSet}, which can be used as input for
+#'   \code{\link[Modstrings:separate]{combineIntoModstrings()}}. See
+#'   \code{\link[Modstrings:separate]{?combineIntoModstrings}} for additional
+#'   details.
+#' @param ... Not used.
+#'
 #'
 #' @examples
-#' \dontrun{
-#' library(EpiTxDb.Hsapiens.hg38)
-#' modifications(EpiTxDb.Hsapiens.hg38.snoRNAdb())
-#' }
+#' etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
+#'                         package="EpiTxDb")
+#' etdb <- loadDb(etdb_file)
+#' etdb
 NULL
 
 # helper functions for extracting feature data ---------------------------------
@@ -153,9 +185,9 @@ translateCols <- function(columns, epitxdb){
 #' @rdname modifications
 #' @export
 setMethod("modifications", "EpiTxDb",
-    function(x, column = c("mod_id","mod_type","mod_name"),
+    function(x, columns = c("mod_id","mod_type","mod_name"),
              filter = NULL, use.names = FALSE){
-        .extractFromEpiTxDb(x, mcolumns = column, filter = filter,
+        .extractFromEpiTxDb(x, mcolumns = columns, filter = filter,
                             use.names = use.names)
     }
 )

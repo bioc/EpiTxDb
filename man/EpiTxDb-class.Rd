@@ -4,14 +4,60 @@
 \name{EpiTxDb-class}
 \alias{EpiTxDb-class}
 \alias{.EpiTxDb}
+\alias{organism,EpiTxDb-method}
+\alias{seqinfo,EpiTxDb-method}
+\alias{as.list,EpiTxDb-method}
 \title{EpiTxDb objects}
-\value{
+\usage{
+\S4method{organism}{EpiTxDb}(object)
 
+\S4method{seqinfo}{EpiTxDb}(x)
+
+\S4method{as.list}{EpiTxDb}(x)
+}
+\arguments{
+\item{x, object}{a \code{EpiTxDb} object}
 }
 \description{
-The \code{EpiTxDb} class
+The \code{EpiTxDb} class is a
+\code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} type container
+for storing Epitranscriptomic information.
+
+The information are typically stored on a per transcript and not as genomic
+coordinates, but the \code{EpiTxDb} class is agnostic to this. In case of
+genomic coordinates \code{transcriptsBy} will return modifications per
+chromosome.
 }
 
 \examples{
+etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
+                        package="EpiTxDb")
+etdb <- loadDb(etdb_file)
+etdb
 
+# general methods
+seqinfo(etdb) #
+seqlevels(etdb) # easy access to all transcript names
+}
+\seealso{
+\itemize{
+    \item{\code{\link[=makeEpiTxDbFromGRanges]{makeEpiTxDbFromGRanges}} for
+      creating a \code{EpiTxDb} object from a
+      \code{\link[GenomicRanges:GRanges-class]{GRanges}} object and it's
+       metadata columns}
+    \item{\code{\link[=makeEpiTxDbFromRMBase]{makeEpiTxDbFromRMBase}} for
+      creating a \code{EpiTxDb} object from RMBase online resources}
+    \item{\code{\link[=makeEpiTxDbFromtRNAdb]{makeEpiTxDbFromtRNAdb}} for
+      creating a \code{EpiTxDb} object from tRNAdb online resources}
+    \item{\code{\link[=makeEpiTxDb]{makeEpiTxDb}} for creating a
+      \code{EpiTxDb} object from \code{data.frames}}
+    \item{\code{\link[=modifications]{modifications}},
+      \code{\link[=modifications]{modificationsBy}} for getting
+      epitranscriptomic modification locations}
+    \item{\code{\link[=select]{select}} for using the default interface of
+      \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} objects.}
+    \item{\code{\link[=shiftGenomicToTranscript]{shiftGenomicToTranscript}}
+      and \code{\link[=shiftGenomicToTranscript]{shiftTranscriptToGenomic}}
+      for transfering genomic to transcript coordinates and back again.}
+}
 }

@@ -3,10 +3,16 @@
 \docType{package}
 \name{EpiTxDb}
 \alias{EpiTxDb}
+\alias{rmbase_data}
 \title{EpiTxDb}
+\format{data.frame}
+\usage{
+data(rmbase_data)
+}
 \description{
 title
 }
 \author{
 Felix G M Ernst [aut]
 }
+\keyword{datasets}

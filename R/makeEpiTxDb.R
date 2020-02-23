@@ -3,11 +3,83 @@ NULL
 
 #' @name makeEpiTxDb
 #'
-#' @title makeEpiTxDb
+#' @title Creating a \code{EpiTxDb} from user supplied annotations as
+#' \code{data.frame}s
 #'
 #' @description
-#' title
+#' \code{makeEpiTxDb} is a low-level constructor for creating a
+#' \code{\link[=EpiTxDb-class]{EpiTxDb}} object from user supplied annotations.
 #'
+#' This functions probably will typically not be used by users.
+#'
+#' @param modifications A \code{data.frame} containg the following columns:
+#'   \itemize{
+#'     \item{\code{mod_id} }
+#'     \item{\code{mod_type} }
+#'     \item{\code{mod_name} }
+#'     \item{\code{tx_id} }
+#'     \item{\code{tx_name} }
+#'     \item{\code{tx_ensembl} }
+#'   }
+#'   The first three are mandatory, whereas one of the last has to be set.
+#'   \code{tx_id} will be generated from the other the last two. The last three
+#'   columns must be consistent in meaning.
+#' @param reactions An optional \code{data.frame} containg the following
+#'   columns:
+#'   \itemize{
+#'     \item{\code{rx_genename} }
+#'     \item{\code{rx_rank} }
+#'     \item{\code{rx_ensembl} }
+#'     \item{\code{rx_ensembltrans} }
+#'     \item{\code{rx_entrezid} }
+#'   }
+#'   (default: \code{reactions = NULL})
+#' @param specifiers An optional \code{data.frame} containg the following
+#'   columns:
+#'     \itemize{
+#'     \item{\code{spec_genename} }
+#'     \item{\code{spec_rank} }
+#'     \item{\code{spec_ensembl} }
+#'     \item{\code{spec_ensembltrans} }
+#'     \item{\code{spec_entrezid} }
+#'   }
+#'   (default: \code{specifiers = NULL})
+#' @param references An optional \code{data.frame} containg the following
+#'   columns:
+#'   \itemize{
+#'     \item{\code{ref_type} }
+#'     \item{\code{ref} }
+#'   }
+#'   (default: \code{references = NULL})
+#' @param metadata An optional \code{data.frame} containg the following columns:
+#'   \itemize{
+#'     \item{\code{name}: }{a character value used as name}
+#'     \item{\code{value}: }{a character value}
+#'   }
+#'   This dataframe will be returned
+#'   by \code{metadata()} (default: \code{metadata = NULL})
+#' @param reassign.ids \code{TRUE} or \code{FALSE} Controls how internal
+#'   \code{mod_id}s should be assigned. If \code{reassign.ids} is \code{FALSE}
+#'   (the default) and if the ids are supplied, then they are used as the
+#'   internal ids, otherwise the internal ids are assigned in a way that is
+#'   compatible with the order defined by ordering the modifications first by
+#'   chromosome, then by strand, then by start, and finally by end.
+#'
+#' @seealso
+#'   \itemize{
+#'   \item{\code{\link[=makeEpiTxDbFromGRanges]{makeEpiTxDbFromGRanges}} for
+#'     creating a \code{EpiTxDb} object from a
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object and it's metadata
+#'     columns}
+#'   \item{\code{\link[=makeEpiTxDbFromRMBase]{makeEpiTxDbFromRMBase}} for
+#'     creating a \code{EpiTxDb} object from RMBase online resources}
+#'   \item{\code{\link[=makeEpiTxDbFromtRNAdb]{makeEpiTxDbFromtRNAdb}} for
+#'     creating a \code{EpiTxDb} object from tRNAdb online resources}
+#' }
+#'
+#' @export
+#'
+#' @examples
 #'
 NULL
 
@@ -356,8 +428,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 .make_ids <- function(df, cols){
     df[is.na(df)] <- ""
-    id <- lapply(df[,colnames(df) %in% cols],factor)
-    id <- as.integer(as.factor(rowSums(data.frame(lapply(id,as.integer)))))
+    id <- factor(do.call(paste,as.list(df[,colnames(df) %in% cols])))
     as.integer(id)
 }
 
@@ -539,11 +610,12 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     insert_data_into_table(conn, "modification2reference", data)
 }
 
+#' @importFrom utils packageDescription
 .write_metadata_table <- function(conn, metadata){
     nb_modifications <- dbEasyQuery(conn,
                                     "SELECT COUNT(*) FROM modification")[[1L]]
-    thispkg_version <- packageDescription("EpiTxDb")$Version
-    rsqlite_version <- packageDescription("RSQLite")$Version
+    thispkg_version <- utils::packageDescription("EpiTxDb")$Version
+    rsqlite_version <- utils::packageDescription("RSQLite")$Version
     mat1 <- matrix(c(
         DB_TYPE_NAME, DB_TYPE_VALUE,
         "Supporting package", "EpiTxDb"),

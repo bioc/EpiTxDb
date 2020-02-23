@@ -9,7 +9,7 @@ NULL
     user_columns
 }
 
-.split_into_GRL <- function(epitxdb, gr, columns, by, use.names){
+.split_into_GRL <- function(epitxdb, gr, columns, by){
     gr_mcols <- mcols(gr)
     colnames(gr_mcols)[match(columns,colnames(gr_mcols))] <- names(columns)
     mcols(gr) <- gr_mcols
@@ -21,7 +21,7 @@ NULL
     }
     f <- switch(by,
                 "transcript" = seqnames(gr),
-                "type" = gr_mcols$mod,
+                "mod_type" = gr_mcols$mod,
                 "reaction" = FUN(gr_mcols$rx_genename),
                 "specifier" = FUN(gr_mcols$spec_genename),
                 "specifier_type" = FUN(gr_mcols$spec_type),
@@ -35,8 +35,8 @@ NULL
     ans <- switch(by,
                   "transcript" = modifications(epitxdb,
                                                c("MODID", "MODTYPE","MODNAME")),
-                  "type" = modifications(epitxdb,
-                                         c("MODTYPE", "MODID", "MODNAME")),
+                  "mod_type" = modifications(epitxdb,
+                                             c("MODTYPE", "MODID", "MODNAME")),
                   "reaction" = modifications(epitxdb,
                                              c("RXENSEMBL", "RXENSEMBLTRANS",
                                                "RXENTREZID", "RXGENENAME")),
@@ -48,13 +48,13 @@ NULL
                                                      "SPECGENENAME", "SPECTYPE")),
                   stop("unsupported 'by' value."))
     mcolumns <- .format_feature_columns(epitxdb, colnames(mcols(ans)), by)
-    .split_into_GRL(epitxdb, ans, mcolumns, by, use.names)
+    .split_into_GRL(epitxdb, ans, mcolumns, by)
 }
 
 #' @rdname modifications
 #' @export
 setMethod("modificationsBy", "EpiTxDb",
-    function(x, by = c("transcript","type","reaction","specifier",
+    function(x, by = c("transcript","mod_type","reaction","specifier",
                        "specifier_type")){
       by <- match.arg(by)
       .extract_features_by(x, by = by)

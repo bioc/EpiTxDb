@@ -3,19 +3,47 @@
 #' @include shiftGenomicToTranscript.R
 NULL
 
-EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
-
-#' @name makeEpiTxDbfromRMBase
+#' @name makeEpiTxDbFromRMBase
 #'
-#' @title makeEpiTxDbfromRMBase
+#' @title Create a \code{EpiTxDb} object from RMBase v2.0 online resources
 #'
 #' @description
-#' title
+#' \code{makeEpiTxDbFromRMBase} will make use of the RMBase v2.0 online
+#' resources.
 #'
+#' @param organism A \code{character} value, which must match an organism
+#'   descriptor on the RMBase download website.
+#' @param genome A \code{character} value, which must match a genome
+#'   descriptor on the RMBase download website.
+#' @param type A \code{character} value, which must match one or more
+#'   modification descriptors on the RMBase download website.
+#' @param files From \code{organism}, \code{genome} and \code{type} the
+#'   available files will be downloaded using the
+#'   \code{\link[BiocFileCache:BiocFileCache-class]{BiocFileCache}} interface
+#'   and passed on to \code{makeEpiTxDbFromRMBaseFiles}. However, individual
+#'   files can be provided as well.
+#' @param tx A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
+#'   which will be used to shift the genomic coordinates to transcript
+#'   coordinates. This is optional, but highly recommended. (default:
+#'   \code{tx = NULL}).
+#' @param sequences A named \code{DNAStringSet} or \code{RNAStringSet}, which
+#'   will be used to check whether the defined modifications are compatible with
+#'   the original base. This uses
+#'   \code{\link[Modstrings:separate]{removeIncompatibleModifications()}}
+#'   function from the \code{Modstrings} package.
+#' @param metadata,reassign.ids See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}
+#'
+#' @export
+#'
+#' @examples
 #'
 NULL
 
-# makeEpiTxDbfromRMBase --------------------------------------------------------
+#' @rdname makeEpiTxDbFromRMBase
+#' @export
+EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
+
+# makeEpiTxDbFromRMBase --------------------------------------------------------
 
 .get_RMBase_rnames <- function(organism, genome, type){
     paste0("RMBase_",organism,"_",genome,"_",type)
@@ -93,7 +121,7 @@ NULL
     unname(unlist(files))
 }
 
-#' @rdname makeEpiTxDbfromRMBase
+#' @rdname makeEpiTxDbFromRMBase
 #' @export
 downloadRMBaseFiles <- function(organism, genome, type){
     bfc <- BiocFileCache::BiocFileCache()
@@ -111,17 +139,17 @@ downloadRMBaseFiles <- function(organism, genome, type){
     files
 }
 
-#' @rdname makeEpiTxDbfromRMBase
+#' @rdname makeEpiTxDbFromRMBase
 #' @export
-makeEpiTxDbfromRMBase <- function(organism, genome, type, tx, sequences = NULL,
+makeEpiTxDbFromRMBase <- function(organism, genome, type, tx, sequences = NULL,
                                   metadata = NULL, reassign.ids = FALSE){
     message("Loading RMBase files ...")
     files <- downloadRMBaseFiles(organism, genome, type)
-    makeEpiTxDbfromRMBaseFiles(files, tx = tx, sequences = sequences,
+    makeEpiTxDbFromRMBaseFiles(files, tx = tx, sequences = sequences,
                                metadata = metadata, reassign.ids = reassign.ids)
 }
 
-# makeEpiTxDbfromRMBaseFiles ---------------------------------------------------
+# makeEpiTxDbFromRMBaseFiles ---------------------------------------------------
 
 .get_RMBase_header <- function(file){
     header <- readLines(file,7L)
@@ -138,6 +166,7 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
                                "supportList", "pubmedIds", "geneName",
                                "sequence")
 
+#' @importFrom utils read.delim
 .read_RMBase_file <- function(file){
     rmb <- try(read.delim(file, skip = 7L), silent = TRUE)
     if(is(rmb,"try-error")){
@@ -179,10 +208,10 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
     mm_chr <- !(chromosome %in% seqlevels)
     f_chr_remove <- grepl("Chr|chr",chromosome[mm_chr])
     if(any(f_chr_remove)){
-        if(all(levels(factor(gsub("Chr|chr","",chromosome[mm_chr][f_chromosome]))) %in%
-               levels(chromosome[mm_chr][f_chromosome])) ||
-           all(levels(chromosome[mm_chr][f_chromosome]) %in%
-               levels(factor(gsub("Chr|chr","",chromosome[mm_chr][f_chromosome]))))){
+        if(all(levels(factor(gsub("Chr|chr","",chromosome[mm_chr][f_chr_remove]))) %in%
+               levels(chromosome[mm_chr][f_chr_remove])) ||
+           all(levels(chromosome[mm_chr][f_chr_remove]) %in%
+               levels(factor(gsub("Chr|chr","",chromosome[mm_chr][f_chr_remove]))))){
             tmp <- gsub("Chr|chr","",chromosome[mm_chr])
             chromosome[mm_chr] <- tmp
         }
@@ -233,7 +262,8 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
     f <- Modstrings:::values(codec)[match(modValues,
                                           Modstrings:::values(codec))]
     # check if reported base matches original base
-    base_mm <- Modstrings:::originatingBase(codec)[f] != subseq(seq,21L,21L)
+    subseq <- Biostrings::subseq(seq,21L,21L)
+    base_mm <- Modstrings:::originatingBase(codec)[f] != subseq
     # if not delete the modifications with a warning
     if(any(base_mm)){
         warning("Detected mismatch of modification and originating base in ",
@@ -319,7 +349,7 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
 .gene_names_to_chromosome <- function(gr){
     chromosome <- mcols(gr)$gene_name
     GenomicRanges::GRanges(seqnames = chromosome,
-                           ranges = ranges(gr),
+                           ranges = IRanges::ranges(gr),
                            strand = strand(gr),
                            mcols(gr))
 }
@@ -344,11 +374,9 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
     }
 }
 
-#' @rdname makeEpiTxDbfromRMBase
+#' @rdname makeEpiTxDbFromRMBase
 #' @export
-getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
-                                   shift.to.transcript = FALSE,
-                                   check.vs.sequence = FALSE){
+getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL){
     message("Assembling data ...")
     # getting raw data from RMBase files
     sl <- NA
@@ -357,8 +385,8 @@ getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
     }
     grl <- .get_RMBase_data(files, seqlevels = sl)
     gr <- unlist(GenomicRanges::GRangesList(grl))
-    # shoft position to transcript coordinates
-    if(shift.to.transcript){
+    # shift position to transcript coordinates
+    if(!is.null(tx)){
         tx <- .norm_tx(tx)
         .check_tx_sequences(tx, sequences)
         message("Shifting RMBase result's coordinates based on transcript ",
@@ -367,7 +395,7 @@ getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
         f <- !duplicated(paste0(as.character(gr),"-",mcols(gr)$mod_type))
         gr <- gr[f]
         # check if all the referenced modification match their originating base
-        if(!is.null(sequences) & check.vs.sequence){
+        if(!is.null(sequences)){
             # remove any positions which do not match the originating base
             colnames(mcols(gr)) <- gsub("mod_type","mod",colnames(mcols(gr)))
             gr <- Modstrings::removeIncompatibleModifications(gr, sequences)
@@ -386,13 +414,11 @@ getRMBaseDataAsGRanges <- function(files, tx = NULL, sequences = NULL,
     metadata
 }
 
-#' @rdname makeEpiTxDbfromRMBase
+#' @rdname makeEpiTxDbFromRMBase
 #' @export
-makeEpiTxDbfromRMBaseFiles <- function(files, tx, sequences = NULL,
+makeEpiTxDbFromRMBaseFiles <- function(files, tx, sequences = NULL,
                                        metadata = NULL, reassign.ids = FALSE){
-    gr <- getRMBaseDataAsGRanges(files, tx = tx, sequences = sequences,
-                                 shift.to.transcript = TRUE,
-                                 check.vs.sequence = TRUE)
+    gr <- getRMBaseDataAsGRanges(files, tx = tx, sequences = sequences)
     #
     mcols(gr)$mod_id <- seq_along(gr)
     mcols(gr)$tx_name <- mcols(gr)$tx_id
@@ -402,11 +428,11 @@ makeEpiTxDbfromRMBaseFiles <- function(files, tx, sequences = NULL,
     if(!is.null(sequences)){
         metadata <- .add_sequence_check_to_metadata(metadata)
     }
-    makeEpiTxDbfromGRanges(gr, metadata = metadata, reassign.ids = reassign.ids)
+    makeEpiTxDbFromGRanges(gr, metadata = metadata, reassign.ids = reassign.ids)
 }
 
 
-#' @rdname makeEpiTxDbfromRMBase
+#' @rdname makeEpiTxDbFromRMBase
 #' @export
 listAvailableOrganismsFromRMBase <- function(){
     # con <- curl::curl(EPITXDB_RMBASE_URL)
@@ -433,11 +459,11 @@ listAvailableOrganismsFromRMBase <- function(){
 .listAvailableGenomesFromRMBase <- function(organism){
     # files <- .get_RMBase_files(organism)
     # .get_RMBase_genomes(files)
-    load(system.file("extdata", "rmbase_data.rda", package = "EpiTxDb"))
+    data("rmbase_data", envir = parent.frame(), package = "EpiTxDb")
     as.character(unique(rmbase_data[rmbase_data$organism == organism,]$genome))
 }
 
-#' @rdname makeEpiTxDbfromRMBase
+#' @rdname makeEpiTxDbFromRMBase
 #' @export
 listAvailableGenomesFromRMBase <- function(organism){
     if(!(organism %in% listAvailableOrganismsFromRMBase())){
@@ -451,12 +477,12 @@ listAvailableGenomesFromRMBase <- function(organism){
     # f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
     # ans <- unique(vapply(strsplit(files[f_genome],"_"),"[",character(1),4L))
     # ans[!grepl("mod",ans)]
-    load(system.file("extdata", "rmbase_data.rda", package = "EpiTxDb"))
+    data("rmbase_data", envir = parent.frame(), package = "EpiTxDb")
     as.character(rmbase_data[rmbase_data$organism == organism &
                                  rmbase_data$genome == genome,]$mod)
 }
 
-#' @rdname makeEpiTxDbfromRMBase
+#' @rdname makeEpiTxDbFromRMBase
 #' @export
 listAvailableModFromRMBase <- function(organism, genome){
     if(!(organism %in% listAvailableOrganismsFromRMBase())){

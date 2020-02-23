@@ -1,6 +1,31 @@
 #' @include EpiTxDb-class.R
 NULL
 
+#' @name select
+#' @aliases select columns keys keytypes
+#'
+#' @title Using the "select" interface on \code{EpiTxDb} objects
+#'
+#' @description
+#' As expected for a \code{AnnotationDb} object, the general accessors
+#' \code{select}, \code{keys}, \code{columns} and \code{keytypes} can be used
+#' to get information from a \code{\link[=EpiTxDb-class]{EpiTxDb}} object.
+#'
+#' @param x a \code{\link[=EpiTxDb-class]{EpiTxDb}} object
+#' @param keys,columns,keytype,... See
+#' \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} for more
+#' comprehensive description of the methods \code{select}, \code{keys},
+#' \code{columns} and \code{keytypes} and their arguments.
+#'
+#' @export
+#'
+#' @examples
+#' etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
+#'                          package="EpiTxDb")
+#' etdb <- loadDb(etdb_file)
+#' etdb
+NULL
+
 # helper functions for column name selection/conversion ------------------------
 
 # Helpers to access/process the table names and columns
@@ -291,6 +316,8 @@ NULL
     res
 }
 
+#' @rdname select
+#' @export
 setMethod("select", "EpiTxDb",
           function(x, keys, columns, keytype, ...) {
               .select(x, keys, columns, keytype, ...)
@@ -305,7 +332,8 @@ setMethod("select", "EpiTxDb",
     res
 }
 
-
+#' @rdname select
+#' @export
 setMethod("columns", "EpiTxDb",
           function(x) .columns(x)
 )
@@ -375,14 +403,19 @@ setMethod("columns", "EpiTxDb",
     AnnotationDbi:::smartKeys(x=x, keytype=keytype, ..., FUN=.keys)
 }
 
-setMethod("keys", "EpiTxDb",.keysDispatch)
+#' @rdname select
+#' @export
+setMethod("keys", "EpiTxDb", .keysDispatch)
 
 # keytypes ---------------------------------------------------------------------
 
+#' @rdname select
+#' @export
 setMethod("keytypes", "EpiTxDb",
           function(x) return(c("MODID","MODTYPE","MODNAME","TXID","TXNAME",
                                "TXENSEMBLTRANS","RXGENENAME",
                                "RXENSEMBL","RXENSEMBLTRANS","RXENTREZID",
-                               "RXENZYME","SPECTYPE","SPECGENENAME",
-                               "SPECENSEMBL","SPECENTREZID", "REFTYPE","REF"))
+                               "SPECTYPE","SPECGENENAME",
+                               "SPECENSEMBL","SPECENSEMBLTRANS","SPECENTREZID",
+                               "REFTYPE","REF"))
 )
