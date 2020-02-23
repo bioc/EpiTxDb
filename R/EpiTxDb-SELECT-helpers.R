@@ -10,7 +10,7 @@ queryAnnotationDb <- GenomicFeatures:::queryAnnotationDb
 .EPITXDB_add_table_bundle <- function(tables){
   if (length(tables) == 1L)
     return(tables)
-  skip_tables <- c("modification",  "transcript")
+  skip_tables <- c("modification",  "seqnames")
   skip_tables <- tables %in% skip_tables
   if(all(skip_tables)){
     return(tables)
@@ -32,14 +32,14 @@ queryAnnotationDb <- GenomicFeatures:::queryAnnotationDb
     joinColumn <- unique(joinColumn)
     stopifnot(length(tables) == length(joinColumn) + (length(tables) - 1L) %/% 2)
     ## Order tables & remove duplicates.
-    join_order <- c("modification", "transcript",
+    join_order <- c("modification", "seqnames",
                     "modification2reaction", "reaction",
                     "modification2specifier", "specifier",
                     "modification2reference", "reference")
-    joinColumn_order <- c("_tx_id","_mod_id","_rx_id","_spec_id","_ref_id")
+    joinColumn_order <- c("_sn_id","_mod_id","_rx_id","_spec_id","_ref_id")
     tables <- intersect(join_order, tables)
     joinColumn <- intersect(joinColumn_order, joinColumn)
-    jc_offset_tx <- sum("_tx_id" %in% joinColumn)
+    jc_offset_tx <- sum("_sn_id" %in% joinColumn)
     jc_offset_sel <- c("2"=1,"3"=2,"4"=3,"5"=3,"6"=4,"7"=4,"8"=5)
     joins <- character(2L * length(tables) - 1L)
     ON_idx <- 2L * seq_len(length(tables) - 1L)
@@ -93,7 +93,7 @@ EpiTxDb_SELECT_from_LEFT_JOIN <- function(epitxdb, table, columns,
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 EpiTxDb_SELECT_from_modification <- function(epitxdb, filter = list(),
-                                             orderby = c("_mod_id", "_tx_id"))
+                                             orderby = c("_mod_id", "_sn_id"))
 {
     schema_version <- EpiTxDb_schema_version(epitxdb)
     columns <- EPITXDB_table_columns("modification",
@@ -101,13 +101,13 @@ EpiTxDb_SELECT_from_modification <- function(epitxdb, filter = list(),
     EpiTxDb_SELECT_from_LEFT_JOIN(epitxdb, "modification", columns,
                                   filter = filter, orderby = orderby)
 }
-EpiTxDb_SELECT_from_transcript <- function(epitxdb, filter = list(),
-                                           orderby = "_tx_id")
+EpiTxDb_SELECT_from_seqnames <- function(epitxdb, filter = list(),
+                                         orderby = "_sn_id")
 {
     schema_version <- EpiTxDb_schema_version(epitxdb)
-    columns <- EPITXDB_table_columns("transcript",
+    columns <- EPITXDB_table_columns("seqnames",
                                      schema_version = schema_version)
-    EpiTxDb_SELECT_from_LEFT_JOIN(epitxdb, "transcript", columns,
+    EpiTxDb_SELECT_from_LEFT_JOIN(epitxdb, "seqnames", columns,
                                   filter = filter, orderby = orderby)
 }
 

@@ -6,12 +6,15 @@
 \alias{.EpiTxDb}
 \alias{organism,EpiTxDb-method}
 \alias{seqinfo,EpiTxDb-method}
+\alias{seqlevels,EpiTxDb-method}
 \alias{as.list,EpiTxDb-method}
 \title{EpiTxDb objects}
 \usage{
 \S4method{organism}{EpiTxDb}(object)
 
 \S4method{seqinfo}{EpiTxDb}(x)
+
+\S4method{seqlevels}{EpiTxDb}(x)
 
 \S4method{as.list}{EpiTxDb}(x)
 }

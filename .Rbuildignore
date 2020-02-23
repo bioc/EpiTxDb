@@ -3,3 +3,5 @@
 .travis.yml
 ^.*\.gz
 ^.*\.fsa
+^cache
+^hub

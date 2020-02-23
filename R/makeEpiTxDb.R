@@ -17,12 +17,13 @@ NULL
 #'     \item{\code{mod_id} }
 #'     \item{\code{mod_type} }
 #'     \item{\code{mod_name} }
-#'     \item{\code{tx_id} }
-#'     \item{\code{tx_name} }
-#'     \item{\code{tx_ensembl} }
+#'     \item{\code{mod_start} }
+#'     \item{\code{mod_end} }
+#'     \item{\code{sn_id} }
+#'     \item{\code{sn_name} }
 #'   }
 #'   The first three are mandatory, whereas one of the last has to be set.
-#'   \code{tx_id} will be generated from the other the last two. The last three
+#'   \code{sn_id} will be generated from the other the last two. The last three
 #'   columns must be consistent in meaning.
 #' @param reactions An optional \code{data.frame} containg the following
 #'   columns:
@@ -138,20 +139,18 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 .makeEpiTxDb_normarg_modifications <- function(modifications){
     .REQUIRED_COLS <- c("mod_id", "mod_type", "mod_start", "mod_end",
-                        "tx_id")
-    .OPTIONAL_COLS <- c("mod_name", "tx_name", "tx_ensembl")
-    # make sure 'tx_id is set'
-    if(!has_col(modifications, "tx_id") &&
-       !has_col(modifications, "tx_name") &&
-       !has_col(modifications, "tx_ensembl")){
-        stop("'modifications' must contain a column 'tx_ensembl' or ",
-             "'tx_name', if no column 'tx_id' is given.")
+                        "sn_id")
+    .OPTIONAL_COLS <- c("mod_name", "sn_name")
+    # make sure 'sn_id is set'
+    if(!has_col(modifications, "sn_id") &&
+       !has_col(modifications, "sn_name")){
+        stop("'modifications' must contain a column 'sn_name', if no column ",
+             "'sn_id' is given.")
     }
-    if(!has_col(modifications, "tx_id") &&
-       (has_col(modifications, "tx_name") ||
-        has_col(modifications, "tx_ensembl"))){
-        modifications$tx_id <- .make_ids(modifications,
-                                         c("tx_name","tx_ensembl"))
+    if(!has_col(modifications, "sn_id") &&
+       has_col(modifications, "sn_name")){
+        modifications$sn_id <- as.integer(factor(modifications$sn_name,
+                                                 unique(modifications$sn_name)))
     }
     check_colnames(modifications, .REQUIRED_COLS, .OPTIONAL_COLS,
                    "modifications")
@@ -171,7 +170,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     ## Check 'mod_end'.
     if (!is.numeric(modifications$mod_end)
         || any(is.na(modifications$mod_end)))
-        stop("'transcripts$mod_end' must be an integer vector ",
+        stop("'modifications$mod_end' must be an integer vector ",
              "with no NAs")
     if (!is.integer(modifications$mod_end))
         modifications$mod_end <- as.integer(modifications$mod_end)
@@ -190,60 +189,35 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         stop("'modifications$mod_type' must be a valid modification shortName ",
              "(shortName(ModRNAString()))")
     }
-    ## Check 'tx_id'.
-    if (!is.integer(modifications$tx_id)
-        || any(is.na(modifications$tx_id)))
-        stop("'modifications$tx_id' must be a integer vector with no ",
+    ## Check 'sn_id'.
+    if (!is.integer(modifications$sn_id)
+        || any(is.na(modifications$sn_id)))
+        stop("'modifications$sn_id' must be a integer vector with no ",
              "NAs")
-    ## Check 'tx_name'.
-    if (has_col(modifications, "tx_name")){
-        if(!.is_character_or_factor(modifications$tx_name)
-           || any(is.na(modifications$tx_name))){
-            stop("'modifications$tx_name' must be a character vector ",
+    ## Check 'sn_name'.
+    if (has_col(modifications, "sn_name")){
+        if(!.is_character_or_factor(modifications$sn_name)
+           || any(is.na(modifications$sn_name))){
+            stop("'modifications$sn_name' must be a character vector ",
                  "(or factor) with no NAs")
         }
-        if(length(unique(modifications$tx_id)) !=
-           length(unique(modifications$tx_name))){
-            stop("'modifications$tx_name' must match ",
-                 "'modifications$tx_id' in meaning.")
+        if(length(unique(modifications$sn_id)) !=
+           length(unique(modifications$sn_name))){
+            stop("'modifications$sn_name' must match ",
+                 "'modifications$sn_id' in meaning.")
         }
-        f1 <- factor(modifications$tx_id,
-                     unique(modifications$tx_id))
-        p1 <- PartitioningByWidth(split(modifications$tx_id,f1))
-        f2 <- factor(modifications$tx_name,
-                     unique(modifications$tx_name))
-        p2 <- PartitioningByWidth(split(modifications$tx_name,f2))
+        f1 <- factor(modifications$sn_id,
+                     unique(modifications$sn_id))
+        p1 <- PartitioningByWidth(split(modifications$sn_id,f1))
+        f2 <- factor(modifications$sn_name,
+                     unique(modifications$sn_name))
+        p2 <- PartitioningByWidth(split(modifications$sn_name,f2))
         if(!all(p1 == p2)){
-            stop("'modifications$tx_name' must match ",
-                 "'modifications$tx_id' in meaning.")
+            stop("'modifications$sn_name' must match ",
+                 "'modifications$sn_id' in meaning.")
         }
     } else {
-        modifications$tx_name <- character(1)
-    }
-    ## Check 'tx_ensembl'.
-    if (has_col(modifications, "tx_ensembl")){
-        if(!.is_character_or_factor(modifications$tx_ensembl)
-           || any(is.na(modifications$tx_ensembl))){
-            stop("'modifications$tx_ensembl' must be a character vector",
-                 " (or factor) with no NAs")
-        }
-        if(length(unique(modifications$tx_id)) !=
-           length(unique(modifications$tx_ensembl))){
-            stop("'modifications$tx_ensembl' must match ",
-                 "'modifications$tx_id' in meaning.")
-        }
-        f1 <- factor(modifications$tx_id,
-                     unique(modifications$tx_id))
-        p1 <- PartitioningByWidth(split(modifications$tx_id,f1))
-        f2 <- factor(modifications$tx_ensembl,
-                     unique(modifications$tx_ensembl))
-        p2 <- PartitioningByWidth(split(modifications$tx_ensembl,f2))
-        if(!all(p1 == p2)){
-            stop("'modifications$tx_ensembl' must match ",
-                 "'modifications$tx_id' in meaning.")
-        }
-    } else {
-        modifications$tx_ensembl <- character(1)
+        modifications$sn_name <- character(1)
     }
     modifications
 }
@@ -458,22 +432,20 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 # write table helper functions -------------------------------------------------
 
-.write_transcript_table <- function(conn,
-                                    tx_id,
-                                    tx_name,
-                                    tx_ensembl){
-    data <- data.frame(tx_id = tx_id,
-                       tx_name = tx_name,
-                       tx_ensembl = tx_ensembl,
+.write_seqnames_table <- function(conn,
+                                  sn_id,
+                                  sn_name){
+    data <- data.frame(sn_id = sn_id,
+                       sn_name = sn_name,
                        check.names = FALSE, stringsAsFactors = FALSE)
     data <- unique(data)
 
     ## Create the table.
-    SQL <- build_SQL_CREATE_transcript_table()
+    SQL <- build_SQL_CREATE_seqnames_table()
     dbExecute(conn, SQL)
 
     ## Fill the table.
-    insert_data_into_table(conn, "transcript", data)
+    insert_data_into_table(conn, "seqnames", data)
 }
 
 .write_modification_table <- function(conn,
@@ -482,7 +454,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                                       mod_name,
                                       mod_start,
                                       mod_end,
-                                      tx_id){
+                                      sn_id){
     if (is.null(mod_name))
         mod_name <- rep.int(NA_character_, length(mod_internal_id))
     data <- data.frame(mod_internal_id = mod_internal_id,
@@ -490,7 +462,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                        mod_name = mod_name,
                        mod_start = mod_start,
                        mod_end = mod_end,
-                       tx_id = tx_id,
+                       sn_id = sn_id,
                        check.names = FALSE, stringsAsFactors = FALSE)
     data <- unique(data)
 
@@ -681,17 +653,16 @@ makeEpiTxDb <- function(modifications, reactions = NULL, specifiers = NULL,
     references <- .shrink_df(references, "ref_id")
     ## Create the db in a temp file.
     conn <- dbConnect(SQLite(), dbname="")
-    .write_transcript_table(conn,
-                            modifications$tx_id,
-                            modifications$tx_name,
-                            modifications$tx_ensembl)
+    .write_seqnames_table(conn,
+                          modifications$sn_id,
+                          modifications$sn_name)
     .write_modification_table(conn,
                               internal_mod_id,
                               modifications$mod_type,
                               modifications$mod_name,
                               modifications$mod_start,
                               modifications$mod_end,
-                              modifications$tx_id)
+                              modifications$sn_id)
     .write_reaction_table(conn,
                           reactions$rx_id,
                           reactions$rx_genename,

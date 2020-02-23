@@ -27,11 +27,11 @@ makeEpiTxDbFromRMBase(
   reassign.ids = FALSE
 )
 
-getRMBaseDataAsGRanges(files, tx = NULL, sequences = NULL)
+getRMBaseDataAsGRanges(files)
 
 makeEpiTxDbFromRMBaseFiles(
   files,
-  tx,
+  tx = NULL,
   sequences = NULL,
   metadata = NULL,
   reassign.ids = FALSE

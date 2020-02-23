@@ -25,7 +25,7 @@ modifiedSeqsByTranscript(x, sequences, ...)
 
 \S4method{modificationsBy}{EpiTxDb}(
   x,
-  by = c("transcript", "mod_type", "reaction", "specifier", "specifier_type")
+  by = c("seqnames", "mod_type", "reaction", "specifier", "specifier_type")
 )
 
 \S4method{modifiedSeqsByTranscript}{EpiTxDb,DNAStringSet}(x, sequences)
@@ -40,7 +40,7 @@ c("mod_id","mod_type","mod_name")})}
 
 \item{filter}{Either NULL or a named list of vectors to be used to restrict
 the output. Valid names for this list are: "mod_id", "mod_type",
-"mod_name", "tx_id", "tx_name", "tx_ensembl", "rx_genename", "rx_ensembl",
+"mod_name", "sn_id", "sn_name", "rx_genename", "rx_ensembl",
 "rx_ensembltrans", "rx_entrezid", "spec_genename", "spec_type",
 "spec_ensembl", "spec_ensembltrans", "spec_entrezid" , "ref_type" and
 "ref". (default: \code{filter = NULL})}
@@ -54,7 +54,7 @@ modification names are set as the names of the returned object. (default:
 \item{by}{By which information type should the result be split into? A
 \code{character} value from one of the following values:
 \itemize{
-  \item{transcript}
+  \item{seqnames}
   \item{mod_type}
   \item{reaction}
   \item{specifier}

@@ -74,7 +74,7 @@ setDataFrameColClass <- GenomicFeatures:::setDataFrameColClass
         mod_name = "character",
         mod_start = "integer",
         mod_end = "integer",
-        tx_id = "integer"
+        sn_id = "integer"
     )
     if (is.null(modifications)) {
         modifications <- makeZeroRowDataFrame(COL2CLASS)
@@ -95,29 +95,28 @@ load_modifications <- function(epitxdb, set.col.class = FALSE){
     .format_modifications(modifications, set.col.class = set.col.class)
 }
 
-.format_transcripts <- function(transcripts, set.col.class = FALSE){
+.format_seqnames <- function(seqnames, set.col.class = FALSE){
     COL2CLASS <- c(
-        tx_id = "integer",
-        tx_name = "character",
-        tx_ensembl = "character"
+        sn_id = "integer",
+        sn_name = "character"
     )
-    if (is.null(transcripts)) {
-      transcripts <- makeZeroRowDataFrame(COL2CLASS)
+    if (is.null(seqnames)) {
+        seqnames <- makeZeroRowDataFrame(COL2CLASS)
     } else {
-        if (!is.data.frame(transcripts))
-            stop("'transcripts' must be a data frame")
-        if (!identical(names(transcripts), names(COL2CLASS)))
-          transcripts <- transcripts[names(COL2CLASS)]
+        if (!is.data.frame(seqnames))
+            stop("'seqnames' must be a data frame")
+        if (!identical(names(seqnames), names(COL2CLASS)))
+            seqnames <- seqnames[names(COL2CLASS)]
         if (set.col.class)
-            transcripts <- setDataFrameColClass(transcripts, COL2CLASS)
+            seqnames <- setDataFrameColClass(seqnames, COL2CLASS)
     }
-    transcripts
+    seqnames
 }
 
-load_transcripts <- function(epitxdb, set.col.class = FALSE){
-    transcripts <- EpiTxDb_SELECT_from_transcript(epitxdb)
-    colnames(transcripts) <- sub("^_", "", colnames(transcripts))
-    .format_transcripts(transcripts, set.col.class = set.col.class)
+load_seqnames <- function(epitxdb, set.col.class = FALSE){
+    seqnames <- EpiTxDb_SELECT_from_seqnames(epitxdb)
+    colnames(seqnames) <- sub("^_", "", colnames(seqnames))
+    .format_seqnames(seqnames, set.col.class = set.col.class)
 }
 
 .format_reactions <- function(reactions, set.col.class = FALSE){
@@ -214,11 +213,11 @@ load_references <- function(epitxdb, set.col.class = FALSE) {
     NULL
 }
 
-.valid.transcript.table <- function(conn){
+.valid.seqnames.table <- function(conn){
     schema_version <- EpiTxDb_schema_version(conn)
-    colnames <- EPITXDB_table_columns("transcript",
+    colnames <- EPITXDB_table_columns("seqnames",
                                       schema_version=schema_version)
-    msg <- AnnotationDbi:::.valid.table.colnames(conn, "transcript", colnames)
+    msg <- AnnotationDbi:::.valid.table.colnames(conn, "seqnames", colnames)
     if (!is.null(msg))
       return(msg)
     NULL
@@ -258,7 +257,7 @@ load_references <- function(epitxdb, set.col.class = FALSE) {
     conn <- dbconn(object)
     c(AnnotationDbi:::.valid.metadata.table(conn, DB_TYPE_NAME, DB_TYPE_VALUE),
         .valid.modification.table(conn),
-        .valid.transcript.table(conn),
+        .valid.seqnames.table(conn),
         .valid.reaction.table(conn),
         .valid.specifier.table(conn),
         .valid.reference.table(conn))
@@ -289,50 +288,33 @@ setMethod("organism", "EpiTxDb",
 # seqinfo ----------------------------------------------------------------------
 
 .get_seqnames <- function(seqnames_db){
-    if(!all(lengths(seqnames_db$`_tx_id`) == 1L) ||
-       !all(lengths(seqnames_db$tx_name) == 1L) ||
-       !all(lengths(seqnames_db$tx_ensembl) == 1L)){
+    if(!all(lengths(seqnames_db$`_sn_id`) == 1L) ||
+       !all(lengths(seqnames_db$sn_name) == 1L)){
         stop(".")
     }
-    tx_name <- seqnames_db$tx_name
-    tx_ensembl <- seqnames_db$tx_ensembl
-    tx_id <- seqnames_db$`_tx_id`
-    if(is(tx_name,"List")){
-        tx_name <- unlist(tx_name)
+    sn_name <- seqnames_db$sn_name
+    sn_id <- seqnames_db$`_sn_id`
+    if(is(sn_name,"List")){
+        sn_name <- unlist(sn_name)
     }
-    if(is(tx_ensembl,"List")){
-        tx_ensembl <- unlist(tx_ensembl)
+    if(is(sn_id,"List")){
+        sn_id <- unlist(sn_id)
     }
-    if(is(tx_id,"List")){
-        tx_id <- unlist(tx_id)
-    }
-    name_not_empty <- tx_name != ""
-    ensembl_not_empty <- tx_ensembl != ""
-    both_empty <- !ensembl_not_empty & !name_not_empty
+    name_not_empty <- sn_name != ""
     if(all(name_not_empty)){
-        return(tx_name)
+        return(sn_name)
     }
-    if(all(ensembl_not_empty)){
-        return(tx_ensembl)
-    }
-    if(all(both_empty)){
-        return(tx_id)
-    }
-    seqnames <- tx_id
-    if(length(intersect(seqnames, tx_name)) != 0L){
+    seqnames <- sn_id
+    if(length(intersect(seqnames, sn_name)) != 0L){
         return(seqnames)
     }
-    seqnames[name_not_empty] <- tx_name[name_not_empty]
-    if(length(intersect(seqnames, tx_ensembl)) != 0L){
-        return(seqnames)
-    }
-    seqnames[ensembl_not_empty] <- tx_ensembl[ensembl_not_empty]
+    seqnames[name_not_empty] <- sn_name[name_not_empty]
     seqnames
 }
 
 .get_EpiTxDb_seqinfo <- function(x){
-    sql <- paste0("SELECT DISTINCT _tx_id, tx_name, tx_ensembl FROM ",
-                  "transcript")
+    sql <- paste0("SELECT DISTINCT _sn_id, sn_name FROM ",
+                  "seqnames")
     seqnames_db <- queryAnnotationDb(x, sql)
     ans <- Seqinfo(seqnames = .get_seqnames(seqnames_db))
     sql <- "SELECT value FROM metadata WHERE name='Genome'"
@@ -348,17 +330,26 @@ setMethod("organism", "EpiTxDb",
 #' @export
 setMethod("seqinfo", "EpiTxDb", .get_EpiTxDb_seqinfo)
 
+.get_EpiTxDb_seqlevels <- function(x){
+    seqnames(.get_EpiTxDb_seqinfo(x))
+}
+
+#' @rdname EpiTxDb-class
+#' @importFrom GenomeInfoDb seqlevels
+#' @export
+setMethod("seqlevels", "EpiTxDb", .get_EpiTxDb_seqlevels)
+
 # as.list and comparison -------------------------------------------------------
 
-.format_txdb_dump <- function(modifications = NULL, transcripts = NULL,
+.format_txdb_dump <- function(modifications = NULL, seqnames = NULL,
                               reactions = NULL, specifiers = NULL,
                               references = NULL){
     modifications <- .format_modifications(modifications, set.col.class = TRUE)
-    transcripts <- .format_transcripts(transcripts, set.col.class = TRUE)
+    seqnames <- .format_seqnames(seqnames, set.col.class = TRUE)
     reactions <- .format_reactions(reactions, set.col.class = TRUE)
     specifiers <- .format_specifiers(specifiers, set.col.class = TRUE)
     references <- .format_references(references, set.col.class = TRUE)
-    list(modifications = modifications, transcripts = transcripts,
+    list(modifications = modifications, seqnames = seqnames,
          reactions = reactions, specifiers = specifiers,
          references = references)
 }
@@ -369,11 +360,11 @@ setMethod("as.list", "EpiTxDb",
     function(x)
     {
         modifications <- load_modifications(x)
-        transcripts <- load_transcripts(x)
+        seqnames <- load_seqnames(x)
         reactions <- load_reactions(x)
         specifiers <- load_specifiers(x)
         references <- load_references(x)
-        .format_txdb_dump(modifications, transcripts, reactions, specifiers,
+        .format_txdb_dump(modifications, seqnames, reactions, specifiers,
                           references)
     }
 )

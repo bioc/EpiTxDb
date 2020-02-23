@@ -8,7 +8,11 @@ NULL
 #'
 #' @description
 #' \code{makeEpiTxDbFromtRNAdb} will make use of the tRNAdb online
-#' resources.
+#' resources and extract the modification information from the RNA database.
+#'
+#' When a
+#'
+#'
 #'
 #' \code{makeEpiTxDbFromtRNAdb} uses the functions provided by the
 #' \code{\link[tRNAdbImport:tRNAdbImport]{tRNAdbImport}} package.
@@ -39,14 +43,81 @@ NULL
 
 # makeEpiTxDbFromtRNAdb --------------------------------------------------------
 
+.add_reference_information_tRNAdb <- function(mod, gr){
+    # collect references
+    f_ref <- mcols(gr)$tRNAdb_reference != ""
+    f_pmid <- mcols(gr)$tRNAdb_pmid != ""
+
+    ref_type <- list(IRanges::CharacterList(as.list(rep("tRNAdb_ID",
+                                                        length(gr)))),
+                     IRanges::CharacterList(as.list(rep("tRNAdb_REF",
+                                                        length(gr)))),
+                     IRanges::CharacterList(as.list(rep("PMID",
+                                                        length(gr)))))
+    ref_type[[2]][!f_ref] <- ""
+    ref_type[[3]][!f_pmid] <- ""
+    ref_type <- do.call(pc,ref_type)
+    ref_type <- ref_type[ref_type != ""]
+
+    references <- list(mcols(gr)$tRNAdb_ID,
+                       mcols(gr)$tRNAdb_reference,
+                       mcols(gr)$tRNAdb_pmid)
+    references[[2]][!f_ref] <- ""
+    references[[3]][!f_pmid] <- ""
+    references <- do.call(pc,references)
+    references <- references[references != ""]
+
+    m <- as.integer(S4Vectors::match(seqnames(mod), seqnames(gr)))
+    mcols(mod)$ref_type <- ref_type[m]
+    mcols(mod)$ref <- references[m]
+    mod
+}
+
+.map_modifications_to_sequences <- function(mod, gr, sequences){
+    seq <- as(gr$tRNA_seq,"RNAStringSet")
+    width <- nchar(seq)
+    width[gr$tRNA_CCA.end] <- width[gr$tRNA_CCA.end] - 3L
+    seq <- Biostrings::subseq(seq, 1L, width)
+    # remove sequences which are definitly to long
+    max_length <- max(lengths(seq))
+    min_length <- min(lengths(seq))
+    sequences[lengths(sequences) > (max_length + 50)] <-
+        do.call(class(sequences),
+                list(paste0(rep("A",(max_length + 50)),collapse = "")))
+    sequences[lengths(sequences) < min_length] <-
+        do.call(class(sequences),
+                list(paste0(rep("A",(max_length + 50)),collapse = "")))
+    hits <- Biostrings::vwhichPDict(sequences, seq,
+                                    with.indels = TRUE, max.mismatch = 5L)
+    hits <- Hits(unlist(hits),as.integer(unlist(Map(rep.int,seq_along(hits),lengths(hits)))),
+                 length(sequences), length(seq))
+    hits_mod <- findMatches(seqnames(mod),names(seq))
+    # transfer names of sequences to seqnames for modifications and expand the
+    # result with multiple matches
+    sn_name <- names(sequences)[queryHits(hits)]
+    sn_name <- IRanges::CharacterList(split(sn_name,subjectHits(hits)))
+    sn_name <- vapply(sn_name,paste,character(1),collapse=",")
+    hits_mod <- hits_mod[subjectHits(hits_mod) %in% unique(subjectHits(hits))]
+    mcols(mod)[queryHits(hits_mod),"sn_name"] <- sn_name[as.character(subjectHits(hits_mod))]
+    sn_name <- IRanges::CharacterList(strsplit(as.character(mcols(mod)$sn_name),","))
+    # expand results
+    mod <- mod[unlist(Map(rep,seq_along(sn_name),lengths(sn_name)))]
+    # assemble new result
+    mcols <- mcols(mod)[,colnames(mcols(mod)) != "sn_name"]
+    mod <- GenomicRanges::GRanges(seqnames = unlist(sn_name),
+                                  ranges = IRanges::ranges(mod),
+                                  strand = strand(mod),
+                                  mcols)
+    mcols(mod)$mod_id <- seq_along(mod)
+    mod
+}
+
 .add_tRNAdb_metadata_columns <- function(gr){
     # assemble metadata columns
     mcols <- mcols(gr)
     colnames(mcols) <- gsub("^mod$","mod_type",colnames(mcols))
-    mcols$mod_name <- paste0(mcols$mod_type,"_",start(gr))
+    mcols$mod_name <- paste0(mcols$mod_type,"_",start(gr),"_",seqnames(gr))
     mcols$mod_id <- seq_len(nrow(mcols))
-    mcols$tx_id <- as.integer(seqnames(gr))
-    mcols$tx_name <- as.character(seqnames(gr))
     mcols(gr) <- mcols
     gr
 }
@@ -54,7 +125,7 @@ NULL
 #' @rdname makeEpiTxDbFromtRNAdb
 #' @importFrom tRNAdbImport import.tRNAdb
 #' @export
-gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL,
+gettRNAdbDataAsGRanges <- function(organism, sequences = NULL,
                                    dbURL = tRNAdbImport::TRNA_DB_URL){
     if(!assertive::is_a_non_empty_string(organism) ||
        !(organism %in% listAvailableOrganismsFromtRNAdb())){
@@ -78,86 +149,29 @@ gettRNAdbDataAsGRanges <- function(organism, tx = NULL, sequences = NULL,
     }
     gr <- suppressWarnings(do.call(c,gr))
     message("Assembling data ...")
-    seq_gr <- gr$tRNA_seq
-    mod <- separate(seq_gr)
-    # collect references
-    f_ref <- mcols(gr)$tRNAdb_reference != ""
-    f_pmid <- mcols(gr)$tRNAdb_pmid != ""
-
-    ref_type <- list(IRanges::CharacterList(as.list(rep("tRNAdb_ID",
-                                                        length(gr)))),
-                     IRanges::CharacterList(as.list(rep("tRNAdb_REF",
-                                                        length(gr)))),
-                     IRanges::CharacterList(as.list(rep("PMID",
-                                                        length(gr)))))
-    ref_type[[2]][!f_ref] <- ""
-    ref_type[[3]][!f_pmid] <- ""
-    ref_type <- do.call(pc,ref_type)
-    ref_type <- ref_type[ref_type != ""]
-
-    references <- list(mcols(gr)$tRNAdb_ID,
-                      mcols(gr)$tRNAdb_reference,
-                      mcols(gr)$tRNAdb_pmid)
-    references[[2]][!f_ref] <- ""
-    references[[3]][!f_pmid] <- ""
-    references <- do.call(pc,references)
-    references <- references[references != ""]
-
-    m <- as.integer(S4Vectors::match(seqnames(mod), seqnames(gr)))
-    mcols(mod)$ref_type <- ref_type[m]
-    mcols(mod)$ref <- references[m]
+    mod <- separate(gr$tRNA_seq)
+    mod <- .add_reference_information_tRNAdb(mod, gr)
+    #
+    if(!is.null(sequences)){
+        message("Trying to associate tRNAdb entries with sequences ...")
+        if(is.null(names(sequences)) ||
+           anyDuplicated(names(sequences)) ||
+           any(names(sequences) == "")){
+            stop("names() of 'sequences' must be set, unique and not empty.",
+                 call. = FALSE)
+        }
+        mod <- .map_modifications_to_sequences(mod, gr, sequences)
+    }
     # assemble metadata columns
     mod <- .add_tRNAdb_metadata_columns(mod)
-    #
-    if(!is.null(tx) && !is.null(sequences)){
-        message("Trying to associate tRNAdb entries with transcripts ...")
-        tx <- .norm_tx(tx)
-        .check_tx_sequences(tx, sequences)
-        seq_rna_gr <- as(seq_gr,"RNAStringSet")
-        width <- nchar(seq_rna_gr)
-        width[gr$tRNA_CCA.end] <- width[gr$tRNA_CCA.end] - 3L
-        seq_rna_gr <- Biostrings::subseq(seq_rna_gr, 1L, width)
-        # remove sequences which are definitly to long
-        max_length <- max(lengths(seq_rna_gr))
-        min_length <- min(lengths(seq_rna_gr))
-        sequences[lengths(sequences) > (max_length + 50)] <-
-            do.call(class(sequences),
-                    list(paste0(rep("A",(max_length + 50)),collapse = "")))
-        sequences[lengths(sequences) < min_length] <-
-            do.call(class(sequences),
-                    list(paste0(rep("A",(max_length + 50)),collapse = "")))
-        hits <- Biostrings::vwhichPDict(sequences, seq_rna_gr,
-                                        with.indels = TRUE, max.mismatch = 6)
-        hits <- Hits(unlist(hits),as.integer(unlist(Map(rep.int,seq_along(hits),lengths(hits)))),
-                     length(sequences), length(seq_rna_gr))
-        hits_mod <- findMatches(seqnames(mod),names(seq_rna_gr))
-        # transfer genenames to modifications
-        tx_name <-
-            unlist(unique(mcols(tx,level="within")[queryHits(hits),"tx_id"]))
-        tx_name <- IRanges::CharacterList(split(tx_name,subjectHits(hits)))
-        tx_name <- vapply(tx_name,paste,character(1),collapse=",")
-        hits_mod <- hits_mod[subjectHits(hits_mod) %in% unique(subjectHits(hits))]
-        mod[queryHits(hits_mod)]$tx_name <- tx_name[as.character(subjectHits(hits_mod))]
-        tx_name <- IRanges::CharacterList(strsplit(as.character(mcols(mod)$tx_name),","))
-        mod <- mod[unlist(Map(rep,seq_along(tx_name),lengths(tx_name)))]
-        mcols(mod)$mod_id <- seq_along(mod)
-        mod <- GenomicRanges::GRanges(seqnames = unlist(tx_name),
-                                      ranges = IRanges::ranges(mod),
-                                      strand = strand(mod),
-                                      mcols(mod))
-        # assemble metadata columns
-        mod <- .add_tRNAdb_metadata_columns(mod)
-    }
     mod
 }
 
 #' @rdname makeEpiTxDbFromtRNAdb
 #' @export
-makeEpiTxDbFromtRNAdb <- function(organism, tx = NULL, sequences = NULL,
-                                  metadata = NULL,
+makeEpiTxDbFromtRNAdb <- function(organism, sequences = NULL, metadata = NULL,
                                   dbURL = tRNAdbImport::TRNA_DB_UR){
-    gr <- gettRNAdbDataAsGRanges(organism, tx = tx, sequences = sequences,
-                                 dbURL = dbURL)
+    gr <- gettRNAdbDataAsGRanges(organism, sequences = sequences, dbURL = dbURL)
     if(!is.null(sequences)){
         gr <- gr[!duplicated(paste0(as.character(gr),"-",gr$mod_type))]
         colnames(mcols(gr)) <- gsub("mod_type","mod",colnames(mcols(gr)))

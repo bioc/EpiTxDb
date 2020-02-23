@@ -42,7 +42,7 @@ NULL
     tCols <- .getTableColMapping(x)
     longNames <- unique(unlist(tCols,use.names=FALSE))
     abbrev <- unique(toupper((gsub("_","",unlist(tCols,use.names=FALSE)))))
-    abbrev <- gsub("^TRANSCRIPT","TX",abbrev)
+    abbrev <- gsub("^SEQNAMES","SN",abbrev)
     abbrev <- gsub("^REACTION","RX",abbrev)
     abbrev <- gsub("^SPECIFIER","SPEC",abbrev)
     abbrev <- gsub("^REFERENCE","REF",abbrev)
@@ -89,8 +89,8 @@ NULL
 # real joins for likely combos
 .tableJoinSelector <- function(tName){
     #
-    modtra <- paste("(SELECT * FROM modification ",
-                     "JOIN transcript ON (modification._tx_id = transcript._tx_id) ) ")
+    modseq <- paste("(SELECT * FROM modification ",
+                     "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ) ")
 
     modrea <- paste("(SELECT * FROM modification ",
                     "LEFT JOIN modification2reaction ON (modification._mod_id = modification2reaction._mod_id) ",
@@ -104,18 +104,18 @@ NULL
                     "LEFT JOIN modification2reference ON (modification._mod_id = modification2reference._mod_id) ",
                     "LEFT JOIN reference ON (modification2reference._ref_id = reference._ref_id) )")
     #
-    modtrarea <- paste("(SELECT * FROM modification ",
-                    "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+    modseqrea <- paste("(SELECT * FROM modification ",
+                    "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                     "LEFT JOIN modification2reaction ON (modification._mod_id = modification2reaction._mod_id) ",
                     "LEFT JOIN reaction ON (modification2reaction._rx_id = reaction._rx_id) )")
 
-    modtraspe <- paste("(SELECT * FROM modification ",
-                    "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+    modseqspe <- paste("(SELECT * FROM modification ",
+                    "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                     "LEFT JOIN modification2specifier ON (modification._mod_id = modification2specifier._mod_id) ",
                     "LEFT JOIN specifier ON (modification2specifier._spec_id = specifier._spec_id) )")
 
-    modtraref <- paste("(SELECT * FROM modification ",
-                    "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+    modseqref <- paste("(SELECT * FROM modification ",
+                    "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                     "LEFT JOIN modification2reference ON (modification._mod_id = modification2reference._mod_id) ",
                     "LEFT JOIN reference ON (modification2reference._ref_id = reference._ref_id) )")
     #
@@ -138,7 +138,7 @@ NULL
                        "LEFT JOIN reference ON (modification2reference._ref_id = reference._ref_id) ) ")
     #
     modreasperef <- paste("(SELECT * FROM modification ",
-                          "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+                          "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                           "LEFT JOIN modification2reaction ON (modification._mod_id = modification2reaction._mod_id) ",
                           "LEFT JOIN reaction ON (modification2reaction._rx_id = reaction._rx_id) ",
                           "LEFT JOIN modification2specifier ON (modification._mod_id = modification2specifier._mod_id) ",
@@ -146,22 +146,22 @@ NULL
                           "LEFT JOIN modification2reference ON (modification._mod_id = modification2reference._mod_id) ",
                           "LEFT JOIN reference ON (modification2reference._ref_id = reference._ref_id) ) ")
     #
-    modtrareaspe <- paste("(SELECT * FROM modification ",
-                          "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+    modseqreaspe <- paste("(SELECT * FROM modification ",
+                          "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                           "LEFT JOIN modification2reaction ON (modification._mod_id = modification2reaction._mod_id) ",
                           "LEFT JOIN reaction ON (modification2reaction._rx_id = reaction._rx_id) ",
                           "LEFT JOIN modification2specifier ON (modification._mod_id = modification2specifier._mod_id) ",
                           "LEFT JOIN specifier ON (modification2specifier._spec_id = specifier._spec_id) ) ")
 
-    modtrarearef <- paste("(SELECT * FROM modification ",
-                          "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+    modseqrearef <- paste("(SELECT * FROM modification ",
+                          "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                           "LEFT JOIN modification2reaction ON (modification._mod_id = modification2reaction._mod_id) ",
                           "LEFT JOIN reaction ON (modification2reaction._rx_id = reaction._rx_id) ",
                           "LEFT JOIN modification2reference ON (modification._mod_id = modification2reference._mod_id) ",
                           "LEFT JOIN reference ON (modification2reference._ref_id = reference._ref_id) ) ")
 
-    modtrasperef <- paste("(SELECT * FROM modification ",
-                          "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+    modseqsperef <- paste("(SELECT * FROM modification ",
+                          "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                           "LEFT JOIN modification2specifier ON (modification._mod_id = modification2specifier._mod_id) ",
                           "LEFT JOIN specifier ON (modification2specifier._spec_id = specifier._spec_id) ",
                           "LEFT JOIN modification2reference ON (modification._mod_id = modification2reference._mod_id) ",
@@ -175,8 +175,8 @@ NULL
                           "LEFT JOIN modification2reference ON (modification._mod_id = modification2reference._mod_id) ",
                           "LEFT JOIN reference ON (modification2reference._ref_id = reference._ref_id) ) ")
     #
-    modtrareasperef <- paste("(SELECT * FROM modification ",
-                             "JOIN transcript ON (modification._tx_id = transcript._tx_id) ",
+    modseqreasperef <- paste("(SELECT * FROM modification ",
+                             "JOIN seqnames ON (modification._sn_id = seqnames._sn_id) ",
                              "LEFT JOIN modification2reaction ON (modification._mod_id = modification2reaction._mod_id) ",
                              "LEFT JOIN reaction ON (modification2reaction._rx_id = reaction._rx_id) ",
                              "LEFT JOIN modification2specifier ON (modification._mod_id = modification2specifier._mod_id) ",
@@ -186,34 +186,34 @@ NULL
 
     sql <- switch(EXPR = tName,
                   "mod" = "modification",
-                  "tra" = "transcript",
+                  "seq" = "seqnames",
                   "rea" = "reaction",
                   "spe" = "specifier",
                   "ref" = "reference",
-                  "modtra" = modtra,
+                  "modseq" = modseq,
                   "modrea" = modrea,
                   "modspe" = modspe,
                   "modref" = modref,
-                  "trarea" = modtrarea,
-                  "traspe" = modtraspe,
-                  "traref" = modtraref,
+                  "seqrea" = modseqrea,
+                  "seqspe" = modseqspe,
+                  "seqref" = modseqref,
                   "reaspe" = modreaspe,
                   "rearef" = modrearef,
                   "speref" = modsperef,
-                  "modtrarea" = modtrarea,
-                  "modtraspe" = modtraspe,
-                  "modtraref" = modtraref,
+                  "modseqrea" = modseqrea,
+                  "modseqspe" = modseqspe,
+                  "modseqref" = modseqref,
                   "modreaspe" = modreaspe,
                   "modrearef" = modrearef,
                   "modsperef" = modsperef,
-                  "trareaspe" = modtrareaspe,
-                  "trarearef" = modtrarearef,
-                  "trasperef" = modtrasperef,
+                  "seqreaspe" = modseqreaspe,
+                  "seqrearef" = modseqrearef,
+                  "seqsperef" = modseqsperef,
                   "reasperef" = modreasperef,
-                  "modtrareaspe" = modtrareaspe,
-                  "modtrarearef" = modtrarearef,
+                  "modseqreaspe" = modseqreaspe,
+                  "modseqrearef" = modseqrearef,
                   "modreasperef" = modreasperef,
-                  "modtrareasperef" = modtrareasperef,
+                  "modseqreasperef" = modseqreasperef,
                   stop(paste("No query for this combination of tables.",
                              "Please add ",tName," to the interpolator")))
     sql
@@ -251,7 +251,6 @@ NULL
 # select -----------------------------------------------------------------------
 
 .select <- function(x, keys, columns, keytype, ...){
-    browser()
     extraArgs <- list(...)
     if(missing(keys) || !is.character(keys))
         stop("'keys' must be a character vector")
@@ -353,15 +352,12 @@ setMethod("columns", "EpiTxDb",
         "MODNAME" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT mod_name FROM modification", 1L),
-        "TXID" = AnnotationDbi:::dbQuery(
+        "SNID" = AnnotationDbi:::dbQuery(
             dbconn(x),
-            "SELECT DISTINCT _tx_id FROM transcript", 1L),
-        "TXNAME" = AnnotationDbi:::dbQuery(
+            "SELECT DISTINCT _sn_id FROM seqnames", 1L),
+        "SNNAME" = AnnotationDbi:::dbQuery(
             dbconn(x),
-            "SELECT DISTINCT tx_name FROM transcript", 1L),
-        "TXENSEMBLTRANS" = AnnotationDbi:::dbQuery(
-            dbconn(x),
-            "SELECT DISTINCT tx_ensembl FROM transcript", 1L),
+            "SELECT DISTINCT sn_name FROM seqnames", 1L),
         "RXGENENAME" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT rx_genename FROM reaction", 1L),
@@ -412,10 +408,9 @@ setMethod("keys", "EpiTxDb", .keysDispatch)
 #' @rdname select
 #' @export
 setMethod("keytypes", "EpiTxDb",
-          function(x) return(c("MODID","MODTYPE","MODNAME","TXID","TXNAME",
-                               "TXENSEMBLTRANS","RXGENENAME",
-                               "RXENSEMBL","RXENSEMBLTRANS","RXENTREZID",
-                               "SPECTYPE","SPECGENENAME",
+          function(x) return(c("MODID","MODTYPE","MODNAME","SNID","SNNAME",
+                               "RXGENENAME","RXENSEMBL","RXENSEMBLTRANS",
+                               "RXENTREZID", "SPECTYPE","SPECGENENAME",
                                "SPECENSEMBL","SPECENSEMBLTRANS","SPECENTREZID",
                                "REFTYPE","REF"))
 )

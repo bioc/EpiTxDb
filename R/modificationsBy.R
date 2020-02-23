@@ -20,7 +20,7 @@ NULL
         x
     }
     f <- switch(by,
-                "transcript" = seqnames(gr),
+                "seqnames" = seqnames(gr),
                 "mod_type" = gr_mcols$mod,
                 "reaction" = FUN(gr_mcols$rx_genename),
                 "specifier" = FUN(gr_mcols$spec_genename),
@@ -31,10 +31,10 @@ NULL
 }
 
 
-.extract_features_by <- function(epitxdb, by = "transcript"){
+.extract_features_by <- function(epitxdb, by = "seqnames"){
     ans <- switch(by,
-                  "transcript" = modifications(epitxdb,
-                                               c("MODID", "MODTYPE","MODNAME")),
+                  "seqnames" = modifications(epitxdb,
+                                             c("MODID", "MODTYPE","MODNAME")),
                   "mod_type" = modifications(epitxdb,
                                              c("MODTYPE", "MODID", "MODNAME")),
                   "reaction" = modifications(epitxdb,
@@ -54,7 +54,7 @@ NULL
 #' @rdname modifications
 #' @export
 setMethod("modificationsBy", "EpiTxDb",
-    function(x, by = c("transcript","mod_type","reaction","specifier",
+    function(x, by = c("seqnames","mod_type","reaction","specifier",
                        "specifier_type")){
       by <- match.arg(by)
       .extract_features_by(x, by = by)
@@ -66,7 +66,7 @@ setMethod("modificationsBy", "EpiTxDb",
 #' @export
 setMethod("modifiedSeqsByTranscript", c("EpiTxDb","DNAStringSet"),
     function(x, sequences){
-      grl <- modificationsBy(x, "transcript")
+      grl <- modificationsBy(x, "seqnames")
       combineIntoModstrings(sequences, grl)
     }
 )

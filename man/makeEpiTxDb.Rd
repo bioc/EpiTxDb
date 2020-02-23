@@ -20,12 +20,13 @@ makeEpiTxDb(
   \item{\code{mod_id} }
   \item{\code{mod_type} }
   \item{\code{mod_name} }
-  \item{\code{tx_id} }
-  \item{\code{tx_name} }
-  \item{\code{tx_ensembl} }
+  \item{\code{mod_start} }
+  \item{\code{mod_end} }
+  \item{\code{sn_id} }
+  \item{\code{sn_name} }
 }
 The first three are mandatory, whereas one of the last has to be set.
-\code{tx_id} will be generated from the other the last two. The last three
+\code{sn_id} will be generated from the other the last two. The last three
 columns must be consistent in meaning.}
 
 \item{reactions}{An optional \code{data.frame} containg the following

@@ -45,9 +45,8 @@ NULL
                           mod_name = mcols(gr)$mod_name,
                           mod_start = start(gr),
                           mod_end = end(gr),
-                          tx_id = as.integer(seqnames(gr)),
-                          tx_name= seqnames(gr),
-                          tx_ensembl = mcols(gr)$tx_ensembl)
+                          sn_id = as.integer(seqnames(gr)),
+                          sn_name= seqnames(gr))
     modifications <- modifications[!vapply(modifications, is.null, logical(1))]
     if(length(modifications) > 1L){
         modifications <- data.frame(modifications, check.names = FALSE,

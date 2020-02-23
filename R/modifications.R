@@ -24,7 +24,7 @@ NULL
 #' @param by By which information type should the result be split into? A
 #'   \code{character} value from one of the following values:
 #'   \itemize{
-#'     \item{transcript}
+#'     \item{seqnames}
 #'     \item{mod_type}
 #'     \item{reaction}
 #'     \item{specifier}
@@ -32,7 +32,7 @@ NULL
 #'   }
 #' @param filter Either NULL or a named list of vectors to be used to restrict
 #'   the output. Valid names for this list are: "mod_id", "mod_type",
-#'   "mod_name", "tx_id", "tx_name", "tx_ensembl", "rx_genename", "rx_ensembl",
+#'   "mod_name", "sn_id", "sn_name", "rx_genename", "rx_ensembl",
 #'   "rx_ensembltrans", "rx_entrezid", "spec_genename", "spec_type",
 #'   "spec_ensembl", "spec_ensembltrans", "spec_entrezid" , "ref_type" and
 #'   "ref". (default: \code{filter = NULL})
@@ -80,7 +80,7 @@ NULL
             filter2 <- list(df1[[proxy_column]])
             names(filter2) <- proxy_column
         }
-        if (satellite_table %in% c("transcript","reaction","specifier",
+        if (satellite_table %in% c("seqnames","reaction","specifier",
                                    "reference")) {
             columns2 <- c(proxy_column, columns2)
             EpiTxDb_SELECT_from_LEFT_JOIN(epitxdb, satellite_table, columns2,
@@ -102,7 +102,7 @@ NULL
 .assignMetadataList <- GenomicFeatures:::.assignMetadataList
 
 .as_db_columns <- function(columns)
-    sub("^(mod_id|tx_id|rx_id|spec_id|ref_id)$", "_\\1", columns)
+    sub("^(mod_id|sn_id|rx_id|spec_id|ref_id)$", "_\\1", columns)
 
 .extract_modifications_as_GRanges <- function(epitxdb, mcolumns = character(0),
                                               filter = list(),
@@ -114,8 +114,8 @@ NULL
     table <- c("modification")
     # save the selected metadata columns for subsetting later on
     mcolumns0 <- mcolumns
-    # add the transcript columns, since the always need to be extracted
-    mcolumns <- unique(c(mcolumns,"tx_id","tx_name","tx_ensembl"))
+    # add the seqnames columns, since the always need to be extracted
+    mcolumns <- unique(c(mcolumns,"sn_id","sn_name"))
     db_mcolumns <- db_mcolumns0 <- .as_db_columns(mcolumns)
     core_columns <- EPITXDB_table_columns(table)
     names(filter) <- .as_db_columns(names(filter))

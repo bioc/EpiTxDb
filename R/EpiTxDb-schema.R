@@ -6,7 +6,7 @@
 #
 # 9 tables:
 #   - modification
-#   - transcript
+#   - seqnames
 #   - reaction
 #   - specifier
 #   - reference
@@ -38,18 +38,17 @@ EPITXDB_MOD_COLDEFS <- c(
     mod_name = "TEXT NULL",
     mod_start = "INTEGER NOT NULL",
     mod_end = "INTEGER NOT NULL",
-    `_tx_id` = "INTEGER NOT NULL"
+    `_sn_id` = "INTEGER NOT NULL"
 )
 EPITXDB_MOD_COLUMNS <- names(EPITXDB_MOD_COLDEFS)
 
-# 'transcript' table
+# 'seqnames' table
 
-EPITXDB_TX_COLDEFS <- c(
-    `_tx_id` = "INTEGER NOT NULL",
-    tx_name = "TEXT NOT NULL",
-    tx_ensembl = "TEXT NULL"
+EPITXDB_SN_COLDEFS <- c(
+    `_sn_id` = "INTEGER NOT NULL",
+    sn_name = "TEXT NOT NULL"
 )
-EPITXDB_TX_COLUMNs <- names(EPITXDB_TX_COLDEFS)
+EPITXDB_SN_COLUMNs <- names(EPITXDB_SN_COLDEFS)
 
 # 'reaction' table
 
@@ -113,7 +112,7 @@ EPITXDB_MOD2REF_COLUMNS <- names(EPITXDB_MOD2REF_COLDEFS)
 
 EPITXDB_COLUMNS <- list(
     modification = EPITXDB_MOD_COLUMNS,
-    transcript = EPITXDB_TX_COLUMNs,
+    seqnames = EPITXDB_SN_COLUMNs,
     reaction = EPITXDB_RX_COLUMNS,
     specifier = EPITXDB_SPEC_COLUMNS,
     reference = EPITXDB_REF_COLUMNS,
@@ -135,17 +134,17 @@ EPITXDB_COLUMNS <- list(
 
 build_SQL_CREATE_modification_table <- function()
 {
-    unique_key <- "UNIQUE (_mod_id, _tx_id)"
-    foreign_key <- "FOREIGN KEY (_tx_id) REFERENCES transcript"
+    unique_key <- "UNIQUE (_mod_id, _sn_id)"
+    foreign_key <- "FOREIGN KEY (_sn_id) REFERENCES seqnames"
     constraints <- c(unique_key, foreign_key)
     .build_SQL_CREATE_TABLE("modification", EPITXDB_MOD_COLDEFS, constraints)
 }
 
-build_SQL_CREATE_transcript_table <- function()
+build_SQL_CREATE_seqnames_table <- function()
 {
-    unique_key <- "UNIQUE (_tx_id)"
+    unique_key <- "UNIQUE (_sn_id)"
     constraints <- c(unique_key)
-    .build_SQL_CREATE_TABLE("transcript", EPITXDB_TX_COLDEFS, constraints)
+    .build_SQL_CREATE_TABLE("seqnames", EPITXDB_SN_COLDEFS, constraints)
 }
 
 build_SQL_CREATE_reaction_table <- function()
