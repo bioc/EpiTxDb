@@ -16,7 +16,7 @@ makeEpiTxDbFromtRNAdb(
   organism,
   sequences = NULL,
   metadata = NULL,
-  dbURL = tRNAdbImport::TRNA_DB_UR
+  dbURL = tRNAdbImport::TRNA_DB_URL
 )
 
 listAvailableOrganismsFromtRNAdb()

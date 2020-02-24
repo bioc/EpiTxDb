@@ -166,7 +166,7 @@ gettRNAdbDataAsGRanges <- function(organism, sequences = NULL,
 #' @rdname makeEpiTxDbFromtRNAdb
 #' @export
 makeEpiTxDbFromtRNAdb <- function(organism, sequences = NULL, metadata = NULL,
-                                  dbURL = tRNAdbImport::TRNA_DB_UR){
+                                  dbURL = tRNAdbImport::TRNA_DB_URL){
     gr <- gettRNAdbDataAsGRanges(organism, sequences = sequences, dbURL = dbURL)
     if(!is.null(sequences)){
         gr <- gr[!duplicated(paste0(as.character(gr),"-",gr$mod_type))]
