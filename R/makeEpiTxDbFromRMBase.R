@@ -416,18 +416,24 @@ getRMBaseDataAsGRanges <- function(files){
 makeEpiTxDbFromRMBaseFiles <- function(files, tx = NULL, sequences = NULL,
                                        metadata = NULL, reassign.ids = FALSE){
     gr <- getRMBaseDataAsGRanges(files)
+    if(!is.null(tx)){
+        sl <- GenomeInfoDb::seqlevels(tx)
+    } else if(!is.null(sequences)) {
+        sl <- names(sequences)
+    } else {
+        sl <- GenomeInfoDb::seqlevels(gr)
+    }
+    chromosome <- .simplify_chromosome_identifiers(seqnames(gr), sl)
+    gr <- GenomicRanges::GRanges(seqnames = chromosome,
+                                 ranges = IRanges::ranges(gr),
+                                 strand = BiocGenerics::strand(gr),
+                                 S4Vectors::mcols(gr))
     # shift position to transcript coordinates
     if(!is.null(tx)){
         tx <- .norm_tx(tx)
         .check_tx_sequences(tx, sequences)
         message("Shifting RMBase result's coordinates based on transcript ",
                 "data ...")
-        sl <- GenomeInfoDb::seqlevels(tx)
-        chromosome <- .simplify_chromosome_identifiers(seqnames(gr), sl)
-        gr <- GenomicRanges::GRanges(seqnames = chromosome,
-                                     ranges = IRanges::ranges(gr),
-                                     strand = BiocGenerics::strand(gr),
-                                     S4Vectors::mcols(gr))
         gr <- shiftGenomicToTranscript(gr, tx)
         f <- !duplicated(paste0(as.character(gr),"-",mcols(gr)$mod_type))
         gr <- gr[f]
