@@ -190,7 +190,7 @@ makeEpiTxDbFromtRNAdb <- function(organism, sequences = NULL, metadata = NULL,
         gr <- Modstrings::removeIncompatibleModifications(gr, sequences)
         colnames(mcols(gr)) <- gsub("^mod$","mod_type",colnames(mcols(gr)))
     }
-    makeEpiTxDbFromGRanges(gr, metadata = NULL, reassign.ids = FALSE)
+    makeEpiTxDbFromGRanges(gr, metadata = metadata, reassign.ids = FALSE)
 }
 
 
