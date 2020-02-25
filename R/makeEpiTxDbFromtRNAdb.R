@@ -32,9 +32,6 @@ NULL
 #' Volume 37 (suppl_1): D159–162. doi:10.1093/nar/gkn772.
 #'
 #' @export
-#'
-#' @examples
-#'
 NULL
 
 # makeEpiTxDbFromtRNAdb --------------------------------------------------------

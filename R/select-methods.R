@@ -227,7 +227,7 @@ NULL
     .tableJoinSelector(tKey)
 }
 
-.makeSelectList <- function(x, cnames, abbrev=TRUE){
+.makeSelectList <- function(x, cnames, abbrev = TRUE){
     tNames <- .getTableNames(x, cnames)
     ## Here is where we only grab the 1st one...
     tNames <- lapply(tNames,function(x){x[1]})
@@ -241,7 +241,7 @@ NULL
     }
 }
 
-.makeKeyList <- function(x, keys, keytype, abbrev=TRUE){
+.makeKeyList <- function(x, keys, keytype, abbrev = TRUE){
     colType <- .makeSelectList(x, keytype, abbrev)
     keys <- paste(paste0("'", keys, "'"), collapse=",")
     paste(colType, "IN (", keys,")")
@@ -327,8 +327,7 @@ setMethod("select", "EpiTxDb",
 
 .columns <- function(x){
     res <- .makeColAbbreviations(x)
-    names(res) <- NULL
-    res
+    unname(res)
 }
 
 #' @rdname select
@@ -396,7 +395,7 @@ setMethod("columns", "EpiTxDb",
 
 .keysDispatch <- function(x, keytype, ...){
     if (missing(keytype)) keytype <- "MODID"
-    AnnotationDbi:::smartKeys(x=x, keytype=keytype, ..., FUN=.keys)
+    AnnotationDbi:::smartKeys(x = x, keytype = keytype, ..., FUN = .keys)
 }
 
 #' @rdname select

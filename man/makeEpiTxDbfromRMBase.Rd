@@ -76,7 +76,4 @@ files can be provided as well.}
 \code{makeEpiTxDbFromRMBase} will make use of the RMBase v2.0 online
 resources.
 }
-\examples{
-
-}
 \keyword{datasets}

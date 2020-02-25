@@ -40,6 +40,7 @@ is reflected in the name. \code{shiftTranscriptToGenomic} implements the
 reverse operation.
 }
 \examples{
+library(GenomicRanges)
 # Construct some example data
 gr1 <- GRanges("chr2", IRanges(3, 6),
                strand="+", gene_name=c("c_g"))

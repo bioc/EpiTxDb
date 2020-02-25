@@ -45,9 +45,6 @@ When a
 \code{\link[tRNAdbImport:import.tRNAdb]{import.tRNAdb}} will be used with
 \code{database = "RNA"} and the three different values for \code{origin}.
 }
-\examples{
-
-}
 \references{
 Jühling F, Mörl M, Hartmann RK, Sprinzl M, Stadler PF, Pütz J. 2009. "tRNAdb
 2009: compilation of tRNA sequences and tRNA genes." Nucleic Acids Research,

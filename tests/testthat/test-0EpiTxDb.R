@@ -91,6 +91,7 @@ test_that("EpiTxDb:",{
                           "specifiers","references"))
     # compareEpiTxDbs
     expect_true(EpiTxDb:::compareEpiTxDbs(etdb,etdb))
+    dbDisconnect(etdb$conn)
 })
 
 context("EpiTxDb SQL")
@@ -205,4 +206,5 @@ test_that("EpiTxDb SQL:",{
     actual <- EpiTxDb:::EpiTxDb_SELECT_from_LEFT_JOIN(etdb, table, cols)
     expect_s3_class(actual,"data.frame")
     expect_equal(colnames(actual),cols)
+    dbDisconnect(etdb$conn)
 })

@@ -33,10 +33,11 @@ specific positions on a range information.
 }
 \examples{
 library(EpiTxDb)
+library(GenomicRanges)
 # Returns an integer vector
-gr <- GRanges("1:5")
+gr <- GRanges("chr1:1-5")
 positionSequence(gr)
 # returns an IntegerList
 grl <- GRangesList("1" = gr,"2" = gr,"3" = gr) # must be named
-positionSequence(gr)
+positionSequence(grl)
 }

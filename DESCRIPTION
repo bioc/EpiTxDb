@@ -13,9 +13,9 @@ License: Artistic-2.0
 Encoding: UTF-8
 LazyData: false
 biocViews:
+    AnnotationHub,
     AnnotationData,
-    Epitranscriptomics,
-    Homo_sapiens
+    Epitranscriptomics
 Depends:
     R (>= 3.6),
     AnnotationDbi,
@@ -26,6 +26,7 @@ Imports:
     httr,
     xml2,
     GenomicFeatures,
+    GenomicRanges,
     GenomeInfoDb,
     dplyr,
     BiocGenerics,
@@ -39,7 +40,9 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
+    AnnotationHub,
     BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Scerevisiae.UCSC.sacCer3,
     EpiTxDb.Hs.hg38
 Collate: 
     'AllGenerics.R'

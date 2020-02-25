@@ -22,12 +22,13 @@ NULL
 #'
 #' @examples
 #' library(EpiTxDb)
+#' library(GenomicRanges)
 #' # Returns an integer vector
-#' gr <- GRanges("1:5")
+#' gr <- GRanges("chr1:1-5")
 #' positionSequence(gr)
 #' # returns an IntegerList
 #' grl <- GRangesList("1" = gr,"2" = gr,"3" = gr) # must be named
-#' positionSequence(gr)
+#' positionSequence(grl)
 NULL
 
 # per element of GRangesList unique
@@ -110,7 +111,8 @@ setMethod("positionSequence","Ranges",
               class <- paste0(class(x),"List")
               x <- do.call(class,list(x))
               names(x) <- "tmp"
-              .seqs_rl_strand(x, order = order, decreasing = decreasing)[["tmp"]]
+              ans <- .seqs_rl_strand(x, order = order, decreasing = decreasing)
+              ans[["tmp"]]
           })
 
 #' @rdname positionSequence

@@ -33,7 +33,14 @@ NULL
 #' @export
 #'
 #' @examples
-#'
+#' library(GenomicRanges)
+#' gr <- GRanges(seqnames = "test",
+#'               ranges = IRanges::IRanges(1,1),
+#'               strand = "+",
+#'               DataFrame(mod_id = 1L,
+#'                         mod_type = "Am",
+#'                         mod_name = "Am_1"))
+#' etdb <- makeEpiTxDbFromGRanges(gr)
 NULL
 
 # makeEpiTxDbfromGRanges -------------------------------------------------------
@@ -97,17 +104,18 @@ NULL
 # extract references table
 .get_gr_references <- function(gr){
     ref_lengths <- lengths(mcols(gr)$ref_type)
+    if(length(ref_lengths) == 0L){
+        return(NULL)
+    }
     references <- list(mod_id = unlist(Map(rep,mcols(gr)$mod_id,ref_lengths)),
                        ref_type = unlist(mcols(gr)$ref_type),
                        ref = unlist(mcols(gr)$ref))
     references <- references[!vapply(references, is.null, logical(1))]
-    if(length(references) > 1L){
-        references <- data.frame(references, check.names = FALSE,
-                                 stringsAsFactors = FALSE)
-    } else {
-        references <- NULL
+    if(length(references) == 0L){
+        return(NULL)
     }
-    references
+    data.frame(references, check.names = FALSE,
+               stringsAsFactors = FALSE)
 }
 
 #' @rdname makeEpiTxDbFromGRanges

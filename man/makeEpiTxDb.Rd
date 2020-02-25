@@ -81,7 +81,29 @@ chromosome, then by strand, then by start, and finally by end.}
 This functions probably will typically not be used by users.
 }
 \examples{
-
+mod <- data.frame("mod_id" = 1L,
+                  "mod_type" = "m1A",
+                  "mod_name" = "m1A_1",
+                  "mod_start" = 1L,
+                  "mod_end" = 1L,
+                  "sn_id" = 1L,
+                  "sn_name" = "test")
+rx <- data.frame(mod_id = 1L,
+                 rx_genename = "test",
+                 rx_rank = 1L,
+                 rx_ensembl = "test",
+                 rx_ensembltrans = "test",
+                 rx_entrezid = "test")
+spec <- data.frame(mod_id = 1L,
+                   spec_type = "test",
+                   spec_genename = "test",
+                   spec_ensembl = "test",
+                   spec_ensembltrans = "test",
+                   spec_entrezid = "test")
+ref <- data.frame(mod_id = 1L,
+                  ref_type = "test",
+                  ref = "test")
+etdb <- makeEpiTxDb(mod,rx,spec,ref)
 }
 \seealso{
 \itemize{

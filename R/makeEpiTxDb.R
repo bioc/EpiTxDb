@@ -81,7 +81,29 @@ NULL
 #' @export
 #'
 #' @examples
-#'
+#' mod <- data.frame("mod_id" = 1L,
+#'                   "mod_type" = "m1A",
+#'                   "mod_name" = "m1A_1",
+#'                   "mod_start" = 1L,
+#'                   "mod_end" = 1L,
+#'                   "sn_id" = 1L,
+#'                   "sn_name" = "test")
+#' rx <- data.frame(mod_id = 1L,
+#'                  rx_genename = "test",
+#'                  rx_rank = 1L,
+#'                  rx_ensembl = "test",
+#'                  rx_ensembltrans = "test",
+#'                  rx_entrezid = "test")
+#' spec <- data.frame(mod_id = 1L,
+#'                    spec_type = "test",
+#'                    spec_genename = "test",
+#'                    spec_ensembl = "test",
+#'                    spec_ensembltrans = "test",
+#'                    spec_entrezid = "test")
+#' ref <- data.frame(mod_id = 1L,
+#'                   ref_type = "test",
+#'                   ref = "test")
+#' etdb <- makeEpiTxDb(mod,rx,spec,ref)
 NULL
 
 # helper functions -------------------------------------------------------------
@@ -161,19 +183,15 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     if (any(duplicated(modifications$mod_id)))
         stop("'modifications$mod_id' contains duplicated values")
     ## Check 'mod_start'.
-    if (!is.numeric(modifications$mod_start)
+    if (!is.integer(modifications$mod_start)
         || any(is.na(modifications$mod_start)))
         stop("'modifications$mod_start' must be an integer vector ",
              "with no NAs")
-    if (!is.integer(modifications$mod_start))
-        modifications$mod_start <- as.integer(modifications$mod_start)
     ## Check 'mod_end'.
-    if (!is.numeric(modifications$mod_end)
+    if (!is.integer(modifications$mod_end)
         || any(is.na(modifications$mod_end)))
         stop("'modifications$mod_end' must be an integer vector ",
              "with no NAs")
-    if (!is.integer(modifications$mod_end))
-        modifications$mod_end <- as.integer(modifications$mod_end)
     ## Check 'mod_start <= mod_end'.
     if (any(modifications$mod_start > modifications$mod_end))
         stop("modification starts must be <= modification ends")
@@ -233,19 +251,17 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                                 check.names = FALSE, stringsAsFactors = FALSE)
         return(reactions)
     }
-    .REQUIRED_COLS <- c("mod_id", "rx_rank", "rx_genename")
+    .REQUIRED_COLS <- c("mod_id", "rx_genename", "rx_rank")
     .OPTIONAL_COLS <- c("rx_ensembl", "rx_ensembltrans", "rx_entrezid")
     check_colnames(reactions, .REQUIRED_COLS, .OPTIONAL_COLS, "reactions")
     ## Check 'mod_id'.
     .check_foreign_key(reactions$mod_id, "integer", "reactions$mod_id",
                        modifications_mod_id, "integer", "modifications$mod_id")
     ## Check 'rx_rank'.
-    if (!is.numeric(reactions$rx_rank)
+    if (!is.integer(reactions$rx_rank)
         || any(is.na(reactions$rx_rank)))
         stop("'reactions$rx_rank' must be an integer vector ",
              "with no NAs")
-    if (!is.integer(reactions$rx_rank))
-        reactions$rx_rank <- as.integer(reactions$rx_rank)
     if (any(reactions$rx_rank <= 0L))
         stop("'reactions$rx_rank' contains non-positive values")
     ## Check uniqueness of (mod_id, rx_rank) pairs.
@@ -258,26 +274,26 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         stop("'reactions$rx_genename' must be a character vector ",
              "(or factor)")
     ## Check 'rx_ensembl'.
-    if (has_col(reactions, "rx_ensembl")
-        && !.is_character_or_factor(reactions$rx_ensembl)){
-        stop("'reactions$rx_ensembl' must be a character vector ",
-             "(or factor)")
+    if (has_col(reactions, "rx_ensembl")){
+        if(!.is_character_or_factor(reactions$rx_ensembl))
+            stop("'reactions$rx_ensembl' must be a character vector ",
+                 "(or factor)")
     } else {
         reactions$rx_ensembl <- character(1)
     }
     ## Check 'rx_ensembltrans'.
-    if (has_col(reactions, "rx_ensembltrans")
-        && !.is_character_or_factor(reactions$rx_ensembltrans)){
-        stop("'reactions$rx_ensembltrans' must be a character vector ",
-             "(or factor)")
+    if (has_col(reactions, "rx_ensembltrans")){
+        if(!.is_character_or_factor(reactions$rx_ensembltrans))
+            stop("'reactions$rx_ensembltrans' must be a character vector ",
+                 "(or factor)")
     } else {
         reactions$rx_ensembltrans <- character(1)
     }
     ## Check 'rx_entrezid'.
-    if (has_col(reactions, "rx_entrezid")
-        && !.is_character_or_factor(reactions$rx_entrezid)){
-        stop("'reactions$rx_entrezid' must be a character vector ",
-             "(or factor)")
+    if (has_col(reactions, "rx_entrezid")){
+        if(!.is_character_or_factor(reactions$rx_entrezid))
+            stop("'reactions$rx_entrezid' must be a character vector ",
+                 "(or factor)")
     } else {
         reactions$rx_entrezid <- character(1)
     }
@@ -312,26 +328,26 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         stop("'specifier$spec_genename' must be a character vector ",
              "(or factor)")
     ## Check 'spec_ensembl'.
-    if (has_col(specifier, "spec_ensembl")
-        && !.is_character_or_factor(specifier$spec_ensembl)){
-        stop("'specifier$spec_ensembl' must be a character vector ",
-             "(or factor)")
+    if (has_col(specifier, "spec_ensembl")){
+        if(!.is_character_or_factor(specifier$spec_ensembl))
+            stop("'specifier$spec_ensembl' must be a character vector ",
+                 "(or factor)")
     } else {
         specifier$spec_ensembl <- character(1)
     }
     ## Check 'spec_ensembltrans'.
-    if (has_col(specifier, "spec_ensembltrans")
-        && !.is_character_or_factor(specifier$spec_ensembltrans)){
-        stop("'specifier$spec_ensembltrans' must be a character vector ",
-             "(or factor)")
+    if (has_col(specifier, "spec_ensembltrans")){
+        if(!.is_character_or_factor(specifier$spec_ensembltrans))
+            stop("'specifier$spec_ensembltrans' must be a character vector ",
+                 "(or factor)")
     } else {
         specifier$spec_ensembltrans <- character(1)
     }
     ## Check 'spec_entrezid'.
-    if (has_col(specifier, "spec_entrezid")
-        && !.is_character_or_factor(specifier$spec_entrezid)){
-        stop("'specifier$spec_entrezid' must be a character vector ",
-             "(or factor)")
+    if (has_col(specifier, "spec_entrezid")){
+        if(!.is_character_or_factor(specifier$spec_entrezid))
+            stop("'specifier$spec_entrezid' must be a character vector ",
+                 "(or factor)")
     } else {
         specifier$spec_entrezid <- character(1)
     }

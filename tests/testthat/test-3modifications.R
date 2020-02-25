@@ -1,0 +1,42 @@
+context("modifications")
+test_that("modifications:",{
+    etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
+                             package="EpiTxDb")
+    etdb <- loadDb(etdb_file)
+    actual <- modifications(etdb)
+    expect_s4_class(actual,"GRanges")
+    expect_equal(colnames(mcols(actual)),c("mod_id","mod_type","mod_name"))
+    expect_error(modifications(etdb, columns = c("MOD")),
+                 "MOD: no such column in db schema")
+    actual <- modifications(etdb, columns = c("MODID","MODTYPE","MODNAME"))
+    expect_s4_class(actual,"GRanges")
+    expect_equal(colnames(mcols(actual)),c("MODID","MODTYPE","MODNAME"))
+    #
+    expect_error(modifications(etdb, filter = 1),
+                 "NA: no such column in db schema")
+    actual <- modifications(etdb, filter = c(mod_id = 1))
+    expect_s4_class(actual,"GRanges")
+    expect_equal(length(actual),1L)
+    # actual <- modifications(etdb, filter = c(mod_id = 236))
+    # expect_equal(length(actual),0L)
+    #
+    actual <- modificationsBy(etdb)
+    expect_s4_class(actual,"GRangesList")
+    expect_named(actual)
+    expect_equal(colnames(mcols(unlist(actual))),
+                 c("mod_id","mod","mod_name"))
+    actual <- modificationsBy(etdb, by = "specifier")
+    expect_s4_class(actual,"GRangesList")
+    expect_named(actual)
+    actual <- modificationsBy(etdb, by = "reaction")
+    expect_s4_class(actual,"GRangesList")
+    expect_named(actual)
+    actual <- modificationsBy(etdb, by = "mod_type")
+    expect_s4_class(actual,"GRangesList")
+    expect_named(actual)
+    expect_named(actual,c("Am","Cm","Gm","Um","Y"))
+    actual <- modificationsBy(etdb, by = "specifier_type")
+    expect_s4_class(actual,"GRangesList")
+    expect_named(actual)
+    dbDisconnect(etdb$conn)
+})

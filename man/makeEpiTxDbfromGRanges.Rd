@@ -34,5 +34,12 @@ The first three are mandatory, whereas \code{tx_ensembl} is optional.}
 ... and passed on the \code{\link[=makeEpiTxDb]{makeEpiTxDb}}.
 }
 \examples{
-
+library(GenomicRanges)
+gr <- GRanges(seqnames = "test",
+              ranges = IRanges::IRanges(1,1),
+              strand = "+",
+              DataFrame(mod_id = 1L,
+                        mod_type = "Am",
+                        mod_name = "Am_1"))
+etdb <- makeEpiTxDbFromGRanges(gr)
 }

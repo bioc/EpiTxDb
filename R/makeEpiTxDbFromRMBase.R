@@ -34,9 +34,6 @@ NULL
 #' @param metadata,reassign.ids See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}
 #'
 #' @export
-#'
-#' @examples
-#'
 NULL
 
 #' @rdname makeEpiTxDbFromRMBase
@@ -458,6 +455,7 @@ listAvailableOrganismsFromRMBase <- function(){
     # organisms <- xml2::xml_attr(xml2::xml_find_all(page,'//img[@alt="[DIR]"]//../following::a'),"href")
     # organisms <- gsub("/","",organisms)
     # organisms[!(organisms %in% c("ajax","otherspecies"))]
+    rmbase_data <- NULL
     utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
     as.character(unique(rmbase_data$organism))
 }
@@ -477,6 +475,7 @@ listAvailableOrganismsFromRMBase <- function(){
 .listAvailableGenomesFromRMBase <- function(organism){
     # files <- .get_RMBase_files(organism)
     # .get_RMBase_genomes(files)
+    rmbase_data <- NULL
     utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
     as.character(unique(rmbase_data[rmbase_data$organism == organism,]$genome))
 }
@@ -495,6 +494,7 @@ listAvailableGenomesFromRMBase <- function(organism){
     # f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
     # ans <- unique(vapply(strsplit(files[f_genome],"_"),"[",character(1),4L))
     # ans[!grepl("mod",ans)]
+    rmbase_data <- NULL
     utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
     as.character(rmbase_data[rmbase_data$organism == organism &
                                  rmbase_data$genome == genome,]$mod)
@@ -508,7 +508,7 @@ listAvailableModFromRMBase <- function(organism, genome){
              "listAvailableOrganismsfromRMBase()")
     }
     if(!(genome %in% listAvailableGenomesFromRMBase(organism))){
-        stop("'genome' must be a valid genome for the fiven 'organism' from ",
+        stop("'genome' must be a valid genome for the given 'organism' from ",
              "listAvailableGenomesFromRMBase()")
     }
     .get_RMBase_mod(organism, genome)
