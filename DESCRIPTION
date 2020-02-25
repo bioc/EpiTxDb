@@ -44,7 +44,7 @@ Suggests:
     rmarkdown,
     testthat,
     AnnotationHub,
-    ensembl,
+    ensembldb,
     BSgenome.Hsapiens.UCSC.hg38,
     BSgenome.Scerevisiae.UCSC.sacCer3
 Collate: 
