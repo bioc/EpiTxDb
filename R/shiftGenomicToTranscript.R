@@ -22,6 +22,8 @@ NULL
 #' defining the relation of gene and transcript names.
 #'
 #' @examples
+#' \dontrun{
+#' library(GenomicRanges)
 #' # Construct some example data
 #' gr1 <- GRanges("chr2", IRanges(3, 6),
 #'                strand="+", gene_name=c("c_g"))
@@ -46,6 +48,7 @@ NULL
 #' shifted_grl2 <- shiftTranscriptToGenomic(shifted_grl,tx)
 #' # comparison of ranges work. However the seqlevels differ
 #' ranges(shifted_grl2) == ranges(grl)
+#' }
 NULL
 
 # helper functions -------------------------------------------------------------
@@ -102,9 +105,9 @@ NULL
 
 .resultFUN_TX_TO_GENOME <- function(tx_hits, subject_hits, starts, ends){
     # transfer gene information
-    mcols(subject_hits)$tx_id <- ""
-    mcols(subject_hits)$tx_id <-
-        unlist(unique(mcols(tx_hits,level="within")[,"tx_id"]))
+    mcols(subject_hits)$sn_id <- ""
+    mcols(subject_hits)$sn_id <-
+        unlist(unique(mcols(tx_hits,level="within")[,"sn_id"]))
     mcols(subject_hits)$seq_start <- start(subject_hits)
     mcols(subject_hits)$seq_end <- end(subject_hits)
     mcols(subject_hits)$seq_strand <- strand(subject_hits)
@@ -124,15 +127,15 @@ NULL
 
 .resultFUN_GENOME_TO_TX <- function(tx_hits, subject_hits, starts, ends){
     # transfer transcript information
-    mcols(subject_hits)$tx_id <- ""
-    mcols(subject_hits)$tx_id <-
-        unlist(unique(mcols(tx_hits,level="within")[,"tx_id"]))
+    mcols(subject_hits)$sn_id <- ""
+    mcols(subject_hits)$sn_id <-
+        unlist(unique(mcols(tx_hits,level="within")[,"sn_id"]))
     mcols(subject_hits)$seq_start <- start(subject_hits)
     mcols(subject_hits)$seq_end <- end(subject_hits)
     mcols(subject_hits)$seq_strand <- strand(subject_hits)
     mcols(subject_hits)$seq_name <- seqnames(subject_hits)
     # reformat GRanges results
-    seqnames <- mcols(subject_hits)$tx_id
+    seqnames <- mcols(subject_hits)$sn_id
     mcols <- mcols(subject_hits)
     ranges <- IRanges::IRanges(start = unlist(starts), end = unlist(ends))
     #

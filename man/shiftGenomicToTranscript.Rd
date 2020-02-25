@@ -40,6 +40,7 @@ is reflected in the name. \code{shiftTranscriptToGenomic} implements the
 reverse operation.
 }
 \examples{
+\dontrun{
 library(GenomicRanges)
 # Construct some example data
 gr1 <- GRanges("chr2", IRanges(3, 6),
@@ -65,4 +66,5 @@ shifted_grl <- shiftGenomicToTranscript(grl,tx)
 shifted_grl2 <- shiftTranscriptToGenomic(shifted_grl,tx)
 # comparison of ranges work. However the seqlevels differ
 ranges(shifted_grl2) == ranges(grl)
+}
 }

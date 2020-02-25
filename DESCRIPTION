@@ -42,8 +42,7 @@ Suggests:
     testthat,
     AnnotationHub,
     BSgenome.Hsapiens.UCSC.hg38,
-    BSgenome.Scerevisiae.UCSC.sacCer3,
-    EpiTxDb.Hs.hg38
+    BSgenome.Scerevisiae.UCSC.sacCer3
 Collate: 
     'AllGenerics.R'
     'EpiTxDb-SELECT-helpers.R'
