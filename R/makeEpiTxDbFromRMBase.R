@@ -242,6 +242,7 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
     mod_type
 }
 
+#' @importFrom Biostrings DNAStringSet subseq
 .extract_GRanges_from_RMBase <- function(rmb, seqtype = "RNA"){
     ############################################################################
     ### check modification information on correct base
@@ -448,6 +449,7 @@ makeEpiTxDbFromRMBaseFiles <- function(files, tx = NULL, sequences = NULL,
 
 
 #' @rdname makeEpiTxDbFromRMBase
+#' @importFrom curl curl
 #' @export
 listAvailableOrganismsFromRMBase <- function(){
     # con <- curl::curl(EPITXDB_RMBASE_URL)
@@ -460,7 +462,7 @@ listAvailableOrganismsFromRMBase <- function(){
     as.character(unique(rmbase_data$organism))
 }
 
-
+#' @importFrom curl curl
 .get_RMBase_files <- function(organism){
     con <- curl::curl(paste0(EPITXDB_RMBASE_URL,organism,"/zip/"))
     page <- xml2::read_html(con)

@@ -25,6 +25,8 @@ Imports:
     utils,
     httr,
     xml2,
+    assertive,
+    curl,
     GenomicFeatures,
     GenomicRanges,
     GenomeInfoDb,
@@ -34,6 +36,8 @@ Imports:
     S4Vectors,
     IRanges,
     RSQLite,
+    DBI,
+    Biostrings,
     tRNAdbImport
 Suggests:
     BiocStyle,

@@ -66,6 +66,7 @@ NULL
     mod
 }
 
+#' @importFrom Biostrings subseq vwhichPDict
 .map_modifications_to_sequences <- function(mod, gr, sequences){
     seq <- as(gr$tRNA_seq,"RNAStringSet")
     width <- nchar(seq)
@@ -117,6 +118,7 @@ NULL
 
 #' @rdname makeEpiTxDbFromtRNAdb
 #' @importFrom tRNAdbImport import.tRNAdb
+#' @importFrom assertive is_a_non_empty_string
 #' @export
 gettRNAdbDataAsGRanges <- function(organism, sequences = NULL,
                                    dbURL = tRNAdbImport::TRNA_DB_URL){

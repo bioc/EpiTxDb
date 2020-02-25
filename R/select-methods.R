@@ -29,23 +29,24 @@ NULL
 # helper functions for column name selection/conversion ------------------------
 
 # Helpers to access/process the table names and columns
+#' @importFrom DBI dbListTables dbListFields
 .getTableColMapping <- function(x){
     conn <- dbconn(x)
     tables <- DBI::dbListTables(conn)
-    tCols <- sapply(tables, DBI::dbListFields, conn=conn)
+    tCols <- sapply(tables, DBI::dbListFields, conn = conn)
     ## right up front we are getting rid of metadata tables...
-    tCols[names(tCols)!="metadata"]
+    tCols[names(tCols) != "metadata"]
 }
 
 # used to match and generate abbreviated column names
 .makeColAbbreviations <- function(x){
     tCols <- .getTableColMapping(x)
-    longNames <- unique(unlist(tCols,use.names=FALSE))
-    abbrev <- unique(toupper((gsub("_","",unlist(tCols,use.names=FALSE)))))
-    abbrev <- gsub("^SEQNAMES","SN",abbrev)
-    abbrev <- gsub("^REACTION","RX",abbrev)
-    abbrev <- gsub("^SPECIFIER","SPEC",abbrev)
-    abbrev <- gsub("^REFERENCE","REF",abbrev)
+    longNames <- unique(unlist(tCols, use.names = FALSE))
+    abbrev <- unique(toupper((gsub("_","",unlist(tCols, use.names = FALSE)))))
+    abbrev <- gsub("^SEQNAMES", "SN", abbrev)
+    abbrev <- gsub("^REACTION", "RX", abbrev)
+    abbrev <- gsub("^SPECIFIER", "SPEC", abbrev)
+    abbrev <- gsub("^REFERENCE", "REF", abbrev)
     names(abbrev) <- longNames
     abbrev
 }
