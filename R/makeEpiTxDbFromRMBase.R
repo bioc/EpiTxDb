@@ -129,6 +129,7 @@ downloadRMBaseFiles <- function(organism, genome, type){
                  "listAvailableModFromRMBase() for the given 'organism' and ",
                  "'genome'.")
         }
+        message("Downloading RMBase v2.0 files ...")
         files <- .download_RMBase_files(bfc, organism, genome, type)
     } else {
         files <- .get_RMBase_files_available(bfc, organism, genome, type)
