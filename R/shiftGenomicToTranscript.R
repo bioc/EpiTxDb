@@ -26,6 +26,10 @@ NULL
 #' @param tx a named \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #'   object.
 #'
+#' @return a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
+#'   \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object depending
+#'   on the type of \code{subject}
+#'
 #' @examples
 #' library(GenomicRanges)
 #' # Construct some example data

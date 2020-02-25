@@ -29,6 +29,11 @@ shiftGenomicToTranscript(subject, tx)
 \item{tx}{a named \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 object.}
 }
+\value{
+a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
+  \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object depending
+  on the type of \code{subject}
+}
 \description{
 \code{shiftGenomicToTranscript} shifts positions of a
 \code{\link[GenomicRanges:GRanges-class]{GRanges}}
@@ -40,7 +45,7 @@ reverse operation.
 Matches are determined by
 \code{\link[GenomicRanges:findOverlaps-methods]{findOverlaps}} for
 \code{shiftGenomicToTranscript} and by
-\code{\link[S4Vectors:findMatches-methods]{findMatches}} for
+\code{\link[S4Vectors:Vector-comparison]{findMatches}} for
 \code{shiftTranscriptToGenomic} using the \code{seqnames} of the
 \code{subject} and the \code{names} of \code{tx}.
 }
@@ -65,8 +70,10 @@ tx <- GRangesList(a=tx1, b=tx2, c=tx3)
 # shift to transcript coordinates. Since the third subject does not have
 # a match in tx it is dropped with a warning
 shifted_grl <- shiftGenomicToTranscript(subject,tx)
+
 # ... and back
 shifted_grl2 <- shiftTranscriptToGenomic(shifted_grl,tx)
+
 # comparison of ranges work. However the seqlevels differ
 ranges(shifted_grl2) == ranges(subject[list(1,c(1,1),c(1,2))])
 }

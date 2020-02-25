@@ -43,6 +43,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
+    httptest,
     AnnotationHub,
     ensembldb,
     BSgenome.Hsapiens.UCSC.hg38,

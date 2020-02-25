@@ -20,8 +20,6 @@ NULL
 #' @return a \code{data.frame} object for \code{select()} and a \code{character}
 #'   vecor for \code{keytypes()}, \code{keys()} and \code{columns()}.
 #'
-#' @export
-#'
 #' @examples
 #' etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
 #'                          package="EpiTxDb")
