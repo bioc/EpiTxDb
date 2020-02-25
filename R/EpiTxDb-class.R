@@ -5,6 +5,7 @@
 NULL
 
 #' @name EpiTxDb-class
+#' @aliases EpiTxDb
 #'
 #' @title EpiTxDb objects
 #'
@@ -41,6 +42,15 @@ NULL
 #'       and \code{\link[=shiftGenomicToTranscript]{shiftTranscriptToGenomic}}
 #'       for transfering genomic to transcript coordinates and back again.}
 #' }
+#'
+#' @return For
+#'   \itemize{
+#'     \item{\code{organism()} and \code{seqlevels()} a \code{character}
+#'     vector}
+#'     \item{\code{seqinfo()} a
+#'     \code{\link[GenomeInfoDb:Seqinfo-class]{Seqinfo}} object}
+#'     \item{\code{as.list()} a \code{list}}
+#'   }
 #'
 #' @export
 #'

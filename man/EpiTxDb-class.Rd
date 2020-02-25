@@ -4,6 +4,7 @@
 \name{EpiTxDb-class}
 \alias{EpiTxDb-class}
 \alias{.EpiTxDb}
+\alias{EpiTxDb}
 \alias{organism,EpiTxDb-method}
 \alias{seqinfo,EpiTxDb-method}
 \alias{seqlevels,EpiTxDb-method}
@@ -20,6 +21,16 @@
 }
 \arguments{
 \item{x, object}{a \code{EpiTxDb} object}
+}
+\value{
+For
+  \itemize{
+    \item{\code{organism()} and \code{seqlevels()} a \code{character}
+    vector}
+    \item{\code{seqinfo()} a
+    \code{\link[GenomeInfoDb:Seqinfo-class]{Seqinfo}} object}
+    \item{\code{as.list()} a \code{list}}
+  }
 }
 \description{
 The \code{EpiTxDb} class is a

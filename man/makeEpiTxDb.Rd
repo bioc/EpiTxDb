@@ -74,6 +74,9 @@ internal ids, otherwise the internal ids are assigned in a way that is
 compatible with the order defined by ordering the modifications first by
 chromosome, then by strand, then by start, and finally by end.}
 }
+\value{
+a \code{EpiTxDb} object.
+}
 \description{
 \code{makeEpiTxDb} is a low-level constructor for creating a
 \code{\link[=EpiTxDb-class]{EpiTxDb}} object from user supplied annotations.

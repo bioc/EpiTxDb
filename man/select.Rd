@@ -27,10 +27,14 @@
 comprehensive description of the methods \code{select}, \code{keys},
 \code{columns} and \code{keytypes} and their arguments.}
 }
+\value{
+a \code{data.frame} object for \code{select()} and a \code{character}
+  vecor for \code{keytypes()}, \code{keys()} and \code{columns()}.
+}
 \description{
 As expected for a \code{AnnotationDb} object, the general accessors
-\code{select}, \code{keys}, \code{columns} and \code{keytypes} can be used
-to get information from a \code{\link[=EpiTxDb-class]{EpiTxDb}} object.
+  \code{select}, \code{keys}, \code{columns} and \code{keytypes} can be used
+  to get information from a \code{\link[=EpiTxDb-class]{EpiTxDb}} object.
 }
 \examples{
 etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",

@@ -32,18 +32,36 @@ will be used to associate a tRNAdb result with a specific transcript.}
 
 \item{metadata}{See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}}
 }
+\value{
+a \code{EpiTxDb} object.
+}
 \description{
 \code{makeEpiTxDbFromtRNAdb} will make use of the tRNAdb online
 resources and extract the modification information from the RNA database.
 
-When a
-
-
+If a named \code{\link[Biostrings:XStringSet-class]{DNAStringSet}} is
+provided, the result from the tRNAdb will be matched against the sequences.
+Valid matches will be used and returned after a check of modification
+compatibility with the provided sequence. By this process multiple copies of
+transcripts will be associated with the modifications.
 
 \code{makeEpiTxDbFromtRNAdb} uses the functions provided by the
 \code{\link[tRNAdbImport:tRNAdbImport]{tRNAdbImport}} package.
 \code{\link[tRNAdbImport:import.tRNAdb]{import.tRNAdb}} will be used with
 \code{database = "RNA"} and the three different values for \code{origin}.
+}
+\examples{
+# getting just the annotation data
+etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae")
+
+# For associating the result with transcripts, provide and additional
+# named DNAStringSet object. Matching will be done against each sequence
+# allowing 5 mismatches and indels. The final result will be checked for
+# validity regarding the identity of the modifications
+\dontrun{
+etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae",
+                              some_transcript_sequences)
+}
 }
 \references{
 Jühling F, Mörl M, Hartmann RK, Sprinzl M, Stadler PF, Pütz J. 2009. "tRNAdb

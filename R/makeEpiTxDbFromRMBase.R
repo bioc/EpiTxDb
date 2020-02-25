@@ -33,6 +33,8 @@ NULL
 #'   function from the \code{Modstrings} package.
 #' @param metadata,reassign.ids See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}
 #'
+#' @return a \code{EpiTxDb} object.
+#'
 #' @export
 NULL
 

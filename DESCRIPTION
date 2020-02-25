@@ -30,7 +30,6 @@ Imports:
     GenomicFeatures,
     GenomicRanges,
     GenomeInfoDb,
-    dplyr,
     BiocGenerics,
     BiocFileCache,
     S4Vectors,
@@ -45,6 +44,7 @@ Suggests:
     rmarkdown,
     testthat,
     AnnotationHub,
+    ensembl,
     BSgenome.Hsapiens.UCSC.hg38,
     BSgenome.Scerevisiae.UCSC.sacCer3
 Collate: 

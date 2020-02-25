@@ -76,6 +76,12 @@ modification names are set as the names of the returned object. (default:
 \code{\link[Modstrings:separate]{?combineIntoModstrings}} for additional
 details.}
 }
+\value{
+a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object for
+  \code{modifications} and a
+  \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} for
+  \code{modificationsBy}.
+}
 \description{
 \code{modifications} and \code{modificationsBy} are functions to
 extract modification annotation from a \code{\link[=EpiTxDb-class]{EpiTxDb}}

@@ -10,7 +10,6 @@ The current version of the RNAmodR package is available from Bioconductor.
 
 ```
 remotes::install_github("FelixErnst/EpiTxDb")
-remotes::install_github("FelixErnst/EpiTxDb")
 #
 library(EpiTxDb)
 ```

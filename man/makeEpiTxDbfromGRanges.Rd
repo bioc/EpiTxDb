@@ -18,6 +18,9 @@ of metadata. (default: \code{metadata = NULL})}
 
 \item{reassign.ids}{= FALSE}
 }
+\value{
+a \code{EpiTxDb} object.
+}
 \description{
 \code{makeEpiTxDbFromGRanges} extracts informations from a
 \code{\link[GenomicRanges:GRanges-class]{GRanges}} object. The following

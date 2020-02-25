@@ -20,8 +20,12 @@ NULL
 #'   the position be ordered in a decreasing order? (default: \code{order =
 #'   FALSE})
 #'
+#' @return a \code{integer} vector if x is a
+#'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object and a
+#'   \code{IntegerList} if x is a
+#'   \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
+#'
 #' @examples
-#' library(EpiTxDb)
 #' library(GenomicRanges)
 #' # Returns an integer vector
 #' gr <- GRanges("chr1:1-5")

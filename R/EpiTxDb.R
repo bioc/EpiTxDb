@@ -23,10 +23,11 @@
 #' D139–D140. doi: 10.1093/nar/gki012
 #'
 #' @docType package
-#' @name EpiTxDb
+#' @name EpiTxDb-package
 NULL
 
 #' @import methods
+#' @import GenomicFeatures
 #' @import BiocGenerics
 #' @import S4Vectors
 #' @import IRanges
@@ -36,7 +37,10 @@ NULL
 #' @import Modstrings
 NULL
 
-#' @rdname EpiTxDb
+#' @name EpiTxDb-data
+#'
+#' @title EpiTxDb internal data
+#'
 #' @usage data(rmbase_data)
 #' @format data.frame
 "rmbase_data"

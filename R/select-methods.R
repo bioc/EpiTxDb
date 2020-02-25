@@ -7,15 +7,18 @@ NULL
 #' @title Using the "select" interface on \code{EpiTxDb} objects
 #'
 #' @description
-#' As expected for a \code{AnnotationDb} object, the general accessors
-#' \code{select}, \code{keys}, \code{columns} and \code{keytypes} can be used
-#' to get information from a \code{\link[=EpiTxDb-class]{EpiTxDb}} object.
+#'   As expected for a \code{AnnotationDb} object, the general accessors
+#'   \code{select}, \code{keys}, \code{columns} and \code{keytypes} can be used
+#'   to get information from a \code{\link[=EpiTxDb-class]{EpiTxDb}} object.
 #'
 #' @param x a \code{\link[=EpiTxDb-class]{EpiTxDb}} object
 #' @param keys,columns,keytype,... See
-#' \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} for more
-#' comprehensive description of the methods \code{select}, \code{keys},
-#' \code{columns} and \code{keytypes} and their arguments.
+#'   \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} for more
+#'   comprehensive description of the methods \code{select}, \code{keys},
+#'   \code{columns} and \code{keytypes} and their arguments.
+#'
+#' @return a \code{data.frame} object for \code{select()} and a \code{character}
+#'   vecor for \code{keytypes()}, \code{keys()} and \code{columns()}.
 #'
 #' @export
 #'

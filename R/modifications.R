@@ -45,6 +45,10 @@ NULL
 #'   details.
 #' @param ... Not used.
 #'
+#' @return a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object for
+#'   \code{modifications} and a
+#'   \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} for
+#'   \code{modificationsBy}.
 #'
 #' @examples
 #' etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",

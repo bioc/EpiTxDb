@@ -30,6 +30,8 @@ NULL
 #' of metadata. (default: \code{metadata = NULL})
 #' @param reassign.ids = FALSE
 #'
+#' @return a \code{EpiTxDb} object.
+#'
 #' @export
 #'
 #' @examples

@@ -72,6 +72,9 @@ available files will be downloaded using the
 and passed on to \code{makeEpiTxDbFromRMBaseFiles}. However, individual
 files can be provided as well.}
 }
+\value{
+a \code{EpiTxDb} object.
+}
 \description{
 \code{makeEpiTxDbFromRMBase} will make use of the RMBase v2.0 online
 resources.

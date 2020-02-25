@@ -78,6 +78,8 @@ NULL
 #'     creating a \code{EpiTxDb} object from tRNAdb online resources}
 #' }
 #'
+#' @return a \code{EpiTxDb} object.
+#'
 #' @export
 #'
 #' @examples

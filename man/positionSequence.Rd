@@ -26,13 +26,18 @@ or \code{\link[IRanges:IRangesList-class]{IRangesList}}}
 the position be ordered in a decreasing order? (default: \code{order =
 FALSE})}
 }
+\value{
+a \code{integer} vector if x is a
+  \code{\link[GenomicRanges:GRanges-class]{GRanges}} object and a
+  \code{IntegerList} if x is a
+  \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
+}
 \description{
 \code{positionSequence} generates sequences of integer values
 along the range information of \code{x}. This can be used for navigating
 specific positions on a range information.
 }
 \examples{
-library(EpiTxDb)
 library(GenomicRanges)
 # Returns an integer vector
 gr <- GRanges("chr1:1-5")
