@@ -14,55 +14,48 @@ NULL
 #' is reflected in the name. \code{shiftTranscriptToGenomic} implements the
 #' reverse operation.
 #'
+#' Matches are determined by
+#' \code{\link[GenomicRanges:findOverlaps-methods]{findOverlaps}} for
+#' \code{shiftGenomicToTranscript} and by
+#' \code{\link[S4Vectors:Vector-comparison]{findMatches}} for
+#' \code{shiftTranscriptToGenomic} using the \code{seqnames} of the
+#' \code{subject} and the \code{names} of \code{tx}.
+#'
 #' @param subject a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
-#' \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
-#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
-#' with a \code{type} metadata column. In addition the metadata \code{mcols(tx)}
-#' must contain at least two columns \code{gene_name} and \code{transcript_name}
-#' defining the relation of gene and transcript names.
+#'   \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
+#' @param tx a named \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
+#'   object.
 #'
 #' @examples
-#' \dontrun{
 #' library(GenomicRanges)
 #' # Construct some example data
-#' gr1 <- GRanges("chr2", IRanges(3, 6),
-#'                strand="+", gene_name=c("c_g"))
-#' gr2 <- GRanges(c("chr1", "chr1"), IRanges(c(7,13), width=3),
-#'                strand=c("+", "-"), gene_name=c("a_g","b_g"))
-#' gr3 <- GRanges(c("chr1", "chr2"), IRanges(c(1, 4), c(3, 9)),
-#'                strand=c("-", "-"), gene_name=c("a_g","c_g"))
-#' grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
-#' tx1 <- GRanges("chr1", IRanges(1, 10),
-#'                strand="+", type="exon")
-#' tx2 <- GRanges("chr1", IRanges(10, 20),
-#'                strand="+", type="exon")
-#' tx3 <- GRanges("chr2", IRanges(1, 10),
-#'                strand="-", type="exon")
+#' subject1 <- GRanges("chr1", IRanges(3, 6),
+#'                     strand = "+")
+#' subject2 <- GRanges("chr1", IRanges(c(17,23), width=3),
+#'                     strand = c("+","-"))
+#' subject3 <- GRanges("chr2", IRanges(c(51, 54), c(53, 59)),
+#'                     strand = "-")
+#' subject <- GRangesList(a=subject1, b=subject2, c=subject3)
+#' tx1 <- GRanges("chr1", IRanges(1, 40),
+#'                strand="+")
+#' tx2 <- GRanges("chr1", IRanges(10, 30),
+#'                strand="+")
+#' tx3 <- GRanges("chr2", IRanges(50, 60),
+#'                strand="-")
 #' tx <- GRangesList(a=tx1, b=tx2, c=tx3)
-#' mcols(tx) <- DataFrame(gene_name = c("a_g","b_g","c_g"),
-#'                        tx_name = c("a","b","c"))
 #'
-#' # shift to transcript coordinates
-#' shifted_grl <- shiftGenomicToTranscript(grl,tx)
+#' # shift to transcript coordinates. Since the third subject does not have
+#' # a match in tx it is dropped with a warning
+#' shifted_grl <- shiftGenomicToTranscript(subject,tx)
+#'
 #' # ... and back
 #' shifted_grl2 <- shiftTranscriptToGenomic(shifted_grl,tx)
+#'
 #' # comparison of ranges work. However the seqlevels differ
-#' ranges(shifted_grl2) == ranges(grl)
-#' }
+#' ranges(shifted_grl2) == ranges(subject[list(1,c(1,1),c(1,2))])
 NULL
 
 # helper functions -------------------------------------------------------------
-
-.REQUIRED_TX_COLNAMES <- c("tx_id")
-
-.norm_subject <- function(subject){
-    if(is(subject,"GRangesList")){
-        tmp_subject <- unlist(subject)
-    } else {
-        tmp_subject <- subject
-    }
-    subject
-}
 
 .norm_tx <- function(tx){
     if(missing(tx) || !is(tx,"GRangesList")){
@@ -74,26 +67,23 @@ NULL
     if(anyDuplicated(names(tx))){
         stop("names of 'tx' must be unique.", call. = FALSE)
     }
-    if(!all(.REQUIRED_TX_COLNAMES %in% colnames(mcols(unlist(tx))))){
-        stop("'tx' must contain the following columns: '",
-             paste(.REQUIRED_TX_COLNAMES, collapse = "','"),
-             "'.",
-             call. = FALSE)
-    }
-    if(anyNA(unlist(mcols(tx, level="within")[,"tx_id"]))){
-        stop("'tx_id' must be a character vector with no NAs.",
-             call. = FALSE)
-    }
-    tx <- tx[lengths(tx) != 0L]
-    unique_tx_id <- unique(mcols(tx, level="within")[,"tx_id"])
-    if(any(lengths(unique_tx_id) != 1L)){
-        stop("'tx_id' must be a unique value within each element.",
-             call. = FALSE)
-    }
     tx
 }
 
 # shiftTranscriptToGenomic ----------------------------------------------------
+
+#' @importFrom S4Vectors findMatches
+.hitsFUN_TX_TO_GENOME <- function(subject,tx){
+    hits <- suppressWarnings(S4Vectors::findMatches(names(tx),
+                                                    seqnames(subject)))
+    hits
+}
+
+#' @importFrom GenomicRanges findOverlaps
+.hitsFUN_GENOME_TO_TX <- function(subject,tx){
+    hits <- suppressWarnings(GenomicRanges::findOverlaps(tx,subject))
+    hits
+}
 
 .compareFUN_TX_TO_GENOME <- function(y, z, seqs){
     seqs[y][IRanges::IntegerList(as.list(z))]
@@ -105,9 +95,6 @@ NULL
 
 .resultFUN_TX_TO_GENOME <- function(tx_hits, subject_hits, starts, ends){
     # transfer gene information
-    mcols(subject_hits)$sn_id <- ""
-    mcols(subject_hits)$sn_id <-
-        unlist(unique(mcols(tx_hits,level="within")[,"sn_id"]))
     mcols(subject_hits)$seq_start <- start(subject_hits)
     mcols(subject_hits)$seq_end <- end(subject_hits)
     mcols(subject_hits)$seq_strand <- strand(subject_hits)
@@ -116,6 +103,9 @@ NULL
     seqnames <- unlist(unique(seqnames(tx_hits)),use.names = FALSE)
     strand <- unlist(unique(strand(tx_hits)),use.names = FALSE)
     mcols <- mcols(subject_hits)
+    tmp <- starts
+    starts[strand == "-"] <- ends[strand == "-"]
+    ends[strand == "-"] <- tmp[strand == "-"]
     ranges <- IRanges::IRanges(start = unlist(starts), end = unlist(ends))
     # reformat GRanges results
     ans <- GenomicRanges::GRanges(seqnames = seqnames,
@@ -127,36 +117,35 @@ NULL
 
 .resultFUN_GENOME_TO_TX <- function(tx_hits, subject_hits, starts, ends){
     # transfer transcript information
-    mcols(subject_hits)$sn_id <- ""
-    mcols(subject_hits)$sn_id <-
-        unlist(unique(mcols(tx_hits,level="within")[,"sn_id"]))
     mcols(subject_hits)$seq_start <- start(subject_hits)
     mcols(subject_hits)$seq_end <- end(subject_hits)
     mcols(subject_hits)$seq_strand <- strand(subject_hits)
     mcols(subject_hits)$seq_name <- seqnames(subject_hits)
     # reformat GRanges results
-    seqnames <- mcols(subject_hits)$sn_id
+    seqnames <- names(tx_hits)
     mcols <- mcols(subject_hits)
+    tmp <- starts
+    starts[strand(subject_hits) == "-"] <- ends[strand(subject_hits) == "-"]
+    ends[strand(subject_hits) == "-"] <- tmp[strand(subject_hits) == "-"]
     ranges <- IRanges::IRanges(start = unlist(starts), end = unlist(ends))
     #
     ans <- GenomicRanges::GRanges(seqnames = seqnames,
                                   ranges = ranges,
-                                  strand = "+",
+                                  strand = "*",
                                   mcols)
     ans
 }
 
-.shift <- function(subject, tx, .compareFUN, .resultFUN){
+.shift <- function(subject, tx, seqs, .hitsFUN, .compareFUN, .resultFUN){
     # match seqnames of subject and names of tx
-    hits_coordinates <-
-        suppressWarnings(GenomicRanges::findOverlaps(tx,subject))
-    if(length(hits_coordinates) == 0L){
+    hits <- .hitsFUN(subject, tx)
+    if(length(hits) == 0L){
         stop("No 'subject'/'tx' matches found.",
              call. = FALSE)
     }
     # assemble results vectors
-    qh <- queryHits(hits_coordinates)
-    sh <- subjectHits(hits_coordinates)
+    qh <- queryHits(hits)
+    sh <- subjectHits(hits)
     f <- seq_along(subject) %in% sh
     if(!all(f)){
         warning("Coordinates for ",sum(!f)," ranges of 'subject' not found: '",
@@ -171,7 +160,6 @@ NULL
     chunks_n <- ceiling(length(qh) / chunk_size)
     f <- factor(unlist(Map(rep.int,seq_len(chunks_n),chunk_size)))
     f <- f[seq_along(qh)]
-    seqs <- positionSequence(tx)
     starts <- mapply(.compareFUN,
                      split(qh, f),
                      split(start(subject_hits), f),
@@ -201,19 +189,20 @@ NULL
 #' @export
 setMethod("shiftTranscriptToGenomic", c("GRanges","GRangesList"),
     function(subject, tx){
-        subject <- .norm_subject(subject)
         tx <- .norm_tx(tx)
-        .shift(subject, tx, .compareFUN_TX_TO_GENOME, .resultFUN_TX_TO_GENOME)
+        seqs <- positionSequence(tx)
+        .shift(subject, tx, seqs, .hitsFUN_TX_TO_GENOME,
+               .compareFUN_TX_TO_GENOME, .resultFUN_TX_TO_GENOME)
     })
 
 #' @rdname shiftGenomicToTranscript
 #' @export
 setMethod("shiftTranscriptToGenomic", c("GRangesList","GRangesList"),
     function(subject, tx){
-        subject <- .norm_subject(subject)
         tx <- .norm_tx(tx)
-        ans <- lapply(subject, .shift, tx, .compareFUN_TX_TO_GENOME,
-                      .resultFUN_TX_TO_GENOME)
+        seqs <- positionSequence(tx)
+        ans <- lapply(subject, .shift, tx, seqs, .hitsFUN_TX_TO_GENOME,
+                      .compareFUN_TX_TO_GENOME, .resultFUN_TX_TO_GENOME)
         GenomicRanges::GRangesList(ans)
     })
 
@@ -224,18 +213,19 @@ setMethod("shiftTranscriptToGenomic", c("GRangesList","GRangesList"),
 #' @export
 setMethod("shiftGenomicToTranscript", c("GRanges","GRangesList"),
     function(subject, tx){
-        subject <- .norm_subject(subject)
         tx <- .norm_tx(tx)
-        .shift(subject, tx, .compareFUN_GENOME_TO_TX, .resultFUN_GENOME_TO_TX)
+        seqs <- positionSequence(tx)
+        .shift(subject, tx, seqs, .hitsFUN_GENOME_TO_TX, .compareFUN_GENOME_TO_TX,
+               .resultFUN_GENOME_TO_TX)
     })
 
 #' @rdname shiftGenomicToTranscript
 #' @export
 setMethod("shiftGenomicToTranscript", c("GRangesList","GRangesList"),
     function(subject, tx){
-        subject <- .norm_subject(subject)
         tx <- .norm_tx(tx)
-        ans <- lapply(subject, .shift, tx, .compareFUN_GENOME_TO_TX,
-                      .resultFUN_GENOME_TO_TX)
+        seqs <- positionSequence(tx)
+        ans <- lapply(subject, .shift, tx, seqs, .hitsFUN_GENOME_TO_TX,
+                      .compareFUN_GENOME_TO_TX, .resultFUN_GENOME_TO_TX)
         GenomicRanges::GRangesList(ans)
     })

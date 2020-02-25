@@ -4,6 +4,7 @@ library(BSgenome.Scerevisiae.UCSC.sacCer3)
 
 context("makeEpiTxDbFromtRNAdb")
 test_that("makeEpiTxDbFromtRNAdb:",{
+    httptest::skip_if_disconnected(url = "http://trna.bioinf.uni-leipzig.de/")
     bs <- BSgenome.Scerevisiae.UCSC.sacCer3
     # get tx
     ah <- AnnotationHub()

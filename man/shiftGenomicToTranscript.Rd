@@ -26,10 +26,8 @@ shiftGenomicToTranscript(subject, tx)
 \item{subject}{a \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
 \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object}
 
-\item{tx}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
-with a \code{type} metadata column. In addition the metadata \code{mcols(tx)}
-must contain at least two columns \code{gene_name} and \code{transcript_name}
-defining the relation of gene and transcript names.}
+\item{tx}{a named \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
+object.}
 }
 \description{
 \code{shiftGenomicToTranscript} shifts positions of a
@@ -38,33 +36,37 @@ object based on coordinates of another \code{GRanges} object. The most common
 application is to shift genomic coordinates to transcript coordinates, which
 is reflected in the name. \code{shiftTranscriptToGenomic} implements the
 reverse operation.
+
+Matches are determined by
+\code{\link[GenomicRanges:findOverlaps-methods]{findOverlaps}} for
+\code{shiftGenomicToTranscript} and by
+\code{\link[S4Vectors:findMatches-methods]{findMatches}} for
+\code{shiftTranscriptToGenomic} using the \code{seqnames} of the
+\code{subject} and the \code{names} of \code{tx}.
 }
 \examples{
-\dontrun{
 library(GenomicRanges)
 # Construct some example data
-gr1 <- GRanges("chr2", IRanges(3, 6),
-               strand="+", gene_name=c("c_g"))
-gr2 <- GRanges(c("chr1", "chr1"), IRanges(c(7,13), width=3),
-               strand=c("+", "-"), gene_name=c("a_g","b_g"))
-gr3 <- GRanges(c("chr1", "chr2"), IRanges(c(1, 4), c(3, 9)),
-               strand=c("-", "-"), gene_name=c("a_g","c_g"))
-grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
-tx1 <- GRanges("chr1", IRanges(1, 10),
-               strand="+", type="exon")
-tx2 <- GRanges("chr1", IRanges(10, 20),
-               strand="+", type="exon")
-tx3 <- GRanges("chr2", IRanges(1, 10),
-               strand="-", type="exon")
+subject1 <- GRanges("chr1", IRanges(3, 6),
+                    strand = "+")
+subject2 <- GRanges("chr1", IRanges(c(17,23), width=3),
+                    strand = c("+","-"))
+subject3 <- GRanges("chr2", IRanges(c(51, 54), c(53, 59)),
+                    strand = "-")
+subject <- GRangesList(a=subject1, b=subject2, c=subject3)
+tx1 <- GRanges("chr1", IRanges(1, 40),
+               strand="+")
+tx2 <- GRanges("chr1", IRanges(10, 30),
+               strand="+")
+tx3 <- GRanges("chr2", IRanges(50, 60),
+               strand="-")
 tx <- GRangesList(a=tx1, b=tx2, c=tx3)
-mcols(tx) <- DataFrame(gene_name = c("a_g","b_g","c_g"),
-                       tx_name = c("a","b","c"))
 
-# shift to transcript coordinates
-shifted_grl <- shiftGenomicToTranscript(grl,tx)
+# shift to transcript coordinates. Since the third subject does not have
+# a match in tx it is dropped with a warning
+shifted_grl <- shiftGenomicToTranscript(subject,tx)
 # ... and back
 shifted_grl2 <- shiftTranscriptToGenomic(shifted_grl,tx)
 # comparison of ranges work. However the seqlevels differ
-ranges(shifted_grl2) == ranges(grl)
-}
+ranges(shifted_grl2) == ranges(subject[list(1,c(1,1),c(1,2))])
 }
