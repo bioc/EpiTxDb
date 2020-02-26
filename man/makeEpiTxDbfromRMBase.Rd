@@ -15,12 +15,12 @@
 \usage{
 EPITXDB_RMBASE_URL
 
-downloadRMBaseFiles(organism, genome, type)
+downloadRMBaseFiles(organism, genome, modtype)
 
 makeEpiTxDbFromRMBase(
   organism,
   genome,
-  type,
+  modtype,
   tx = NULL,
   sequences = NULL,
   metadata = NULL,
@@ -50,7 +50,7 @@ descriptor on the RMBase download website.}
 \item{genome}{A \code{character} value, which must match a genome
 descriptor on the RMBase download website.}
 
-\item{type}{A \code{character} value, which must match one or more
+\item{modtype}{A \code{character} value, which must match one or more
 modification descriptors on the RMBase download website.}
 
 \item{tx}{A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
@@ -66,7 +66,7 @@ function from the \code{Modstrings} package.}
 
 \item{metadata, reassign.ids}{See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}}
 
-\item{files}{From \code{organism}, \code{genome} and \code{type} the
+\item{files}{From \code{organism}, \code{genome} and \code{modtype} the
 available files will be downloaded using the
 \code{\link[BiocFileCache:BiocFileCache-class]{BiocFileCache}} interface
 and passed on to \code{makeEpiTxDbFromRMBaseFiles}. However, individual

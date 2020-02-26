@@ -35,7 +35,7 @@ modifiedSeqsByTranscript(x, sequences, ...)
 
 \S4method{modificationsBy}{EpiTxDb}(
   x,
-  by = c("seqnames", "mod_type", "reaction", "specifier", "specifier_type")
+  by = c("seqnames", "modtype", "reaction", "specifier", "specifiertype")
 )
 
 \S4method{modifiedSeqsByTranscript}{EpiTxDb,DNAStringSet}(x, sequences)
