@@ -15,9 +15,9 @@ NULL
 #'   descriptor on the RMBase download website.
 #' @param genome A \code{character} value, which must match a genome
 #'   descriptor on the RMBase download website.
-#' @param type A \code{character} value, which must match one or more
+#' @param modtype A \code{character} value, which must match one or more
 #'   modification descriptors on the RMBase download website.
-#' @param files From \code{organism}, \code{genome} and \code{type} the
+#' @param files From \code{organism}, \code{genome} and \code{modtype} the
 #'   available files will be downloaded using the
 #'   \code{\link[BiocFileCache:BiocFileCache-class]{BiocFileCache}} interface
 #'   and passed on to \code{makeEpiTxDbFromRMBaseFiles}. However, individual
@@ -44,13 +44,13 @@ EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
 
 # makeEpiTxDbFromRMBase --------------------------------------------------------
 
-.get_RMBase_rnames <- function(organism, genome, type){
-    paste0("RMBase_",organism,"_",genome,"_",type)
+.get_RMBase_rnames <- function(organism, genome, modtype){
+    paste0("RMBase_",organism,"_",genome,"_",modtype)
 }
 
-.check_RMBase_files_available <- function(bfc, organism, genome, type){
+.check_RMBase_files_available <- function(bfc, organism, genome, modtype){
     # get BiocFileCache information
-    rnames <- .get_RMBase_rnames(organism, genome, type)
+    rnames <- .get_RMBase_rnames(organism, genome, modtype)
     bfci <- BiocFileCache::bfcinfo(bfc)
     m <- match(rnames,bfci$rname)
     m <- m[!is.na(m)]
@@ -59,9 +59,9 @@ EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
     nrow(res) == length(rnames)
 }
 
-.get_RMBase_files_available <- function(bfc, organism, genome, type){
+.get_RMBase_files_available <- function(bfc, organism, genome, modtype){
     # get BiocFileCache information
-    rnames <- .get_RMBase_rnames(organism, genome, type)
+    rnames <- .get_RMBase_rnames(organism, genome, modtype)
     bfci <- BiocFileCache::bfcinfo(bfc)
     m <- match(rnames,bfci$rname)
     m <- m[!is.na(m)]
@@ -87,15 +87,15 @@ EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
 }
 
 #' @importFrom BiocFileCache bfcquery bfcadd BiocFileCache
-.download_RMBase_files <- function(bfc, organism, genome, type){
+.download_RMBase_files <- function(bfc, organism, genome, modtype){
     # get file names
     files <- .get_RMBase_files(organism)
     f_genome <- vapply(strsplit(files,"_"),"[",character(1),2L) == genome
-    f_mod <- vapply(strsplit(files[f_genome],"_"),"[",character(1),4L) %in% type
+    f_mod <- vapply(strsplit(files[f_genome],"_"),"[",character(1),4L) %in% modtype
     files <- files[f_genome][f_mod]
     urls <- paste0(EPITXDB_RMBASE_URL,organism,"/zip/",files)
     #
-    rnames <- .get_RMBase_rnames(organism, genome, type)
+    rnames <- .get_RMBase_rnames(organism, genome, modtype)
     if(length(rnames) != length(urls)){
         stop(".")
     }
@@ -122,30 +122,30 @@ EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
 
 #' @rdname makeEpiTxDbFromRMBase
 #' @export
-downloadRMBaseFiles <- function(organism, genome, type){
+downloadRMBaseFiles <- function(organism, genome, modtype){
     bfc <- BiocFileCache::BiocFileCache()
-    if(!.check_RMBase_files_available(bfc, organism, genome, type)){
-        types <- listAvailableModFromRMBase(organism, genome)
-        if(!all(type %in% types)){
-            stop("'type' must be a valid modification type from ",
+    if(!.check_RMBase_files_available(bfc, organism, genome, modtype)){
+        modtypes <- listAvailableModFromRMBase(organism, genome)
+        if(!all(modtype %in% modtypes)){
+            stop("'modtype' must be a valid modification type from ",
                  "listAvailableModFromRMBase() for the given 'organism' and ",
                  "'genome'.")
         }
         message("Downloading RMBase v2.0 files ...")
-        files <- .download_RMBase_files(bfc, organism, genome, type)
+        files <- .download_RMBase_files(bfc, organism, genome, modtype)
     } else {
-        files <- .get_RMBase_files_available(bfc, organism, genome, type)
+        files <- .get_RMBase_files_available(bfc, organism, genome, modtype)
     }
     files
 }
 
 #' @rdname makeEpiTxDbFromRMBase
 #' @export
-makeEpiTxDbFromRMBase <- function(organism, genome, type, tx = NULL,
+makeEpiTxDbFromRMBase <- function(organism, genome, modtype, tx = NULL,
                                   sequences = NULL, metadata = NULL,
                                   reassign.ids = FALSE){
     message("Loading RMBase files ...")
-    files <- downloadRMBaseFiles(organism, genome, type)
+    files <- downloadRMBaseFiles(organism, genome, modtype)
     makeEpiTxDbFromRMBaseFiles(files, tx = tx, sequences = sequences,
                                metadata = metadata, reassign.ids = reassign.ids)
 }

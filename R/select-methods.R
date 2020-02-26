@@ -353,6 +353,9 @@ setMethod("columns", "EpiTxDb",
         "MODNAME" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT mod_name FROM modification", 1L),
+        "MODSTRAND" = AnnotationDbi:::dbQuery(
+            dbconn(x),
+            "SELECT DISTINCT mod_strand FROM modification", 1L),
         "SNID" = AnnotationDbi:::dbQuery(
             dbconn(x),
             "SELECT DISTINCT _sn_id FROM seqnames", 1L),
@@ -409,9 +412,9 @@ setMethod("keys", "EpiTxDb", .keysDispatch)
 #' @rdname select
 #' @export
 setMethod("keytypes", "EpiTxDb",
-          function(x) return(c("MODID","MODTYPE","MODNAME","SNID","SNNAME",
-                               "RXGENENAME","RXENSEMBL","RXENSEMBLTRANS",
-                               "RXENTREZID", "SPECTYPE","SPECGENENAME",
-                               "SPECENSEMBL","SPECENSEMBLTRANS","SPECENTREZID",
-                               "REFTYPE","REF"))
+          function(x) return(c("MODID","MODTYPE","MODNAME","MODSTRAND","SNID",
+                               "SNNAME","RXGENENAME","RXENSEMBL",
+                               "RXENSEMBLTRANS","RXENTREZID", "SPECTYPE",
+                               "SPECGENENAME","SPECENSEMBL","SPECENSEMBLTRANS",
+                               "SPECENTREZID","REFTYPE","REF"))
 )

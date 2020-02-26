@@ -174,7 +174,7 @@ test_that("EpiTxDb SQL:",{
     actual <- EpiTxDb:::EpiTxDb_SELECT_from_modification(etdb)
     expect_s3_class(actual,"data.frame")
     expect_equal(colnames(actual),c("_mod_id","mod_type","mod_name","mod_start",
-                                    "mod_end","_sn_id"))
+                                    "mod_end","mod_strand","_sn_id"))
     actual <- EpiTxDb:::EpiTxDb_SELECT_from_seqnames(etdb)
     expect_s3_class(actual,"data.frame")
     expect_equal(colnames(actual),c("_sn_id","sn_name"))

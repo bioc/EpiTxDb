@@ -21,10 +21,10 @@ NULL
     }
     f <- switch(by,
                 "seqnames" = seqnames(gr),
-                "mod_type" = gr_mcols$mod,
+                "modtype" = gr_mcols$mod,
                 "reaction" = FUN(gr_mcols$rx_genename),
                 "specifier" = FUN(gr_mcols$spec_genename),
-                "specifier_type" = FUN(gr_mcols$spec_type),
+                "specifiertype" = FUN(gr_mcols$spec_type),
                 stop("unsupported 'by' value."))
     grl <- S4Vectors::split(gr, f)
     .assignMetadataList(grl, epitxdb)
@@ -35,7 +35,7 @@ NULL
     ans <- switch(by,
                   "seqnames" = modifications(epitxdb,
                                              c("MODID", "MODTYPE","MODNAME")),
-                  "mod_type" = modifications(epitxdb,
+                  "modtype" = modifications(epitxdb,
                                              c("MODTYPE", "MODID", "MODNAME")),
                   "reaction" = modifications(epitxdb,
                                              c("RXENSEMBL", "RXENSEMBLTRANS",
@@ -43,7 +43,7 @@ NULL
                   "specifier" = modifications(epitxdb,
                                               c("SPECENSEMBL","SPECENTREZID",
                                                 "SPECGENENAME", "SPECTYPE")),
-                  "specifier_type" = modifications(epitxdb,
+                  "specifiertype" = modifications(epitxdb,
                                                    c("SPECENSEMBL","SPECENTREZID",
                                                      "SPECGENENAME", "SPECTYPE")),
                   stop("unsupported 'by' value."))
@@ -54,8 +54,8 @@ NULL
 #' @rdname modifications
 #' @export
 setMethod("modificationsBy", "EpiTxDb",
-    function(x, by = c("seqnames","mod_type","reaction","specifier",
-                       "specifier_type")){
+    function(x, by = c("seqnames","modtype","reaction","specifier",
+                       "specifiertype")){
       by <- match.arg(by)
       .extract_features_by(x, by = by)
     }

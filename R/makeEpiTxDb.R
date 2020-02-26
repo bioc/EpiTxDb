@@ -19,6 +19,7 @@ NULL
 #'     \item{\code{mod_name} }
 #'     \item{\code{mod_start} }
 #'     \item{\code{mod_end} }
+#'     \item{\code{mod_strand} }
 #'     \item{\code{sn_id} }
 #'     \item{\code{sn_name} }
 #'   }
@@ -88,6 +89,7 @@ NULL
 #'                   "mod_name" = "m1A_1",
 #'                   "mod_start" = 1L,
 #'                   "mod_end" = 1L,
+#'                   "mod_start" = "+",
 #'                   "sn_id" = 1L,
 #'                   "sn_name" = "test")
 #' rx <- data.frame(mod_id = 1L,
@@ -162,7 +164,7 @@ has_col <- GenomicFeatures:::has_col
 dbEasyQuery <- GenomicFeatures:::dbEasyQuery
 
 .makeEpiTxDb_normarg_modifications <- function(modifications){
-    .REQUIRED_COLS <- c("mod_id", "mod_type", "mod_start", "mod_end",
+    .REQUIRED_COLS <- c("mod_id","mod_type","mod_start","mod_end","mod_strand",
                         "sn_id")
     .OPTIONAL_COLS <- c("mod_name", "sn_name")
     # make sure 'sn_id is set'
@@ -209,6 +211,11 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         stop("'modifications$mod_type' must be a valid modification shortName ",
              "(shortName(ModRNAString()))")
     }
+    ## Check 'mod_strand'.
+    if (!.is_character_or_factor(modifications$mod_strand) ||
+        any(!(modifications$mod_strand %in% c("+","-","*"))))
+        stop("'modifications$mod_strand' must be a character vector ",
+             "(or factor) and contain only '+', '-' or '*'")
     ## Check 'sn_id'.
     if (!is.integer(modifications$sn_id)
         || any(is.na(modifications$sn_id)))
@@ -472,6 +479,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                                       mod_name,
                                       mod_start,
                                       mod_end,
+                                      mod_strand,
                                       sn_id){
     if (is.null(mod_name))
         mod_name <- rep.int(NA_character_, length(mod_internal_id))
@@ -480,6 +488,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
                        mod_name = mod_name,
                        mod_start = mod_start,
                        mod_end = mod_end,
+                       mod_strand = mod_strand,
                        sn_id = sn_id,
                        check.names = FALSE, stringsAsFactors = FALSE)
     data <- unique(data)
@@ -680,6 +689,7 @@ makeEpiTxDb <- function(modifications, reactions = NULL, specifiers = NULL,
                               modifications$mod_name,
                               modifications$mod_start,
                               modifications$mod_end,
+                              modifications$mod_strand,
                               modifications$sn_id)
     .write_reaction_table(conn,
                           reactions$rx_id,

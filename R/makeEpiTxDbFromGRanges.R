@@ -54,6 +54,7 @@ NULL
                           mod_name = mcols(gr)$mod_name,
                           mod_start = start(gr),
                           mod_end = end(gr),
+                          mod_strand = strand(gr),
                           sn_id = as.integer(seqnames(gr)),
                           sn_name= seqnames(gr))
     modifications <- modifications[!vapply(modifications, is.null, logical(1))]

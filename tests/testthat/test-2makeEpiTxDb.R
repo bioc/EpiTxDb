@@ -5,6 +5,7 @@ test_that("makeEpiTxDb:",{
                       "mod_name" = "m1A_1",
                       "mod_start" = 1L,
                       "mod_end" = 1L,
+                      "mod_strand" = "+",
                       "sn_id" = 1L,
                       "sn_name" = "test")
     expect_equal(EpiTxDb:::.makeEpiTxDb_normarg_modifications(mod),mod)
@@ -16,6 +17,10 @@ test_that("makeEpiTxDb:",{
     df[,"mod_type"] <- "Z"
     expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
                  "'modifications\\$mod_type' must be a valid")
+    df <- mod
+    df[,"mod_name"] <- 1
+    expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
+                 "'modifications\\$mod_name' must be a character")
     df <- mod
     df[,"mod_start"] <- 1
     expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
@@ -29,13 +34,13 @@ test_that("makeEpiTxDb:",{
     expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
                  "modification starts must be <= modification ends")
     df <- mod
+    df[,"mod_strand"] <- 1
+    expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
+                 "'modifications\\$mod_strand' must be a character")
+    df <- mod
     df[,"sn_id"] <- 1
     expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
                  "'modifications\\$sn_id' must be a integer")
-    df <- mod
-    df[,"mod_name"] <- 1
-    expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
-                 "'modifications\\$mod_name' must be a character")
     df <- mod
     df[,"sn_name"] <- 1
     expect_error(EpiTxDb:::.makeEpiTxDb_normarg_modifications(df),
@@ -140,6 +145,7 @@ test_that("makeEpiTxDb:",{
                        "mod_name" = "m1A_1",
                        "mod_start" = 1L,
                        "mod_end" = 1L,
+                       "mod_strand" = "+",
                        "sn_id" = 1L,
                        "sn_name" = "test")
     actual <- EpiTxDb:::.make_modifications_internal_mod_id(mod, FALSE)

@@ -22,6 +22,7 @@ makeEpiTxDb(
   \item{\code{mod_name} }
   \item{\code{mod_start} }
   \item{\code{mod_end} }
+  \item{\code{mod_strand} }
   \item{\code{sn_id} }
   \item{\code{sn_name} }
 }
@@ -89,6 +90,7 @@ mod <- data.frame("mod_id" = 1L,
                   "mod_name" = "m1A_1",
                   "mod_start" = 1L,
                   "mod_end" = 1L,
+                  "mod_start" = "+",
                   "sn_id" = 1L,
                   "sn_name" = "test")
 rx <- data.frame(mod_id = 1L,

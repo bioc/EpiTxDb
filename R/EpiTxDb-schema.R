@@ -38,6 +38,7 @@ EPITXDB_MOD_COLDEFS <- c(
     mod_name = "TEXT NULL",
     mod_start = "INTEGER NOT NULL",
     mod_end = "INTEGER NOT NULL",
+    mod_strand = "TEXT NOT NULL",
     `_sn_id` = "INTEGER NOT NULL"
 )
 EPITXDB_MOD_COLUMNS <- names(EPITXDB_MOD_COLDEFS)

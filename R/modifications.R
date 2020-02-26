@@ -132,7 +132,8 @@ NULL
         seqinfo = .get_EpiTxDb_seqinfo(epitxdb),
         seqnames.field = "seqnames",
         start.field = "mod_start",
-        end.field = "mod_end")
+        end.field = "mod_end",
+        strand.field = "mod_strand")
     if (use.names) {
         ans_names <- DF[ ,"mod_name"]
         names(ans) <- ans_names

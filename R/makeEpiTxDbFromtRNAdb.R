@@ -11,10 +11,11 @@ NULL
 #' resources and extract the modification information from the RNA database.
 #'
 #' If a named \code{\link[Biostrings:XStringSet-class]{DNAStringSet}} is
-#' provided, the result from the tRNAdb will be matched against the sequences.
-#' Valid matches will be used and returned after a check of modification
-#' compatibility with the provided sequence. By this process multiple copies of
-#' transcripts will be associated with the modifications.
+#' provided as \code{sequences}, the result from the tRNAdb will be matched
+#' against the sequences. Valid matches will be used as transcript identifiers
+#' and returned after a check of modification compatibility with the provided
+#' sequence. By this process multiple copies of transcripts can be associated
+#' with a single modification.
 #'
 #' \code{makeEpiTxDbFromtRNAdb} uses the functions provided by the
 #' \code{\link[tRNAdbImport:tRNAdbImport]{tRNAdbImport}} package.
@@ -29,9 +30,9 @@ NULL
 #' @param metadata See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}
 #'
 #' @references
-#' Jühling F, Mörl M, Hartmann RK, Sprinzl M, Stadler PF, Pütz J. 2009. "tRNAdb
-#' 2009: compilation of tRNA sequences and tRNA genes." Nucleic Acids Research,
-#' Volume 37 (suppl_1): D159–162. doi:10.1093/nar/gkn772.
+#' Juehling F, Moerl M, Hartmann RK, Sprinzl M, Stadler PF, Puetz J. 2009.
+#' "tRNAdb 2009: compilation of tRNA sequences and tRNA genes." Nucleic Acids
+#' Research, Volume 37 (suppl_1): D159–162. doi:10.1093/nar/gkn772.
 #'
 #' @return a \code{EpiTxDb} object.
 #'
