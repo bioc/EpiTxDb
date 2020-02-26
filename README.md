@@ -4,7 +4,7 @@
 
 # Installation
 
-The current version of the RNAmodR package is available from Bioconductor.
+The current version of the `EpiTxDb` package is available from Bioconductor.
 
 ## Github
 
