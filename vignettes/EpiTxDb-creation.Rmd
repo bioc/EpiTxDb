@@ -1,0 +1,116 @@
+---
+title: "EpiTxDb: creating an EpiTxDb object"
+author: "Felix G.M. Ernst"
+date: "`r Sys.Date()`"
+package: EpiTxDb
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{EpiTxDb-creation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+---
+
+```{r style, echo = FALSE, results = 'asis'}
+BiocStyle::markdown(css.files = c('custom.css'))
+```
+
+# Introduction
+
+To create an `EpiTxDb` object a number of different functions are available.
+The most univeral functions are `makeEpiTxDb` and `makeEpiTxDbFromGRanges`.
+`makeEpiTxDb` uses four `data.frame`s as input, whereas `makeEpiTxDbFromGRanges`
+is a wrapper for information available as a `GRanges` object.
+
+The other functions are `makeEpiTxDbFromRMBase` and `makeEpiTxDbFromtRNAdb`,
+which are aimed to make data available from the RMBase v2.0 database
+[[@Xuan.2017;@Sun.2015]](#References) or the tRNAdb
+[[@Juehling.2009;@Sprinzl.2005]](#References). However, before creating your 
+`EpiTxDb` objects, have a look at the already available resources for 
+`H. sapiens`, `M. musculus` and `S. cerevisiae.`
+
+Additional metadata can be provided as separate `data.frame` for all functions.
+The `data.frame` must have two columns `name` and `value`.
+
+```{r, echo = FALSE}
+suppressPackageStartupMessages({
+    library(GenomicRanges)
+    library(EpiTxDb)
+})
+```
+```{r, eval = FALSE}
+library(GenomicRanges)
+library(EpiTxDb)
+```
+
+# `makeEpiTxDb` and `makeEpiTxDbFromGRanges`
+
+The creation of an etdb object is quite easy starting with a `GRanges` object.
+
+```{r}
+gr <- GRanges(seqnames = "test",
+              ranges = IRanges::IRanges(1,1),
+              strand = "+",
+              DataFrame(mod_id = 1L,
+                        mod_type = "Am",
+                        mod_name = "Am_1"))
+etdb <- makeEpiTxDbFromGRanges(gr, metadata = data.frame(name = "test",
+                                                         value = "Yes"))
+etdb
+metadata(etdb)
+```
+
+Additional data can be provided via the metadata columns of the `GRanges`
+object. For supported columns have a look at `?makeEpiTxDb` or 
+`?makeEpiTxDbFromGRanges`.
+
+# `makeEpiTxDbFromtRNAdb`
+
+The information of the tRNAdb can be accessed via the `tRNAdbImport` package 
+using the RNA database. As a result a `ModRNAStringSet` object is returned from
+which the modifications can be extracted using `separate()`.
+
+The only input require is a valid organism name returned by 
+`listAvailableOrganismsFromtRNAdb()`.
+
+```{r}
+etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae")
+etdb
+```
+
+For additional information have a look at `?makeEpiTxDbFromtRNAdb`. The result
+returned from the tRNAdb is also available as `GRanges` object, if 
+`gettRNAdbDataAsGRanges()` is used.
+
+# `makeEpiTxDbFromRMBase`
+
+Analogous to the example above `makeEpiTxDbFromRMBase()` will download the data
+from the RMBase v2.0. Three inputs are required, `organism`, `genome` and 
+`modtype`, which have to valid bia the functions 
+`listAvailableOrganismsFromRMBase()`, `.listAvailableGenomesFromRMBase()` and 
+`listAvailableModFromRMBase`.
+
+```{r, eval=FALSE}
+etdb <- makeEpiTxDbFromRMBase(organism = "Saccharomyces cerevisiae",
+                              genome = "sacCer3",
+                              modtype = "m1A")
+```
+
+Internally, the files are cached using the `BiocFileCache` package and passed
+to `makeEpiTxDbFromRMBaseFiles()`, which can also be used with locally stored
+files. The resuls for creating the `EpiTxDb` class are processed from these
+files via the `getRMBaseDataAsGRanges()` function.
+
+# Session info
+
+```{r}
+sessionInfo()
+```
+
+<a name="References"></a>
+
+# References

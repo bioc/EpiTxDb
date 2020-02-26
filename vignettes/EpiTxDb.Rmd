@@ -1,5 +1,5 @@
 ---
-title: "EpiTxDb"
+title: "EpiTxDb: Storing and accessing epitranscriptomic information using the AnnotationDbi interface"
 author: "Felix G.M. Ernst"
 date: "`r Sys.Date()`"
 package: EpiTxDb
@@ -21,30 +21,98 @@ BiocStyle::markdown(css.files = c('custom.css'))
 
 # Introduction
 
+The epitranscriptome includes all post-transcriptional modifications of the RNA
+and describes and additional layer of information encoded on RNA. Like the term
+epigenome it is not about a change in nucleotide sequences, but the addition of
+functional elements through modifications.
+
+With the development of high throughput detection strategies for specific RNA
+modifications, such as miCLIP and Pseudo-Seq amongst other, a large number of
+modified positions have been identified and were summarized via the RMBase 
+project [[@Xuan.2017;@Sun.2015]](#References) project.
+
+To make these information avaialble within the Bioconductor universe `EpiTxDb`
+was developed, which facilitates the storage of epitranscriptomic information.
+More specifically, it can keep track of modification identity, position, the
+enzyme for introducing it on the RNA, a specifier which determines the position
+on the RNA to be modified and the literature references each modification is
+associated with.
+
+# Getting started
+
 ```{r, echo = FALSE}
 suppressPackageStartupMessages({
-  library(GenomicFeatures)
-  library(BSgenome.Hsapiens.UCSC.hg38)
   library(EpiTxDb)
-  # library(EpiTxDb.Hs.hg38)
-  library(Modstrings)
+  library(EpiTxDb.Hs.hg38)
 })
 ```
 ```{r, eval = FALSE}
-library(GenomicFeatures)
-library(BSgenome.Hsapiens.UCSC.hg38)
 library(EpiTxDb)
-# library(EpiTxDb.Hs.hg38)
-library(Modstrings)
+library(EpiTxDb.Hs.hg38)
 ```
 
+The class `EpiTxDb` is the class for storing the epitranscriptomic data. It 
+inherits the inner workings of `AnnotationDb` class from the `AnnotationDbi`
+package.
 
+As an example for the vignette the snoRNAdb data [[@Lestrade.2006]](#References)
+from the `EpiTxDb.Hs.hg38` package will be used. The data is stored in the
+`AnnotationHub` and is downloaded and cached upon the first request.
 
-# Ribosomal modifications (Y and 2'-O)
+```{r}
+etdb <- EpiTxDb.Hs.hg38.snoRNAdb()
+etdb
+```
 
+As expected for an `AnnotationDb` class the general accessors are available.
+
+```{r}
+keytypes(etdb)
+columns(etdb)
+keys(etdb, "MODID")
+select(etdb, keys = "1",
+       columns = c("MODNAM","MODTYPE","MODSTART","MODSTRAND","SNNAME",
+                   "RXGENENAME","SPECTYPE","SPECGENENAME"),
+       keytype = "MODID")
+```
+
+The columns with the prefix `RX` or `SPEC` reference the reaction enzyme and the
+location specifier. This can be the same information, but for ribosomal 
+modifications from the snoRNAdb it is of course fibrillarin and a snoRNA.
+
+In addition the following accessor for metadata are available as well.
+
+```{r}
+species(etdb)
+organism(etdb)
+seqlevels(etdb)
+taxonomyId(etdb)
+```
+
+# Accessing RNA modifications
+
+The specialized accessors are `modifications()` and `modificationsBy()`. 
+`modifications()` allows for filtering results, whereas `modificationsBy()`
+returns all the modifications in batches separated by certain information.
+
+```{r}
+modifications(etdb, columns = c("mod_id","mod_type","mod_name",
+                                "rx_genename","spec_genename",
+                                "ref_type","ref"),
+              filter = list(mod_id = 1:3))
+```
+
+```{r}
+modificationsBy(etdb, by = "transcript")
+modificationsBy(etdb, by = "modtype")
+```
 
 # Session info
 
 ```{r}
 sessionInfo()
 ```
+
+<a name="References"></a>
+
+# References
