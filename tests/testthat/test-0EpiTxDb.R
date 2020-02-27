@@ -171,6 +171,10 @@ test_that("EpiTxDb SQL:",{
     etdb_file <- system.file("extdata", "EpiTxDb.Hs.hg38.snoRNAdb.sqlite",
                              package="EpiTxDb")
     etdb <- loadDb(etdb_file)
+    expect_output(show(etdb))
+    expect_true(validObject(etdb))
+    expect_type(organism(etdb),"character")
+    expect_length(organism(etdb),1L)
     actual <- EpiTxDb:::EpiTxDb_SELECT_from_modification(etdb)
     expect_s3_class(actual,"data.frame")
     expect_equal(colnames(actual),c("_mod_id","mod_type","mod_name","mod_start",
