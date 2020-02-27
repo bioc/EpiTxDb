@@ -8,7 +8,7 @@
 \alias{rescale,GRangesList-method}
 \title{Rescaling \code{Ranges} object}
 \usage{
-rescale(x, to = 1L, from = 1L, ...)
+rescale(x, to = 1L, from = 1L)
 
 \S4method{rescale}{IRanges}(x, to = 1L, from = 1L)
 
