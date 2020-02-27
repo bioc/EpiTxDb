@@ -7,8 +7,9 @@ Authors@R: person("Felix G.M.",
                   email = "felix.gm.ernst@outlook.com", 
                   role = c("aut", "cre"),
                   comment = c(ORCID = "0000-0001-5064-0928"))
-Description: `EpiTxDb` facilitates the storage of epitranscriptomic information.
-    More specifically, it can keep track of modification identity, position, the
+Description: 
+    EpiTxDb facilitates the storage of epitranscriptomic information. More 
+    specifically, it can keep track of modification identity, position, the
     enzyme for introducing it on the RNA, a specifier which determines the
     position on the RNA to be modified and the literature references each
     modification is associated with.
@@ -50,7 +51,7 @@ Suggests:
     AnnotationHub,
     ensembldb,
     BSgenome.Hsapiens.UCSC.hg38,
-    BSgenome.Scerevisiae.UCSC.sacCer3
+    TxDb.Hsapiens.UCSC.hg38.knownGene
 Collate: 
     'AllGenerics.R'
     'EpiTxDb-SELECT-helpers.R'

@@ -1,6 +1,21 @@
 # EpiTxDb [![Build Status](https://travis-ci.com/FelixErnst/EpiTxDb.svg?branch=master)](https://travis-ci.com/FelixErnst/EpiTxDb) [![codecov](https://codecov.io/gh/FelixErnst/EpiTxDb/branch/master/graph/badge.svg)](https://codecov.io/gh/FelixErnst/EpiTxDb)
 
+The epitranscriptome includes all post-transcriptional modifications of the RNA
+and describes and additional layer of information encoded on RNA. Like the term
+epigenome it is not about a change in nucleotide sequences, but the addition of
+functional elements through modifications.
 
+With the development of high throughput detection strategies for specific RNA
+modifications, such as miCLIP and Pseudo-Seq amongst other, a large number of
+modified positions have been identified and were summarized via the RMBase 
+project ([Xuan et al. 2017, Sun et al. 2015](#Literature)) project.
+
+To make these information avaialble within the Bioconductor universe `EpiTxDb`
+was developed, which facilitates the storage of epitranscriptomic information.
+More specifically, it can keep track of modification identity, position, the
+enzyme for introducing it on the RNA, a specifier which determines the position
+on the RNA to be modified and the literature references each modification is
+associated with.
 
 # Installation
 
@@ -26,10 +41,6 @@ BiocManager::install("EpiTxDb")
 library(EpiTxDb)
 ```
 
-# Introduction
-
-
-
 # Literature
 
 - Jia-Jia Xuan, Wen-Ju Sun, Ke-Ren Zhou, Shun Liu, Peng-Hui Lin, Ling-Ling
@@ -43,13 +54,3 @@ doi:[10.1093/nar/gkx934](https://doi.org/10.1093/nar/gkx934)
 high-throughput sequencing data", Nucleic Acids Research, Volume 44, Issue D1, 4
 January 2016, Pages D259–D265.
 doi:[10.1093/nar/gkv1036](https://doi.org/10.1093/nar/gkv1036).
-
-- Jühling, Frank; Mörl, Mario; Hartmann, Roland K.; Sprinzl, Mathias; Stadler,
-Peter F.; Pütz, Joern (2009): "TRNAdb 2009: Compilation of tRNA Sequences and
-tRNA Genes." Nucleic Acids Research 37 (suppl_1): D159–D162.
-doi:[10.1093/nar/gkn772](https://doi.org/10.1093/nar/gkn772).
-
-- Sprinzl, Mathias; Vassilenko, Konstantin S. (2005): "Compilation of tRNA 
-Sequences and Sequences of tRNA Genes." Nucleic Acids Research 33 (suppl_1): 
-D139–D140. doi:[10.1093/nar/gki012](https://doi.org/10.1093/nar/gki012).
-

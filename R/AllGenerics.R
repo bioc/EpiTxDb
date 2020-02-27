@@ -4,6 +4,11 @@ setGeneric("positionSequence",
            function(x, order = FALSE, decreasing = FALSE)
                standardGeneric("positionSequence"))
 
+#' @rdname rescale
+setGeneric("rescale",
+           function(x, to = 1L, from = 1L, ...)
+               standardGeneric("rescale"))
+
 #' @rdname shiftGenomicToTranscript
 setGeneric("shiftTranscriptToGenomic",
            function(subject, tx)

@@ -107,6 +107,85 @@ modificationsBy(etdb, by = "transcript")
 modificationsBy(etdb, by = "modtype")
 ```
 
+# Shifting coordinates from genomic to transcritomic
+
+Since epitranscriptomic modifications by their nature refere to each individual
+it might be of interest to shift the coordinates transctipt coordinates keeping
+in mind that with transcript variants multiple options exist for each of the 
+transcript maturation process.
+
+
+```{r}
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+library(BSgenome.Hsapiens.UCSC.hg38)
+etdb <- EpiTxDb.Hs.hg38.RMBase()
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+bs <- BSgenome.Hsapiens.UCSC.hg38
+mod <- modifications(etdb, filter = list(sn_name = "chr1"))
+seqlevels(txdb) <- "chr1"
+tx <- exonsBy(txdb)
+length(mod)
+```
+
+In the following example we will focus on shifting the coordinates to individual
+mature transcripts. However, keep in mind, that premature transcript might be
+of interest as well and this can be controlled via the `tx` arguments of
+`shiftGenomicToTranscript()`
+
+```{r}
+mod_tx <- shiftGenomicToTranscript(mod, tx)
+length(mod_tx)
+```
+
+Due to multiple matches for each transcript variant the number of modifications
+has increased.
+
+With the we can plot the relative positions of modifications by type on 
+`chr1` transcripts.
+
+```{r}
+mod_tx <- split(mod_tx,seqnames(mod_tx))
+names <- Reduce(intersect,list(names(mod_tx),names(tx)))
+# Getting the corresponding 5'-UTR and 3'-UTR annotations
+fp <- fiveUTRsByTranscript(txdb)
+tp <- threeUTRsByTranscript(txdb)
+tx <- tx[names]
+mod_tx <- mod_tx[names]
+fp_m <- match(names,names(fp))
+fp_m <- fp_m[!is.na(fp_m)]
+tp_m <- match(names,names(tp))
+tp_m <- tp_m[!is.na(tp_m)]
+fp <- fp[fp_m]
+tp <- tp[tp_m]
+
+# Getting lengths of transcripts, 5'-UTR and 3'-UTR
+tx_lengths <- sum(width(tx))
+fp_lengths <- rep(0L,length(tx))
+names(fp_lengths) <- names
+fp_lengths[names(fp)] <- sum(width(fp))
+tp_lengths <- rep(0L,length(tx))
+names(tp_lengths) <- names
+tp_lengths[names(tp)] <- sum(width(tp))
+
+# Rescale modifications
+# CDS start is at position 1L and cds end at position 1000L
+from <- IRanges(fp_lengths+1L, tx_lengths - tp_lengths)
+to <- IRanges(1L,1000L)
+mod_rescale <- rescale(mod_tx, to, from)
+
+# Construct result data.frame
+rel_pos <- data.frame(mod_type = unlist(mcols(mod_rescale,level="within")[,"mod_type"]),
+                      rel_pos = unlist(start(mod_rescale)))
+rel_pos <- rel_pos[rel_pos$rel_pos < 1500 & rel_pos$rel_pos > -500,]
+```
+
+```{r}
+library(ggplot2)
+ggplot(rel_pos[rel_pos$mod_type %in% c("m6A","m1A","Y"),],
+       aes(x = rel_pos, colour = mod_type)) + 
+  geom_density()
+```
+
 # Session info
 
 ```{r}

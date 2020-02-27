@@ -126,3 +126,91 @@ setMethod("positionSequence","RangesList",
               .seqs_rl_strand(x, order = order, decreasing = decreasing)
           })
 
+# rescale ----------------------------------------------------------------------
+
+#' @name rescale
+#'
+#' @title Rescaling \code{Ranges} object
+#'
+#' @description
+#' \code{rescale()} rescales \code{IRanges}, \code{GRanges}, \code{IRangesList}
+#' and \code{GRangesList} by using \code{to} and \code{from}.
+#'
+#' @param x a \code{IRanges}, \code{GRanges}, \code{IRangesList} and
+#'   \code{GRangesList} object
+#' @param to,from an \code{IRanges} object or a numeric vector parallel to
+#' \code{x} or with \code{length = 1L}.
+#'
+#' @return an object of the same type and dimensions as \code{x}
+#'
+#' @examples
+#' x <- IRanges("5-10")
+#' # widen the ranges
+#' rescale(x, 100, 10)
+#' # widen and shift
+#' rescale(x, "31-60", "5-14")
+NULL
+
+.zoom0 <- function(x, z = 1)
+{
+    stopifnot(is(x, "Ranges"), is.numeric(z))
+    if (length(z) > length(x) && length(z) != 1L)
+        stop("'z' is longer than 'x'")
+    if (anyNA(z) || min(z) <= -1L)
+        stop("'z' contains NAs and/or negative values")
+    new_start <- as.integer(start(x) * z)
+    new_width <- as.integer(width(x) * z)
+    BiocGenerics:::replaceSlots(x, start=new_start, width=new_width)
+}
+
+.normarg_scale <- function(scale)
+{
+    if (is(scale, "IRanges"))
+        return(scale)
+    if (is.numeric(scale))
+        return(IRanges(1L, scale))
+    as(scale, "IRanges")
+}
+
+#' @rdname rescale
+#' @export
+setMethod("rescale","IRanges",
+    function(x, to = 1L, from = 1L){
+        to <- .normarg_scale(to)
+        from <- .normarg_scale(from)
+        ans <- shift(x, -start(from))
+        ans <- .zoom0(ans, width(to) / width(from))
+        shift(ans, start(to))
+    }
+)
+
+#' @rdname rescale
+#' @export
+setMethod("rescale","IRangesList",
+    function(x, to = 1L, from = 1L){
+        to <- .normarg_scale(to)
+        from <- .normarg_scale(from)
+        ans <- shift(x, -start(from))
+        ans <- Map(.zoom0,ans,width(to) / width(from))
+        ans <- IRanges::IRangesList(ans)
+        shift(ans, start(to))
+    }
+)
+
+#' @rdname rescale
+#' @export
+setMethod("rescale","GRanges",
+    function(x, to = 1L, from = 1L){
+        ranges(x) <- rescale(ranges(x), to = to, from = from)
+        x
+    }
+)
+
+#' @rdname rescale
+#' @export
+setMethod("rescale","GRangesList",
+    function(x, to = 1L, from = 1L){
+        ranges(x) <- rescale(ranges(x), to = to, from = from)
+        x
+    }
+)
