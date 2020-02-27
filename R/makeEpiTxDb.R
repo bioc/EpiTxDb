@@ -306,8 +306,8 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     if (any(reactions$rx_rank <= 0L))
         stop("'reactions$rx_rank' contains non-positive values")
     ## Check uniqueness of (mod_id, rx_rank) pairs.
-    if (any(S4Vectors:::duplicatedIntegerPairs(reactions$mod_id,
-                                               reactions$rx_rank)))
+    if (any(S4Vectors::duplicatedIntegerPairs(reactions$mod_id,
+                                              reactions$rx_rank)))
         stop("'reactions' must contain unique (mod_id, rx_rank) pairs")
     ## Check 'rx_genename'.
     if (has_col(reactions, "rx_genename")

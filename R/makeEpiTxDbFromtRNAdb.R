@@ -200,7 +200,7 @@ makeEpiTxDbFromtRNAdb <- function(organism, sequences = NULL, metadata = NULL,
 #' @importFrom xml2 xml_find_all
 #' @export
 listAvailableOrganismsFromtRNAdb <- function(){
-    res <- httr::POST(paste0(httr::modify_url(tRNAdbImport:::TRNA_DB_URL),
+    res <- httr::POST(paste0(httr::modify_url(tRNAdbImport::TRNA_DB_URL),
                              "DataOutput/Organisms"))
     html <- httr::content(res)
     organsisms <- as.character(xml2::xml_find_all(html,'.//div[@id="inhalt"]//span[count(.//span)=0]//a//b/text()'))
