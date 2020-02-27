@@ -18,10 +18,23 @@ test_that("shiftGenomicToTranscript:",{
     expect_s4_class(actual,"GRanges")
     expect_equal(colnames(mcols(actual)),c("seq_start","seq_end","seq_strand",
                                            "seq_name"))
+    expect_equal(start(actual),c(3L,17L,8L,8L,2L))
+    expect_equal(end(actual),c(6L,19L,10L,10L,7L))
+    actual2 <- shiftTranscriptToGenomic(actual,tx)
+    expect_s4_class(actual2,"GRanges")
+    expect_equal(ranges(actual2),
+                 unname(ranges(unlist(subject)[c(1L,2L,2L,4L,5L)])))
+    #
     expect_warning(actual <- shiftGenomicToTranscript(subject,tx))
     expect_s4_class(actual,"GRangesList")
-    #
+    expect_equal(unlist(start(actual), use.names = FALSE),
+                 c(3L, 17L, 8L, 8L, 2L))
+    expect_equal(unlist(end(actual), use.names = FALSE),
+                 c(6L, 19L, 10L, 10L, 7L))
     actual2 <- shiftTranscriptToGenomic(actual,tx)
-    actual3 <- all(ranges(actual2) == ranges(subject[list(1,c(1,1),c(1,2))]))
-    expect_true(all(actual3))
+    expect_s4_class(actual2,"GRangesList")
+    expect_equal(unlist(start(actual2), use.names = FALSE),
+                 c(3L, 26L, 17L, 51L, 54L))
+    expect_equal(unlist(end(actual2), use.names = FALSE),
+                 c(6L, 28L, 19L, 53L, 59L))
 })
