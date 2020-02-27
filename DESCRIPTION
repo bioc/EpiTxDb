@@ -21,7 +21,7 @@ biocViews:
     AnnotationData,
     Epitranscriptomics
 Depends:
-    R (>= 3.6),
+    R (>= 4.0),
     AnnotationDbi,
     Modstrings
 Imports:
