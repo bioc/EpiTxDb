@@ -44,7 +44,6 @@ associated with.
 suppressPackageStartupMessages({
   library(EpiTxDb)
   library(EpiTxDb.Hs.hg38)
-  library(RSQLite)
 })
 ```
 ```{r, eval = FALSE}
@@ -61,8 +60,7 @@ from the `EpiTxDb.Hs.hg38` package will be used. The data is stored in the
 `AnnotationHub` and is downloaded and cached upon the first request.
 
 ```{r}
-etdb <- EpiTxDb:::EpiTxDb(dbConnect(SQLite(),"../EpiTxDb.Hs.hg38/hub/EpiTxDb.Hs.hg38.snoRNAdb.sqlite"))
-# etdb <- EpiTxDb.Hs.hg38.snoRNAdb()
+etdb <- EpiTxDb.Hs.hg38.snoRNAdb()
 etdb
 ```
 
@@ -132,8 +130,7 @@ txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 seqlevels(txdb) <- "chr1"
 bs <- BSgenome.Hsapiens.UCSC.hg38
 
-etdb <- EpiTxDb:::EpiTxDb(dbConnect(SQLite(),"../EpiTxDb.Hs.hg38/hub/EpiTxDb.Hs.hg38.RMBase.sqlite"))
-# etdb <- EpiTxDb.Hs.hg38.RMBase()
+etdb <- EpiTxDb.Hs.hg38.RMBase()
 
 tx <- exonsBy(txdb)
 mod <- modifications(etdb, filter = list(sn_name = "chr1"))
