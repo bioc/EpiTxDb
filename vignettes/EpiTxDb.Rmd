@@ -44,6 +44,7 @@ associated with.
 suppressPackageStartupMessages({
   library(EpiTxDb)
   library(EpiTxDb.Hs.hg38)
+  library(RSQLite)
 })
 ```
 ```{r, eval = FALSE}
@@ -60,7 +61,8 @@ from the `EpiTxDb.Hs.hg38` package will be used. The data is stored in the
 `AnnotationHub` and is downloaded and cached upon the first request.
 
 ```{r}
-etdb <- EpiTxDb.Hs.hg38.snoRNAdb()
+etdb <- EpiTxDb:::EpiTxDb(dbConnect(SQLite(),"../EpiTxDb.Hs.hg38/hub/EpiTxDb.Hs.hg38.snoRNAdb.sqlite"))
+# etdb <- EpiTxDb.Hs.hg38.snoRNAdb()
 etdb
 ```
 
@@ -69,9 +71,9 @@ As expected for an `AnnotationDb` class the general accessors are available.
 ```{r}
 keytypes(etdb)
 columns(etdb)
-keys(etdb, "MODID")
+head(keys(etdb, "MODID"))
 select(etdb, keys = "1",
-       columns = c("MODNAM","MODTYPE","MODSTART","MODSTRAND","SNNAME",
+       columns = c("MODNAME","MODTYPE","MODSTART","MODSTRAND","SNNAME",
                    "RXGENENAME","SPECTYPE","SPECGENENAME"),
        keytype = "MODID")
 ```
@@ -86,7 +88,6 @@ In addition the following accessor for metadata are available as well.
 species(etdb)
 organism(etdb)
 seqlevels(etdb)
-taxonomyId(etdb)
 ```
 
 # Accessing RNA modifications
@@ -103,7 +104,9 @@ modifications(etdb, columns = c("mod_id","mod_type","mod_name",
 ```
 
 ```{r}
-modificationsBy(etdb, by = "transcript")
+# split by sequence name, usually a transcipt identifier
+modificationsBy(etdb, by = "seqnames")
+# split modification type
 modificationsBy(etdb, by = "modtype")
 ```
 
@@ -114,16 +117,26 @@ it might be of interest to shift the coordinates transctipt coordinates keeping
 in mind that with transcript variants multiple options exist for each of the 
 transcript maturation process.
 
-
-```{r}
+```{r, echo = FALSE}
+suppressPackageStartupMessages({
+  library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+  library(BSgenome.Hsapiens.UCSC.hg38)
+})
+```
+```{r, eval = FALSE}
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(BSgenome.Hsapiens.UCSC.hg38)
-etdb <- EpiTxDb.Hs.hg38.RMBase()
+```
+```{r}
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
-bs <- BSgenome.Hsapiens.UCSC.hg38
-mod <- modifications(etdb, filter = list(sn_name = "chr1"))
 seqlevels(txdb) <- "chr1"
+bs <- BSgenome.Hsapiens.UCSC.hg38
+
+etdb <- EpiTxDb:::EpiTxDb(dbConnect(SQLite(),"../EpiTxDb.Hs.hg38/hub/EpiTxDb.Hs.hg38.RMBase.sqlite"))
+# etdb <- EpiTxDb.Hs.hg38.RMBase()
+
 tx <- exonsBy(txdb)
+mod <- modifications(etdb, filter = list(sn_name = "chr1"))
 length(mod)
 ```
 

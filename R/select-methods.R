@@ -78,7 +78,7 @@ NULL
 # this just takes the 1 letter abrevs and makes them into a sorted string
 # that can be used as a key below
 .encodeSortedTableKey <- function(sTNames){
-    prefSort <- c("mod","tra","rea","spe","ref")
+    prefSort <- c("mod","seq","rea","spe","ref")
     res <- sTNames[match(prefSort, sTNames)]
     paste(res[!is.na(res)], collapse="")
 }

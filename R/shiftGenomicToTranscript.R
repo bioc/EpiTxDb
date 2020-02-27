@@ -313,8 +313,9 @@ NULL
     f <- .non_hits(subject, sh)
     if(!all(f)){
         warning("Coordinates for ",sum(!f)," ranges of 'subject' not found: '",
-                paste(unique(as.character(subject[!f])),collapse = "','"),
-                "'.",
+                paste(unique(as.character(head(subject[!f], 10L))),
+                      collapse = "','"),
+                "'",ifelse(sum(!f) > 10L, " and more ..",""),".",
                 call. = FALSE)
     }
     tx_hits <- tx[qh]

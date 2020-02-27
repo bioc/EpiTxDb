@@ -50,6 +50,7 @@ Suggests:
     httptest,
     AnnotationHub,
     ensembldb,
+    ggplot2,
     BSgenome.Hsapiens.UCSC.hg38,
     TxDb.Hsapiens.UCSC.hg38.knownGene
 Collate: 
