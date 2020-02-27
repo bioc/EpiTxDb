@@ -43,11 +43,11 @@ test_that("EpiTxDb select:",{
     #
     expect_error(EpiTxDb:::.encodeSortedTableKey(),
                  'argument "sTNames" is missing')
-    expect_equal(EpiTxDb:::.encodeSortedTableKey(c("tra","mod")),"modtra")
-    expect_equal(EpiTxDb:::.encodeSortedTableKey(c("spec","tra","mod")),
-                 "modtra")
-    expect_equal(EpiTxDb:::.encodeSortedTableKey(c("spe","tra","mod")),
-                 "modtraspe")
+    expect_equal(EpiTxDb:::.encodeSortedTableKey(c("seq","mod")),"modseq")
+    expect_equal(EpiTxDb:::.encodeSortedTableKey(c("spec","seq","mod")),
+                 "modseq")
+    expect_equal(EpiTxDb:::.encodeSortedTableKey(c("spe","seq","mod")),
+                 "modseqspe")
     #
     expect_error(EpiTxDb:::.makeTableKey(etdb),
                  'argument "cnames" is missing')
