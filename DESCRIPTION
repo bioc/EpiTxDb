@@ -49,8 +49,8 @@ Suggests:
     testthat,
     httptest,
     AnnotationHub,
-    ensembldb,
     ggplot2,
+    EpiTxDb.Hs.hg38,
     BSgenome.Hsapiens.UCSC.hg38,
     BSgenome.Scerevisiae.UCSC.sacCer3,
     TxDb.Hsapiens.UCSC.hg38.knownGene
