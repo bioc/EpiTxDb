@@ -13,7 +13,7 @@ positionSequence(x, order = FALSE, decreasing = FALSE)
 
 \S4method{positionSequence}{RangesList}(x, order = FALSE, decreasing = FALSE)
 
-\S4method{as.integer}{Ranges}(x, ...)
+\S4method{as.integer}{Ranges}(x)
 }
 \arguments{
 \item{x}{a \code{Ranges} object, like a

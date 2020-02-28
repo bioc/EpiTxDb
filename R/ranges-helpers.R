@@ -132,8 +132,8 @@ setMethod("positionSequence","RangesList",
 #' @rdname positionSequence
 #' @export
 setMethod("as.integer","Ranges",
-    function(x, ...){
-        positionSequence(x, ...)
+    function(x){
+        positionSequence(x)
     })
 
 setAs("RangesList","IntegerList",

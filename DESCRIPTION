@@ -52,6 +52,7 @@ Suggests:
     ensembldb,
     ggplot2,
     BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Scerevisiae.UCSC.sacCer3,
     TxDb.Hsapiens.UCSC.hg38.knownGene
 Collate: 
     'AllGenerics.R'
