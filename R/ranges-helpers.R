@@ -28,10 +28,12 @@ NULL
 #' @examples
 #' library(GenomicRanges)
 #' # Returns an integer vector
-#' gr <- GRanges("chr1:1-5")
+#' gr <- GRanges("chr1:1-5:+")
+#' positionSequence(gr)
+#' gr2 <- GRanges("chr1:1-5:-")
 #' positionSequence(gr)
 #' # returns an IntegerList
-#' grl <- GRangesList("1" = gr,"2" = gr,"3" = gr) # must be named
+#' grl <- GRangesList("1" = gr,"2" = gr,"3" = gr2) # must be named
 #' positionSequence(grl)
 NULL
 
@@ -83,7 +85,7 @@ NULL
     if(any(names(from) != names(to))){
         stop("Unmatched names.")
     }
-    if(by < 0L){ # switch from to around if negative
+    if(by < 0L){ # switch from/to around if negative
         tmp <- to
         to <- from
         from <- tmp
@@ -111,20 +113,33 @@ NULL
 #' @rdname positionSequence
 #' @export
 setMethod("positionSequence","Ranges",
-          function(x, order = FALSE, decreasing = FALSE){
-              class <- paste0(class(x),"List")
-              x <- do.call(class,list(x))
-              names(x) <- "tmp"
-              ans <- .seqs_rl_strand(x, order = order, decreasing = decreasing)
-              ans[["tmp"]]
-          })
+    function(x, order = FALSE, decreasing = FALSE){
+        class <- paste0(class(x),"List")
+        x <- do.call(class,list(x))
+        names(x) <- "tmp"
+        ans <- .seqs_rl_strand(x, order = order, decreasing = decreasing)
+        ans[["tmp"]]
+    }
+)
 
 #' @rdname positionSequence
 #' @export
 setMethod("positionSequence","RangesList",
-          function(x, order = FALSE, decreasing = FALSE){
-              .seqs_rl_strand(x, order = order, decreasing = decreasing)
-          })
+    function(x, order = FALSE, decreasing = FALSE){
+        .seqs_rl_strand(x, order = order, decreasing = decreasing)
+    })
+
+#' @rdname positionSequence
+#' @export
+setMethod("as.integer","Ranges",
+    function(x, ...){
+        positionSequence(x, ...)
+    })
+
+setAs("RangesList","IntegerList",
+    function(from){
+        positionSequence(from)
+    })
 
 # rescale ----------------------------------------------------------------------
 
@@ -134,14 +149,22 @@ setMethod("positionSequence","RangesList",
 #'
 #' @description
 #' \code{rescale()} rescales \code{IRanges}, \code{GRanges}, \code{IRangesList}
-#' and \code{GRangesList} by using \code{to} and \code{from}.
+#' and \code{GRangesList} by using minima and maxima derived from \code{to} and
+#' \code{from}.
 #'
 #' @param x a \code{IRanges}, \code{GRanges}, \code{IRangesList} and
 #'   \code{GRangesList} object
-#' @param to,from an \code{IRanges} object or a numeric vector parallel to
-#' \code{x} or with \code{length = 1L}.
+#' @param to,from an \code{IRanges} object, a \code{character} vector coercible
+#'   to \code{IRanges} or a \code{integer} vector parallel to \code{x} or with
+#'   \code{length = 1L}.
 #'
 #' @return an object of the same type and dimensions as \code{x}
+#'
+#' @author H. Pagès, F. Ernst
+#'
+#' @seealso
+#' \code{\link[IRanges:IRanges-constructor]{IRanges}} for details on
+#' \code{character} vectors coercible to \code{IRanges}.
 #'
 #' @examples
 #' x <- IRanges("5-10")

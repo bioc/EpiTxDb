@@ -22,15 +22,17 @@ rescale(x, to = 1L, from = 1L)
 \item{x}{a \code{IRanges}, \code{GRanges}, \code{IRangesList} and
 \code{GRangesList} object}
 
-\item{to, from}{an \code{IRanges} object or a numeric vector parallel to
-\code{x} or with \code{length = 1L}.}
+\item{to, from}{an \code{IRanges} object, a \code{character} vector coercible
+to \code{IRanges} or a \code{integer} vector parallel to \code{x} or with
+\code{length = 1L}.}
 }
 \value{
 an object of the same type and dimensions as \code{x}
 }
 \description{
 \code{rescale()} rescales \code{IRanges}, \code{GRanges}, \code{IRangesList}
-and \code{GRangesList} by using \code{to} and \code{from}.
+and \code{GRangesList} by using minima and maxima derived from \code{to} and
+\code{from}.
 }
 \examples{
 x <- IRanges("5-10")
@@ -38,4 +40,11 @@ x <- IRanges("5-10")
 rescale(x, 100, 10)
 # widen and shift
 rescale(x, "31-60", "5-14")
+}
+\seealso{
+\code{\link[IRanges:IRanges-constructor]{IRanges}} for details on
+\code{character} vectors coercible to \code{IRanges}.
+}
+\author{
+H. Pagès, F. Ernst
 }

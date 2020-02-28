@@ -4,6 +4,7 @@
 \alias{positionSequence}
 \alias{positionSequence,Ranges-method}
 \alias{positionSequence,RangesList-method}
+\alias{as.integer,Ranges-method}
 \title{Generate integer sequences from position information of \code{Ranges}}
 \usage{
 positionSequence(x, order = FALSE, decreasing = FALSE)
@@ -11,6 +12,8 @@ positionSequence(x, order = FALSE, decreasing = FALSE)
 \S4method{positionSequence}{Ranges}(x, order = FALSE, decreasing = FALSE)
 
 \S4method{positionSequence}{RangesList}(x, order = FALSE, decreasing = FALSE)
+
+\S4method{as.integer}{Ranges}(x, ...)
 }
 \arguments{
 \item{x}{a \code{Ranges} object, like a
@@ -40,9 +43,11 @@ specific positions on a range information.
 \examples{
 library(GenomicRanges)
 # Returns an integer vector
-gr <- GRanges("chr1:1-5")
+gr <- GRanges("chr1:1-5:+")
+positionSequence(gr)
+gr2 <- GRanges("chr1:1-5:-")
 positionSequence(gr)
 # returns an IntegerList
-grl <- GRangesList("1" = gr,"2" = gr,"3" = gr) # must be named
+grl <- GRangesList("1" = gr,"2" = gr,"3" = gr2) # must be named
 positionSequence(grl)
 }
