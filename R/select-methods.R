@@ -34,7 +34,8 @@ NULL
 .getTableColMapping <- function(x){
     conn <- dbconn(x)
     tables <- DBI::dbListTables(conn)
-    tCols <- sapply(tables, DBI::dbListFields, conn = conn)
+    tCols <- lapply(tables, DBI::dbListFields, conn = conn)
+    names(tCols) <- tables
     ## right up front we are getting rid of metadata tables...
     tCols[names(tCols) != "metadata"]
 }

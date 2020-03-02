@@ -43,7 +43,7 @@ queryAnnotationDb <- GenomicFeatures:::queryAnnotationDb
     jc_offset_sel <- c("2"=1,"3"=2,"4"=3,"5"=3,"6"=4,"7"=4,"8"=5)
     joins <- character(2L * length(tables) - 1L)
     ON_idx <- 2L * seq_len(length(tables) - 1L)
-    ON <- sapply(2:length(tables), function(i) {
+    ON <- vapply(2:length(tables), function(i) {
         Rtable <- tables[[i]]
         if(i%%2 == jc_offset_tx){
             USING <- joinColumn[[1L+jc_offset_tx]]
@@ -55,7 +55,7 @@ queryAnnotationDb <- GenomicFeatures:::queryAnnotationDb
         Lcolumn <- .as_qualified(Ltable, USING)
         Rcolumn <- .as_qualified(Rtable, USING)
         paste(Lcolumn, Rcolumn, sep="=")
-    })
+    },character(1))
     joins[ON_idx] <- ON
     joins[c(1L, ON_idx + 1L)] <- tables
     joins

@@ -208,7 +208,7 @@ EPITXDB_table_columns <- function(table, schema_version = NA){
 EPITXDB_column2table <- function(columns, from_table = NA, schema_version = NA){
     if (length(columns) == 0L)
         return(character(0))
-    tables <- sapply(columns,
+    tables <- lapply(columns,
                      function(column) {
                          for (table in EPITXDB_tables()) {
                              table_columns <-
@@ -224,6 +224,8 @@ EPITXDB_column2table <- function(columns, from_table = NA, schema_version = NA){
                          }
                          stop(column, ": no such column", in_schema)
                      })
+    tables <- unlist(tables)
+    names(tables) <- columns
     if (!is.na(from_table)) {
         table_columns <- EPITXDB_table_columns(from_table,
                                                schema_version = schema_version)
@@ -235,7 +237,7 @@ EPITXDB_column2table <- function(columns, from_table = NA, schema_version = NA){
 EPITXDB_table2joinColumns <- function(tables, schema_version = NA){
     if (length(tables) == 0L)
         return(character(0))
-    tables <- sapply(tables,
+    columns <- lapply(tables,
                      function(table) {
                          if(table %in% EPITXDB_tables()){
                              table_columns <-
@@ -250,5 +252,7 @@ EPITXDB_table2joinColumns <- function(tables, schema_version = NA){
                          }
                          stop(table, ": no such table", in_schema)
                      })
-    tables
+    columns <- unlist(columns)
+    names(columns) <- tables
+    columns
 }
