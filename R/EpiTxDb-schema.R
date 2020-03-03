@@ -208,23 +208,20 @@ EPITXDB_table_columns <- function(table, schema_version = NA){
 EPITXDB_column2table <- function(columns, from_table = NA, schema_version = NA){
     if (length(columns) == 0L)
         return(character(0))
-    tables <- lapply(columns,
-                     function(column) {
-                         for (table in EPITXDB_tables()) {
-                             table_columns <-
-                                 EPITXDB_table_columns(table,
-                                                       schema_version = schema_version)
-                             if (column %in% table_columns)
-                                 return(table)
-                         }
-                         if (is.na(schema_version)) {
-                             in_schema <- ""
-                         } else {
-                             in_schema <- c(" in db schema ", as.character(schema_version))
-                         }
-                         stop(column, ": no such column", in_schema)
-                     })
-    tables <- unlist(tables)
+    table_columns <- lapply(EPITXDB_tables(), EPITXDB_table_columns,
+                            schema_version = schema_version)
+    names(table_columns) <- EPITXDB_tables()
+    table_columns <- unlist(IRanges::CharacterList(table_columns))
+    if(any(!(columns %in% table_columns))){
+        if (is.na(schema_version)) {
+            in_schema <- ""
+        } else {
+            in_schema <- c(" in db schema ", as.character(schema_version))
+        }
+        stop(columns[!(columns %in% table_columns)], ": no such column",
+             in_schema)
+    }
+    tables <- names(table_columns[match(columns,table_columns)])
     names(tables) <- columns
     if (!is.na(from_table)) {
         table_columns <- EPITXDB_table_columns(from_table,
@@ -237,22 +234,18 @@ EPITXDB_column2table <- function(columns, from_table = NA, schema_version = NA){
 EPITXDB_table2joinColumns <- function(tables, schema_version = NA){
     if (length(tables) == 0L)
         return(character(0))
-    columns <- lapply(tables,
-                     function(table) {
-                         if(table %in% EPITXDB_tables()){
-                             table_columns <-
-                                 EPITXDB_table_columns(table,
-                                                       schema_version = schema_version)
-                             return(table_columns[1L])
-                         }
-                         if (is.na(schema_version)) {
-                             in_schema <- ""
-                         } else {
-                             in_schema <- c(" in db schema ", as.character(schema_version))
-                         }
-                         stop(table, ": no such table", in_schema)
-                     })
-    columns <- unlist(columns)
+    f <- tables %in% EPITXDB_tables()
+    if(any(!f)){
+        if (is.na(schema_version)) {
+            in_schema <- ""
+        } else {
+            in_schema <- c(" in db schema ", as.character(schema_version))
+        }
+        stop(tables[!f], ": no such table", in_schema)
+    }
+    columns <- vapply(lapply(tables, EPITXDB_table_columns,
+                             schema_version = schema_version),
+                      "[[",character(1),1L)
     names(columns) <- tables
     columns
 }

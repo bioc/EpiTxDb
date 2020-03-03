@@ -398,9 +398,11 @@ setMethod("show", "EpiTxDb",
           {
               cat(class(object), "object:\n")
               metadata <- metadata(object)
-              for (i in seq_len(nrow(metadata))) {
-                  cat("# ", metadata[i, "name"], ": ", metadata[i, "value"],
-                      "\n", sep ="")
-              }
+              cat(apply(metadata,1L,
+                        function(row){
+                          paste0("# ", row["name"], ": ", row["value"],
+                                 "\n", sep ="")
+                        }),
+                  sep ="")
           }
 )
