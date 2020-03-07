@@ -17,8 +17,7 @@ License: Artistic-2.0
 Encoding: UTF-8
 LazyData: false
 biocViews:
-    AnnotationHub,
-    AnnotationData,
+    Software,
     Epitranscriptomics
 Depends:
     R (>= 4.0),
