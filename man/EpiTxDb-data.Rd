@@ -5,7 +5,9 @@
 \alias{EpiTxDb-data}
 \alias{rmbase_data}
 \title{EpiTxDb internal data}
-\format{data.frame}
+\format{
+data.frame
+}
 \usage{
 data(rmbase_data)
 }

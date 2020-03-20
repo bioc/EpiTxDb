@@ -1,7 +1,7 @@
 Package: EpiTxDb
 Type: Package
 Title: Storing and accessing epitranscriptomic information using the AnnotationDbi interface
-Version: 0.99.4
+Version: 0.99.5
 Authors@R: person("Felix G.M.", 
                   "Ernst", 
                   email = "felix.gm.ernst@outlook.com", 
@@ -28,7 +28,6 @@ Imports:
     utils,
     httr,
     xml2,
-    assertive,
     curl,
     GenomicFeatures,
     GenomicRanges,
@@ -68,7 +67,7 @@ Collate:
     'modificationsBy.R'
     'ranges-helpers.R'
     'select-methods.R'
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 BugReports: https://github.com/FelixErnst/EpiTxDb/issues
 URL: https://github.com/FelixErnst/EpiTxDb
 VignetteBuilder: knitr

@@ -11,7 +11,9 @@
 \alias{listAvailableGenomesFromRMBase}
 \alias{listAvailableModFromRMBase}
 \title{Create a \code{EpiTxDb} object from RMBase v2.0 online resources}
-\format{An object of class \code{character} of length 1.}
+\format{
+An object of class \code{character} of length 1.
+}
 \usage{
 EPITXDB_RMBASE_URL
 

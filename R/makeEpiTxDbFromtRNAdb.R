@@ -136,11 +136,11 @@ NULL
 
 #' @rdname makeEpiTxDbFromtRNAdb
 #' @importFrom tRNAdbImport import.tRNAdb
-#' @importFrom assertive is_a_non_empty_string
 #' @export
 gettRNAdbDataAsGRanges <- function(organism, sequences = NULL,
                                    dbURL = tRNAdbImport::TRNA_DB_URL){
-    if(!assertive::is_a_non_empty_string(organism) ||
+
+    if(!is.character(organism) || length(organism) > 1L ||
        !(organism %in% listAvailableOrganismsFromtRNAdb())){
         stop("'organism' must be a single character value and match an entry ",
              "from listAvailableOrganismsFromtRNAdb()")
