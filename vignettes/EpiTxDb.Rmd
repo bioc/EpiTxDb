@@ -19,6 +19,15 @@ bibliography: references.bib
 BiocStyle::markdown(css.files = c('custom.css'))
 ```
 
+# Installation
+
+```{r, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(c("EpiTxDb","EpiTxDb.Hs.hg38"))
+```
+
 # Introduction
 
 The epitranscriptome includes all post-transcriptional modifications of the RNA
