@@ -49,7 +49,7 @@ jobs:
 
       - name: Install R dependencies
         run: |
-          BiocManager::install("GenomeInfoDbData)
+          BiocManager::install("GenomeInfoDbData")
           remotes::install_deps(dependencies = TRUE, repos = c(getOption('repos'), BiocManager::repositories()), Ncpu = 2L)
           remotes::install_cran("pkgdown")
           remotes::install_cran("magick")
