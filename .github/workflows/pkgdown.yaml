@@ -7,14 +7,14 @@ name: pkgdown
 jobs:
   pkgdown:
     runs-on: ubuntu-18.04
-    
+
     name: Pkgdown (Ubuntu-18.04)
-    
+
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: "https://demo.rstudiopm.com/all/__linux__/bionic/latest"
       GITHUB_PAT: ${{secrets.PAT}}
-      
+
     steps:
       - uses: actions/checkout@v2
 
@@ -27,7 +27,7 @@ jobs:
           install.packages(c('remotes', 'BiocManager'))
           remotes::install_github('r-hub/sysreqs')
         shell: Rscript {0}
-        
+
       - name: Query dependencies
         run: |
           saveRDS(remotes::dev_package_deps(dependencies = TRUE, repos = c(getOption('repos'), BiocManager::repositories())), "depends.Rds", version = 2)
@@ -46,9 +46,10 @@ jobs:
         run: |
           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
           sudo -s eval "$sysreqs"
-        
+
       - name: Install R dependencies
         run: |
+          remotes::install_deps("GenomeInfoDbData")
           remotes::install_deps(dependencies = TRUE, repos = c(getOption('repos'), BiocManager::repositories()), Ncpu = 2L)
           remotes::install_cran("pkgdown")
           remotes::install_cran("magick")
