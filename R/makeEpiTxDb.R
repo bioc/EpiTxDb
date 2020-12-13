@@ -219,13 +219,13 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
     if (any(duplicated(modifications$mod_id)))
         stop("'modifications$mod_id' contains duplicated values")
     ## Check 'mod_start'.
-    if (!is.integer(modifications$mod_start)
-        || any(is.na(modifications$mod_start)))
+    if (!is.integer(modifications$mod_start) ||
+        any(is.na(modifications$mod_start)))
         stop("'modifications$mod_start' must be an integer vector ",
              "with no NAs")
     ## Check 'mod_end'.
-    if (!is.integer(modifications$mod_end)
-        || any(is.na(modifications$mod_end)))
+    if (!is.integer(modifications$mod_end) ||
+        any(is.na(modifications$mod_end)))
         stop("'modifications$mod_end' must be an integer vector ",
              "with no NAs")
     ## Check 'mod_start <= mod_end'.
@@ -249,14 +249,14 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         stop("'modifications$mod_strand' must be a character vector ",
              "(or factor) and contain only '+', '-' or '*'")
     ## Check 'sn_id'.
-    if (!is.integer(modifications$sn_id)
-        || any(is.na(modifications$sn_id)))
+    if (!is.integer(modifications$sn_id) ||
+        any(is.na(modifications$sn_id)))
         stop("'modifications$sn_id' must be a integer vector with no ",
              "NAs")
     ## Check 'sn_name'.
     if (has_col(modifications, "sn_name")){
-        if(!.is_character_or_factor(modifications$sn_name)
-           || any(is.na(modifications$sn_name))){
+        if(!.is_character_or_factor(modifications$sn_name) ||
+           any(is.na(modifications$sn_name))){
             stop("'modifications$sn_name' must be a character vector ",
                  "(or factor) with no NAs")
         }
@@ -271,7 +271,7 @@ dbEasyQuery <- GenomicFeatures:::dbEasyQuery
         f2 <- factor(modifications$sn_name,
                      unique(modifications$sn_name))
         p2 <- PartitioningByWidth(split(modifications$sn_name,f2))
-        if(!all(p1 == p2)){
+        if(!all(all(p1 == p2))){
             stop("'modifications$sn_name' must match ",
                  "'modifications$sn_id' in meaning.")
         }
