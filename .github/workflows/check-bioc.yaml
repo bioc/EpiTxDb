@@ -160,7 +160,7 @@ jobs:
           ## Ideally, all dependencies should get installed in the first pass.
 
           ## Temporary for now due to https://github.com/ropensci/RefManageR/issues/79
-          remotes::install_cran(c("RCurl","dbplyr"))
+          remotes::install_cran(c("RCurl","dbplyr","BiocFileCache"))
           remotes::install_github("ropensci/bibtex")
           remotes::install_github("ropensci/RefManageR")
           remotes::install_github("cboettig/knitcitations")
