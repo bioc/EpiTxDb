@@ -52,6 +52,7 @@ with a single modification.
 \code{database = "RNA"} and the three different values for \code{origin}.
 }
 \examples{
+\dontrun{
 # getting just the annotation data
 etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae")
 
@@ -59,7 +60,6 @@ etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae")
 # named DNAStringSet object. Matching will be done against each sequence
 # allowing 5 mismatches and indels. The final result will be checked for
 # validity regarding the identity of the modifications
-\dontrun{
 etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae",
                               some_transcript_sequences)
 }

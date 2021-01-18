@@ -39,6 +39,7 @@ NULL
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # getting just the annotation data
 #' etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae")
 #'
@@ -46,7 +47,6 @@ NULL
 #' # named DNAStringSet object. Matching will be done against each sequence
 #' # allowing 5 mismatches and indels. The final result will be checked for
 #' # validity regarding the identity of the modifications
-#' \dontrun{
 #' etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae",
 #'                               some_transcript_sequences)
 #' }
@@ -158,7 +158,10 @@ gettRNAdbDataAsGRanges <- function(organism, sequences = NULL,
                  })
     gr <- gr[!vapply(gr,is,logical(1),"try-error")]
     if(length(gr) == 0L){
-        stop(".")
+        stop("No results returned from tRNAdb. Check the output of ",
+             "tRNAdbImport::import.tRNAdb with database set to 'RNA' from ",
+             "all available origins.",
+             call. = FALSE)
     }
     gr <- suppressWarnings(do.call(c,gr))
     message("Assembling data ...")
