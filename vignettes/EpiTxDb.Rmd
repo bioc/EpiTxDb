@@ -111,12 +111,24 @@ modificationsBy(etdb, by = "seqnames")
 modificationsBy(etdb, by = "modtype")
 ```
 
-# Shifting coordinates from genomic to transcritomic
+# Shifting coordinates from genomic to transcriptomic
 
-Since epitranscriptomic modifications by their nature refere to each individual
-it might be of interest to shift the coordinates transctipt coordinates keeping
-in mind that with transcript variants multiple options exist for each of the 
-transcript maturation process.
+Since epitranscriptomic modifications by their nature can have different meaning
+for each of the individual transcript variants. This also introduces conflicts
+for saving epitranscriptomics coordinates. In the example above the coordinates
+are given per transcript, because of the source data.
+
+However, not all sources report transcript coordinates. It might be of interest
+to shift the coordinates to transcript coordinates and at the same time taking
+care that with transcript variants multiple options exist for each of the
+transcript maturation process: From one genomic coordinate, multiple
+transcriptomic coordinates can be spawned.
+
+Whether this is biologically relevant or whether biological evidence does exist
+for each modification on each transcript cannot be guaranteed or differentiated
+technically depending on the methods used. This might change with the arrival of
+new techniques allowing for detection of modified nucleotides per individual
+transcript variant.
 
 ```{r, echo = FALSE}
 suppressPackageStartupMessages({
@@ -159,6 +171,7 @@ With the we can plot the relative positions of modifications by type on
 ```{r}
 mod_tx <- split(mod_tx,seqnames(mod_tx))
 names <- Reduce(intersect,list(names(mod_tx),names(tx)))
+
 # Getting the corresponding 5'-UTR and 3'-UTR annotations
 fp <- fiveUTRsByTranscript(txdb)
 tp <- threeUTRsByTranscript(txdb)
