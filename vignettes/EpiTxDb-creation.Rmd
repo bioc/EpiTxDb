@@ -77,7 +77,8 @@ which the modifications can be extracted using `separate()`.
 The only input require is a valid organism name returned by 
 `listAvailableOrganismsFromtRNAdb()`.
 
-```{r}
+```{r, eval=FALSE}
+# Currently not run since the server is not available
 etdb <- makeEpiTxDbFromtRNAdb("Saccharomyces cerevisiae")
 etdb
 ```
