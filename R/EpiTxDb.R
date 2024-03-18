@@ -22,9 +22,12 @@
 #' Sequences and Sequences of tRNA Genes." Nucleic Acids Research 33 (suppl_1):
 #' D139–D140. doi: 10.1093/nar/gki012
 #'
-#' @docType _PACKAGE
-#' @name EpiTxDb-package
+#' @name EpiTxDb-package#'
 NULL
+
+#' @keywords internal
+"_PACKAGE"
+
 
 #' @import methods
 #' @import GenomicFeatures
