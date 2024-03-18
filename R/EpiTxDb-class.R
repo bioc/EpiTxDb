@@ -74,8 +74,8 @@ NULL
 
 # Low-level data loaders -------------------------------------------------------
 
-makeZeroRowDataFrame <- GenomicFeatures:::makeZeroRowDataFrame
-setDataFrameColClass <- GenomicFeatures:::setDataFrameColClass
+makeZeroRowDataFrame <- txdbmaker:::makeZeroRowDataFrame
+setDataFrameColClass <- txdbmaker:::setDataFrameColClass
 
 .format_modifications <- function(modifications, set.col.class = FALSE){
     COL2CLASS <- c(

@@ -188,15 +188,14 @@ makeFeatureIds <- function(name = NULL, type, start, end,
 
 # check helper functions -------------------------------------------------------
 
-.is_character_or_factor <- function(x){
-    is.character(x) || is.factor(x) || (is.logical(x) && all(is.na(x)))
-}
 
-.check_foreign_key <- GenomicFeatures:::.check_foreign_key
-translateIds <- GenomicFeatures:::translateIds
-check_colnames <- GenomicFeatures:::check_colnames
-has_col <- GenomicFeatures:::has_col
-dbEasyQuery <- GenomicFeatures:::dbEasyQuery
+.is_character_or_factor <- txdbmaker:::.is_character_or_factor
+
+.check_foreign_key <- txdbmaker:::.check_foreign_key
+translateIds <- txdbmaker:::translateIds
+check_colnames <- txdbmaker:::check_colnames
+has_col <- txdbmaker:::has_col
+dbEasyQuery <- txdbmaker:::dbEasyQuery
 
 .makeEpiTxDb_normarg_modifications <- function(modifications){
     .REQUIRED_COLS <- c("mod_id","mod_type","mod_start","mod_end","mod_strand",
