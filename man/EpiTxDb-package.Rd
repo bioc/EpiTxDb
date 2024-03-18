@@ -24,6 +24,14 @@ Sprinzl, Mathias; Vassilenko, Konstantin S. (2005): "Compilation of tRNA
 Sequences and Sequences of tRNA Genes." Nucleic Acids Research 33 (suppl_1):
 D139–D140. doi: 10.1093/nar/gki012
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/FelixErnst/EpiTxDb}
+  \item Report bugs at \url{https://github.com/FelixErnst/EpiTxDb/issues}
+}
+
+}
 \author{
 Felix G M Ernst [aut]
 }
