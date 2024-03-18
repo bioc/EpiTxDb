@@ -1,7 +1,7 @@
 # EpiTxDb <img src="https://raw.githubusercontent.com/Bioconductor/BiocStickers/master/EpiTxDb/EpiTxDb.png" height="200" align="right">
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/FelixErnst/EpiTxDb/workflows/R-CMD-check/badge.svg)](https://github.com/FelixErnst/EpiTxDb/actions/)
+[![R-CMD-check](https://github.com/FelixErnst/EpiTxDb/workflows/R-CMD-check-bioc-devel/badge.svg)](https://github.com/FelixErnst/EpiTxDb/actions/)
 [![BioC Build](https://bioconductor.org/shields/build/devel/bioc/EpiTxDb.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/EpiTxDb/)
 [![codecov](https://codecov.io/gh/FelixErnst/EpiTxDb/branch/master/graph/badge.svg)](https://codecov.io/gh/FelixErnst/EpiTxDb)
 [![BioC Years](https://bioconductor.org/shields/years-in-bioc/EpiTxDb.svg)](https://doi.org/doi:10.18129/B9.bioc.EpiTxDb)
