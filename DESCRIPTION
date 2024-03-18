@@ -70,7 +70,7 @@ Collate:
     'modificationsBy.R'
     'ranges-helpers.R'
     'select-methods.R'
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 BugReports: https://github.com/FelixErnst/EpiTxDb/issues
 URL: https://github.com/FelixErnst/EpiTxDb
 VignetteBuilder: knitr
