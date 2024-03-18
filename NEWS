@@ -1,2 +1,5 @@
 Changes in version 0.99.0 (2020-02-25)
 + Submitted to Bioconductor
+
+Changes in version 1.15.2 (2024-03-18)
++ Bugfix due to upstream changes in internal functions
