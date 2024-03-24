@@ -30,6 +30,7 @@ Imports:
     httr,
     xml2,
     curl,
+    rex,
     GenomicFeatures,
     txdbmaker,
     GenomicRanges,

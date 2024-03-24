@@ -31,6 +31,7 @@ NULL
 #'   the original base. This uses
 #'   \code{\link[Modstrings:separate]{removeIncompatibleModifications()}}
 #'   function from the \code{Modstrings} package.
+#' @param verbose \code{TRUE} or \code{FALSE}: Should verbose message be prined?
 #' @param metadata,reassign.ids See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}
 #'
 #' @return a \code{EpiTxDb} object.
@@ -40,12 +41,15 @@ NULL
 
 #' @rdname makeEpiTxDbFromRMBase
 #' @export
-EPITXDB_RMBASE_URL <- "http://rna.sysu.edu.cn/rmbase/download/"
+EPITXDB_RMBASE_URL <- "https://rna.sysu.edu.cn/rmbase/download/"
+EPITXDB_RMBASE_URL_JSON <- paste0(EPITXDB_RMBASE_URL,"ajax/download.json")
 
 # makeEpiTxDbFromRMBase --------------------------------------------------------
 
 .get_RMBase_rnames <- function(organism, genome, modtype){
-    paste0("RMBase_",organism,"_",genome,"_",modtype)
+    rmbase_data <- NULL
+    utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
+    rmbase_data[rmbase_data$organism == organism & rmbase_data$genome == genome & rmbase_data$mod == modtype,]$dataSet
 }
 
 .check_RMBase_files_available <- function(bfc, organism, genome, modtype){
@@ -143,11 +147,20 @@ downloadRMBaseFiles <- function(organism, genome, modtype){
 #' @export
 makeEpiTxDbFromRMBase <- function(organism, genome, modtype, tx = NULL,
                                   sequences = NULL, metadata = NULL,
-                                  reassign.ids = FALSE){
+                                  reassign.ids = FALSE, verbose = FALSE){
+    # Input check
+    if(!(is.logical(reassign.ids) && length(reassign.ids) == 1L)){
+        stop("'reassign.ids' must be TRUE or FALSE.", call. = FALSE)
+    }
+    if(!(is.logical(verbose) && length(verbose) == 1L)){
+        stop("'verbose' must be TRUE or FALSE.", call. = FALSE)
+    }
+    #
     message("Loading RMBase files ...")
     files <- downloadRMBaseFiles(organism, genome, modtype)
     makeEpiTxDbFromRMBaseFiles(files, tx = tx, sequences = sequences,
-                               metadata = metadata, reassign.ids = reassign.ids)
+                               metadata = metadata, reassign.ids = reassign.ids,
+                               verbose = verbose)
 }
 
 # makeEpiTxDbFromRMBaseFiles ---------------------------------------------------
@@ -246,7 +259,7 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
 }
 
 #' @importFrom Biostrings DNAStringSet subseq
-.extract_GRanges_from_RMBase <- function(rmb, seqtype = "RNA"){
+.extract_GRanges_from_RMBase <- function(rmb, seqtype = "RNA", verbose = FALSE){
     ############################################################################
     ### check modification information on correct base
     seq <- Biostrings::DNAStringSet(rmb$sequence)
@@ -267,15 +280,20 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
                                                     nc_type)
     f <- Modstrings:::values(codec)[match(modValues,
                                           Modstrings:::values(codec))]
-    # check if reported base matches original base
+    # check if reported base matches original base, 21 is the middle position of
+    # 41 nucleotides always returned from RMBase
     subseq <- Biostrings::subseq(seq,21L,21L)
     base_mm <- Modstrings:::originatingBase(codec)[f] != subseq
     # if not delete the modifications with a warning
     if(any(base_mm)){
-        warning("Detected mismatch of modification and originating base in ",
+        warning("Detected ",sum(base_mm),
+                " mismatch(es) of modification and originating base in ",
                 "RMBase data for '", paste(unique(mod_type), collapse = "', '"),
                 "'. Removing them ... ",
                 call. = FALSE)
+        if(verbose){
+            print(rmb[base_mm,])
+        }
         rmb <- rmb[!base_mm,]
     }
     ############################################################################
@@ -337,11 +355,11 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
     ans
 }
 
-.get_RMBase_data <- function(files){
+.get_RMBase_data <- function(files, verbose = FALSE){
     grl <- lapply(files,
                   function(file){
                       rmb <- .read_RMBase_file(file)
-                      .extract_GRanges_from_RMBase(rmb)
+                      .extract_GRanges_from_RMBase(rmb, verbose = verbose)
                   })
     grl
 }
@@ -376,10 +394,15 @@ EPITXDB_RMBASE_REQ_COLUMS <- c("chromosome", "modStart", "modEnd", "modId",
 
 #' @rdname makeEpiTxDbFromRMBase
 #' @export
-getRMBaseDataAsGRanges <- function(files){
+getRMBaseDataAsGRanges <- function(files, verbose = FALSE){
+    # Input check
+    if(!(is.logical(verbose) && length(verbose) == 1L)){
+        stop("'verbose' must be TRUE or FALSE.", call. = FALSE)
+    }
+    #
     message("Assembling RMBase data ...")
     # getting raw data from RMBase files
-    grl <- .get_RMBase_data(files)
+    grl <- .get_RMBase_data(files, verbose = verbose)
     gr <- unlist(GenomicRanges::GRangesList(grl))
     gr
 }
@@ -415,8 +438,17 @@ getRMBaseDataAsGRanges <- function(files){
 #' @rdname makeEpiTxDbFromRMBase
 #' @export
 makeEpiTxDbFromRMBaseFiles <- function(files, tx = NULL, sequences = NULL,
-                                       metadata = NULL, reassign.ids = FALSE){
-    gr <- getRMBaseDataAsGRanges(files)
+                                       metadata = NULL, reassign.ids = FALSE,
+                                       verbose = FALSE){
+    # Input check
+    if(!(is.logical(reassign.ids) && length(reassign.ids) == 1L)){
+        stop("'reassign.ids' must be TRUE or FALSE.", call. = FALSE)
+    }
+    if(!(is.logical(verbose) && length(verbose) == 1L)){
+        stop("'verbose' must be TRUE or FALSE.", call. = FALSE)
+    }
+    #
+    gr <- getRMBaseDataAsGRanges(files, verbose = verbose)
     if(!is.null(tx)){
         sl <- GenomeInfoDb::seqlevels(tx)
     } else if(!is.null(sequences)) {
@@ -455,22 +487,28 @@ makeEpiTxDbFromRMBaseFiles <- function(files, tx = NULL, sequences = NULL,
 #' @importFrom curl curl
 #' @export
 listAvailableOrganismsFromRMBase <- function(){
-    # con <- curl::curl(EPITXDB_RMBASE_URL)
-    # page <- xml2::read_html(con)
-    # organisms <- xml2::xml_attr(xml2::xml_find_all(page,'//img[@alt="[DIR]"]//../following::a'),"href")
-    # organisms <- gsub("/","",organisms)
-    # organisms[!(organisms %in% c("ajax","otherspecies"))]
+    # con <- curl::curl(EPITXDB_RMBASE_URL_JSON)
+    # downloadData <- jsonlite::fromJSON(con)
+    # rmbase_data <- downloadData$data[,1:3]
+    # colnames(rmbase_data) <- c("species","mod","dataSet")
+    # re <- rex("download/",
+    #           capture(alphas, name="organism"),
+    #           "/RMBase_",
+    #           capture(zero_or_more(any,type="lazy"), name="genome"),
+    #           "_",anything,"/zip/",
+    #           capture(zero_or_more(any,type="lazy"), name="file"),"'")
+    # rmbase_data <- cbind(rmbase_data,re_matches(downloadData$data$Download,re))
     rmbase_data <- NULL
     utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
     as.character(unique(rmbase_data$organism))
 }
 
 #' @importFrom curl curl
+#' @import rex
 .get_RMBase_files <- function(organism){
-    con <- curl::curl(paste0(EPITXDB_RMBASE_URL,organism,"/zip/"))
-    page <- xml2::read_html(con)
-    files <- xml2::xml_attr(xml2::xml_find_all(page,'//img[@alt="[   ]"]//../following::a'),"href")
-    files[!grepl("^old",files)]
+    rmbase_data <- NULL
+    utils::data("rmbase_data", envir = environment(), package = "EpiTxDb")
+    as.character(rmbase_data[rmbase_data$organism == organism,]$file)
 }
 
 .get_RMBase_genomes <- function(files){
