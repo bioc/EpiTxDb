@@ -26,17 +26,19 @@ makeEpiTxDbFromRMBase(
   tx = NULL,
   sequences = NULL,
   metadata = NULL,
-  reassign.ids = FALSE
+  reassign.ids = FALSE,
+  verbose = FALSE
 )
 
-getRMBaseDataAsGRanges(files)
+getRMBaseDataAsGRanges(files, verbose = FALSE)
 
 makeEpiTxDbFromRMBaseFiles(
   files,
   tx = NULL,
   sequences = NULL,
   metadata = NULL,
-  reassign.ids = FALSE
+  reassign.ids = FALSE,
+  verbose = FALSE
 )
 
 listAvailableOrganismsFromRMBase()
@@ -67,6 +69,8 @@ the original base. This uses
 function from the \code{Modstrings} package.}
 
 \item{metadata, reassign.ids}{See \code{\link[=makeEpiTxDb]{makeEpiTxDb}}}
+
+\item{verbose}{\code{TRUE} or \code{FALSE}: Should verbose message be prined?}
 
 \item{files}{From \code{organism}, \code{genome} and \code{modtype} the
 available files will be downloaded using the

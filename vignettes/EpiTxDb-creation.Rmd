@@ -96,7 +96,7 @@ from the RMBase v2.0. Three inputs are required, `organism`, `genome` and
 `listAvailableModFromRMBase`.
 
 ```{r, eval=FALSE}
-etdb <- makeEpiTxDbFromRMBase(organism = "Saccharomyces cerevisiae",
+etdb <- makeEpiTxDbFromRMBase(organism = "yeast",
                               genome = "sacCer3",
                               modtype = "m1A")
 ```
