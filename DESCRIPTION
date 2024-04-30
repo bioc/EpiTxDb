@@ -1,7 +1,7 @@
 Package: EpiTxDb
 Type: Package
 Title: Storing and accessing epitranscriptomic information using the AnnotationDbi interface
-Version: 1.16.0
+Version: 1.17.0
 Date: 2024-03-24
 Authors@R: person("Felix G.M.", 
                   "Ernst", 
