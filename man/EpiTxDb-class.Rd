@@ -28,7 +28,7 @@ For
     \item{\code{organism()} and \code{seqlevels()} a \code{character}
     vector}
     \item{\code{seqinfo()} a
-    \code{\link[GenomeInfoDb:Seqinfo-class]{Seqinfo}} object}
+    \code{\link[Seqinfo]{Seqinfo}} object}
     \item{\code{as.list()} a \code{list}}
   }
 }
