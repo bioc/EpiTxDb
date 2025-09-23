@@ -30,7 +30,6 @@ NULL
 
 
 #' @import methods
-#' @import GenomicFeatures
 #' @import txdbmaker
 #' @import BiocGenerics
 #' @import S4Vectors

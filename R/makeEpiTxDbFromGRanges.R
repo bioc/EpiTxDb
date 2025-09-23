@@ -11,13 +11,13 @@ NULL
 #' \code{\link[GenomicRanges:GRanges-class]{GRanges}} object. The following
 #' metadata columns can be used:
 #' \itemize{
-#' \item{\code{mod_id}, \code{mod_type}, \code{mod_name} and \code{tx_ensembl}.
-#' The first three are mandatory, whereas \code{tx_ensembl} is optional.}
-#' \item{\code{rx_genename}, \code{rx_rank}, \code{rx_ensembl},
-#' \code{rx_ensembltrans} and \code{rx_entrezid}}
-#' \item{\code{spec_type}, \code{spec_genename}, \code{spec_ensembl},
-#' \code{spec_ensembltrans} and \code{spec_entrezid}}
-#' \item{\code{ref_type} and \code{ref}}
+#' \item \code{mod_id}, \code{mod_type}, \code{mod_name} and \code{tx_ensembl}.
+#' The first three are mandatory, whereas \code{tx_ensembl} is optional.
+#' \item \code{rx_genename}, \code{rx_rank}, \code{rx_ensembl},
+#' \code{rx_ensembltrans} and \code{rx_entrezid}
+#' \item \code{spec_type}, \code{spec_genename}, \code{spec_ensembl},
+#' \code{spec_ensembltrans} and \code{spec_entrezid}
+#' \item \code{ref_type} and \code{ref}
 #' }
 #' ... and passed on the \code{\link[=makeEpiTxDb]{makeEpiTxDb}}.
 #'

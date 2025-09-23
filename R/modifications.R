@@ -24,11 +24,11 @@ NULL
 #' @param by By which information type should the result be split into? A
 #'   \code{character} value from one of the following values:
 #'   \itemize{
-#'     \item{seqnames}
-#'     \item{mod_type}
-#'     \item{reaction}
-#'     \item{specifier}
-#'     \item{specifier_type}
+#'     \item seqnames
+#'     \item mod_type
+#'     \item reaction
+#'     \item specifier
+#'     \item specifier_type
 #'   }
 #' @param filter Either NULL or a named list of vectors to be used to restrict
 #'   the output. Valid names for this list are: "mod_id", "mod_type",

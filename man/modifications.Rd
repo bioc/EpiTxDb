@@ -64,11 +64,11 @@ modification names are set as the names of the returned object. (default:
 \item{by}{By which information type should the result be split into? A
 \code{character} value from one of the following values:
 \itemize{
-  \item{seqnames}
-  \item{mod_type}
-  \item{reaction}
-  \item{specifier}
-  \item{specifier_type}
+  \item seqnames
+  \item mod_type
+  \item reaction
+  \item specifier
+  \item specifier_type
 }}
 
 \item{sequences}{A \code{RNAStringSet}, which can be used as input for

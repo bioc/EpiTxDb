@@ -25,11 +25,11 @@
 \value{
 For
   \itemize{
-    \item{\code{organism()} and \code{seqlevels()} a \code{character}
-    vector}
-    \item{\code{seqinfo()} a
-    \code{\link[Seqinfo]{Seqinfo}} object}
-    \item{\code{as.list()} a \code{list}}
+    \item \code{organism()} and \code{seqlevels()}: a \code{character}
+      vector
+    \item \code{seqinfo()}: a
+      \code{\link[Seqinfo:Seqinfo-class]{Seqinfo}} object
+    \item \code{as.list()} a \code{list}
   }
 }
 \description{
@@ -55,23 +55,23 @@ seqlevels(etdb) # easy access to all transcript names
 }
 \seealso{
 \itemize{
-    \item{\code{\link[=makeEpiTxDbFromGRanges]{makeEpiTxDbFromGRanges}} for
+    \item \code{\link[=makeEpiTxDbFromGRanges]{makeEpiTxDbFromGRanges}} for
       creating a \code{EpiTxDb} object from a
       \code{\link[GenomicRanges:GRanges-class]{GRanges}} object and it's
-       metadata columns}
-    \item{\code{\link[=makeEpiTxDbFromRMBase]{makeEpiTxDbFromRMBase}} for
-      creating a \code{EpiTxDb} object from RMBase online resources}
-    \item{\code{\link[=makeEpiTxDbFromtRNAdb]{makeEpiTxDbFromtRNAdb}} for
-      creating a \code{EpiTxDb} object from tRNAdb online resources}
-    \item{\code{\link[=makeEpiTxDb]{makeEpiTxDb}} for creating a
-      \code{EpiTxDb} object from \code{data.frames}}
-    \item{\code{\link[=modifications]{modifications}},
+       metadata columns
+    \item \code{\link[=makeEpiTxDbFromRMBase]{makeEpiTxDbFromRMBase}} for
+      creating a \code{EpiTxDb} object from RMBase online resources
+    \item \code{\link[=makeEpiTxDbFromtRNAdb]{makeEpiTxDbFromtRNAdb}} for
+      creating a \code{EpiTxDb} object from tRNAdb online resources
+    \item \code{\link[=makeEpiTxDb]{makeEpiTxDb}} for creating a
+      \code{EpiTxDb} object from \code{data.frames}
+    \item \code{\link[=modifications]{modifications}},
       \code{\link[=modifications]{modificationsBy}} for getting
-      epitranscriptomic modification locations}
-    \item{\code{\link[=select]{select}} for using the default interface of
-      \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} objects.}
-    \item{\code{\link[=shiftGenomicToTranscript]{shiftGenomicToTranscript}}
+      epitranscriptomic modification locations
+    \item \code{\link[=select]{select}} for using the default interface of
+      \code{\link[AnnotationDbi:AnnotationDb-class]{AnnotationDb}} objects.
+    \item \code{\link[=shiftGenomicToTranscript]{shiftGenomicToTranscript}}
       and \code{\link[=shiftGenomicToTranscript]{shiftTranscriptToGenomic}}
-      for transfering genomic to transcript coordinates and back again.}
+      for transfering genomic to transcript coordinates and back again.
 }
 }

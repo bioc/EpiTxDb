@@ -1,9 +1,10 @@
 # Low-level helpers imported from GenomicFeatures ------------------------------
 
+#' @importFrom GenomicFeatures transcripts
 .as_qualified <- GenomicFeatures:::.as_qualified
 .tables_in_joins <- GenomicFeatures:::.tables_in_joins
 .build_SQL_SELECT <- GenomicFeatures:::.build_SQL_SELECT
-queryAnnotationDb <- GenomicFeatures:::queryAnnotationDb
+queryAnnotationDb <- txdbmaker:::queryAnnotationDb
 
 # .EPITXDB_join_tables() -------------------------------------------------------
 

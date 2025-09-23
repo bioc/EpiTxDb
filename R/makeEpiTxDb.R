@@ -14,21 +14,21 @@ NULL
 #'
 #' @param modifications A \code{data.frame} containg the following columns:
 #'   \itemize{
-#'     \item{\code{mod_id}: }{a unique \code{integer} value per modification.}
-#'     \item{\code{mod_type}: }{the modification type as a \code{character} or
+#'     \item \code{mod_id}: a unique \code{integer} value per modification.
+#'     \item \code{mod_type}: the modification type as a \code{character} or
 #'     \code{factor} value. Must be a value from
-#'     \code{shortName(ModRNAString())}.}
-#'     \item{\code{mod_name}: }{a \code{character} or \code{factor} name for the
-#'     specific modification}
-#'     \item{\code{mod_start}: }{the start position for the modification as
-#'     \code{integer} value. Usually \code{mod_start = mod_end} }
-#'     \item{\code{mod_end}: }{the end position for the modification as
-#'     \code{integer} value. Usually \code{mod_start = mod_end} }
-#'     \item{\code{mod_strand}: }{the strand information for the modificaion as a
-#'     \code{character} or \code{factor}. }
-#'     \item{\code{sn_id}: }{a \code{integer} value per unique sequence }
-#'     \item{\code{sn_name}: }{a \code{character} or \code{factor} as sequence
-#'     name, e.g a chromosome or a transcript identifier like \code{chr1}.}
+#'     \code{shortName(ModRNAString())}.
+#'     \item \code{mod_name}: a \code{character} or \code{factor} name for the
+#'     specific modification
+#'     \item \code{mod_start}: the start position for the modification as
+#'     \code{integer} value. Usually \code{mod_start = mod_end}
+#'     \item \code{mod_end}: the end position for the modification as
+#'     \code{integer} value. Usually \code{mod_start = mod_end}
+#'     \item \code{mod_strand}: the strand information for the modificaion as a
+#'     \code{character} or \code{factor}.
+#'     \item \code{sn_id}: a \code{integer} value per unique sequence
+#'     \item \code{sn_name}: a \code{character} or \code{factor} as sequence
+#'     name, e.g a chromosome or a transcript identifier like \code{chr1}.
 #'   }
 #'   The first six are mandatory, whereas one of the last two has to be set.
 #'   \code{sn_id} will be generated from \code{sn_name}, if \code{sn_id} is not
@@ -37,59 +37,59 @@ NULL
 #' @param reactions An optional \code{data.frame} containg the following
 #'   columns:
 #'   \itemize{
-#'     \item{\code{mod_id}: }{a \code{integer} value per modification and the
-#'     link to the \code{modification} \code{data.frame}.}
-#'     \item{\code{rx_genename}: }{a \code{character} or \code{factor} referencing
-#'     a genename for the enzyme incorporating the modification. }
-#'     \item{\code{rx_rank}: }{a \code{integer} for sorting enzyme reactions, if
+#'     \item \code{mod_id}: a \code{integer} value per modification and the
+#'     link to the \code{modification} \code{data.frame}.
+#'     \item \code{rx_genename}: a \code{character} or \code{factor} referencing
+#'     a genename for the enzyme incorporating the modification.
+#'     \item \code{rx_rank}: a \code{integer} for sorting enzyme reactions, if
 #'     multiple enzymes are involved in the modification's
-#'     incorporation/maintenance.}
-#'     \item{\code{rx_ensembl}: }{a \code{character} or \code{factor} with an
-#'     ensembl identifier for the genename of the enzyme.}
-#'     \item{\code{rx_ensembltrans}: }{a \code{character} or \code{factor} with an
-#'     ensembl identifier for the transcript being translated into the enzyme.}
-#'     \item{\code{rx_entrezid}: }{a \code{character} or \code{factor} with an
-#'     entrezid for the genename of the enzyme.}
+#'     incorporation/maintenance.
+#'     \item \code{rx_ensembl}: a \code{character} or \code{factor} with an
+#'     ensembl identifier for the genename of the enzyme.
+#'     \item \code{rx_ensembltrans}: a \code{character} or \code{factor} with an
+#'     ensembl identifier for the transcript being translated into the enzyme.
+#'     \item \code{rx_entrezid}: a \code{character} or \code{factor} with an
+#'     entrezid for the genename of the enzyme.
 #'   }
 #'   (default: \code{reactions = NULL})
 #'
 #' @param specifiers An optional \code{data.frame} containg the following
 #'   columns:
 #'     \itemize{
-#'     \item{\code{mod_id}: }{a \code{integer} value per modification and the
-#'     link to the \code{modification} \code{data.frame}.}
-#'     \item{\code{spec_type}: }{a \code{character} or \code{factor}
+#'     \item \code{mod_id}: a \code{integer} value per modification and the
+#'     link to the \code{modification} \code{data.frame}.
+#'     \item \code{spec_type}: a \code{character} or \code{factor}
 #'     referencing a type of specifier, e.g. \code{snoRNA}. Not checked for
-#'     validity.}
-#'     \item{\code{spec_genename}: }{a \code{character} or \code{factor}
+#'     validity.
+#'     \item \code{spec_genename}: a \code{character} or \code{factor}
 #'     referencing a genename for the specifier directing an enzyme to the
-#'     specific location for the modification to be incorporated.}
-#'     \item{\code{spec_ensembl}: }{a \code{character} or \code{factor} with an
-#'     ensembl identifier for the genename of the specifier.}
-#'     \item{\code{spec_ensembltrans}: }{a \code{character} or \code{factor} with an
-#'     ensembl identifier for the transcript being translated into the specifier.}
-#'     \item{\code{spec_entrezid}: }{a \code{character} or \code{factor} with an
-#'     entrezid for the genename of the specifier.}
+#'     specific location for the modification to be incorporated.
+#'     \item \code{spec_ensembl}: a \code{character} or \code{factor} with an
+#'     ensembl identifier for the genename of the specifier.
+#'     \item \code{spec_ensembltrans}: a \code{character} or \code{factor} with an
+#'     ensembl identifier for the transcript being translated into the specifier.
+#'     \item \code{spec_entrezid}: a \code{character} or \code{factor} with an
+#'     entrezid for the genename of the specifier.
 #'   }
 #'   (default: \code{specifiers = NULL})
 #'
 #' @param references An optional \code{data.frame} containg the following
 #'   columns:
 #'   \itemize{
-#'     \item{\code{mod_id}: }{a \code{integer} value per modification and the
-#'     link to the \code{modification} \code{data.frame}.}
-#'     \item{\code{ref_type}: }{a \code{character} or \code{factor} with a
-#'     reference type, e.g. \code{PMID}. Is not checked for validity. }
-#'     \item{\code{ref}: }{a \code{character} or \code{factor} with a reference
+#'     \item \code{mod_id}: a \code{integer} value per modification and the
+#'     link to the \code{modification} \code{data.frame}.
+#'     \item \code{ref_type}: a \code{character} or \code{factor} with a
+#'     reference type, e.g. \code{PMID}. Is not checked for validity.
+#'     \item \code{ref}: a \code{character} or \code{factor} with a reference
 #'     value, e.g. a specific pubmed id or an journal article. Is not checked
-#'     for validity.}
+#'     for validity.
 #'   }
 #'   (default: \code{references = NULL})
 #'
 #' @param metadata An optional \code{data.frame} containg the following columns:
 #'   \itemize{
-#'     \item{\code{name}: }{a \code{character} value used as name}
-#'     \item{\code{value}: }{a \code{character} value}
+#'     \item \code{name}: a \code{character} value used as name
+#'     \item \code{value}: a \code{character} value
 #'   }
 #'   This dataframe will be returned
 #'   by \code{metadata()} (default: \code{metadata = NULL})
@@ -103,17 +103,17 @@ NULL
 #'
 #' @seealso
 #' \itemize{
-#'   \item{\code{\link[=makeEpiTxDbFromGRanges]{makeEpiTxDbFromGRanges}} for
+#'   \item \code{\link[=makeEpiTxDbFromGRanges]{makeEpiTxDbFromGRanges}} for
 #'     creating a \code{EpiTxDb} object from a
 #'   \code{\link[GenomicRanges:GRanges-class]{GRanges}} object and it's metadata
-#'     columns}
-#'   \item{\code{\link[=makeEpiTxDbFromRMBase]{makeEpiTxDbFromRMBase}} for
-#'     creating a \code{EpiTxDb} object from RMBase online resources}
-#'   \item{\code{\link[=makeEpiTxDbFromtRNAdb]{makeEpiTxDbFromtRNAdb}} for
-#'     creating a \code{EpiTxDb} object from tRNAdb online resources}
-#'   \item{\code{\link[Modstrings:alphabet]{shortName}} and
+#'     columns
+#'   \item \code{\link[=makeEpiTxDbFromRMBase]{makeEpiTxDbFromRMBase}} for
+#'     creating a \code{EpiTxDb} object from RMBase online resources
+#'   \item \code{\link[=makeEpiTxDbFromtRNAdb]{makeEpiTxDbFromtRNAdb}} for
+#'     creating a \code{EpiTxDb} object from tRNAdb online resources
+#'   \item \code{\link[Modstrings:alphabet]{shortName}} and
 #'   \code{\link[Modstrings:ModRNAString]{ModRNAString}} for information on
-#'   \code{ModRNAString} objects.}
+#'   \code{ModRNAString} objects.
 #' }
 #'
 #' @return a \code{EpiTxDb} object.

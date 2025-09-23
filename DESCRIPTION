@@ -1,8 +1,8 @@
 Package: EpiTxDb
 Type: Package
 Title: Storing and accessing epitranscriptomic information using the AnnotationDbi interface
-Version: 1.21.1
-Date: 2025-07-22
+Version: 1.21.2
+Date: 2025-09-23
 Authors@R: person("Felix G.M.", 
                   "Ernst", 
                   email = "felix.gm.ernst@outlook.com", 
@@ -71,7 +71,7 @@ Collate:
     'modificationsBy.R'
     'ranges-helpers.R'
     'select-methods.R'
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 BugReports: https://github.com/FelixErnst/EpiTxDb/issues
 URL: https://github.com/FelixErnst/EpiTxDb
 VignetteBuilder: knitr
