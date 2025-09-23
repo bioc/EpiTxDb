@@ -450,11 +450,11 @@ makeEpiTxDbFromRMBaseFiles <- function(files, tx = NULL, sequences = NULL,
     #
     gr <- getRMBaseDataAsGRanges(files, verbose = verbose)
     if(!is.null(tx)){
-        sl <- GenomeInfoDb::seqlevels(tx)
+        sl <- Seqinfo::seqlevels(tx)
     } else if(!is.null(sequences)) {
         sl <- names(sequences)
     } else {
-        sl <- GenomeInfoDb::seqlevels(gr)
+        sl <- Seqinfo::seqlevels(gr)
     }
     chromosome <- .simplify_chromosome_identifiers(seqnames(gr), sl)
     gr <- GenomicRanges::GRanges(seqnames = chromosome,

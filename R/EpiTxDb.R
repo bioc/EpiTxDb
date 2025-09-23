@@ -37,7 +37,7 @@ NULL
 #' @import IRanges
 #' @import AnnotationDbi
 #' @import RSQLite
-#' @import GenomeInfoDb
+#' @import Seqinfo
 #' @import Modstrings
 NULL
 

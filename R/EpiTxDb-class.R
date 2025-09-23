@@ -48,7 +48,7 @@ NULL
 #'     \item{\code{organism()} and \code{seqlevels()} a \code{character}
 #'     vector}
 #'     \item{\code{seqinfo()} a
-#'     \code{\link[GenomeInfoDb:Seqinfo-class]{Seqinfo}} object}
+#'     \code{\link[Seqinfo:Seqinfo-class]{Seqinfo}} object}
 #'     \item{\code{as.list()} a \code{list}}
 #'   }
 #'
@@ -336,7 +336,7 @@ setMethod("organism", "EpiTxDb",
 }
 
 #' @rdname EpiTxDb-class
-#' @importFrom GenomeInfoDb seqinfo
+#' @importFrom Seqinfo seqinfo
 #' @export
 setMethod("seqinfo", "EpiTxDb", .get_EpiTxDb_seqinfo)
 
@@ -345,7 +345,7 @@ setMethod("seqinfo", "EpiTxDb", .get_EpiTxDb_seqinfo)
 }
 
 #' @rdname EpiTxDb-class
-#' @importFrom GenomeInfoDb seqlevels
+#' @importFrom Seqinfo seqlevels
 #' @export
 setMethod("seqlevels", "EpiTxDb", .get_EpiTxDb_seqlevels)
 

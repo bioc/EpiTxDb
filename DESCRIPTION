@@ -1,8 +1,8 @@
 Package: EpiTxDb
 Type: Package
 Title: Storing and accessing epitranscriptomic information using the AnnotationDbi interface
-Version: 1.15.3
-Date: 2024-03-24
+Version: 1.21.1
+Date: 2025-07-22
 Authors@R: person("Felix G.M.", 
                   "Ernst", 
                   email = "felix.gm.ernst@outlook.com", 
@@ -34,7 +34,7 @@ Imports:
     GenomicFeatures,
     txdbmaker,
     GenomicRanges,
-    GenomeInfoDb,
+    Seqinfo,
     BiocGenerics,
     BiocFileCache,
     S4Vectors,
